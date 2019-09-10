@@ -507,7 +507,7 @@ Text
     Angle 0.1
 
 Text
-    "Quần đảo Trường Sa"
+    "Q u ầ n   đ ả o   t r ư ờ n g   s a\n"
     113.149383 9.200517 115.4115 9.387464
     Font (".VnHelvetInsH",1,0,0)
     Angle 0.1
@@ -64004,7 +64004,7 @@ Text
     Font (".VnTimeH",1,0,0)
     Angle 360
     Justify Center
-iêu
+
 Text
     "vÜnh ch©u"
     105.894136 9.320812 106.094705 9.358884
@@ -64103,7 +64103,7 @@ Text
     Justify Center
 
 Text
-    "Thái Bình"
+    "thíi b×nh"
     105.102921 9.276613 105.283142 9.314685
     Font (".VnTimeH",0,0,0)
     Angle 360
@@ -64117,7 +64117,7 @@ Text
     Justify Center
 
 Text
-    "K. Cà Mau Bạc L"
+    "K. Cµ Mau ®i B¹c Liªu"
     105.433553 9.163813 105.751755 9.197126
     Font (".VnTime",2,0,65535)
     Angle 15.8

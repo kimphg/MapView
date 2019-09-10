@@ -15,6 +15,7 @@ import android.os.Build;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -480,6 +481,7 @@ public class MapView extends View {
     Button buttonZoomIn,buttonZoomOut;
     //private Point pt = new Point(scrWidth/2,scrHeight/2);
     private ScaleGestureDetector scaleGestureDetector;
+    GestureDetector gestureDetector;
     public MapView(Context context, AttributeSet attr) {
         super(context,attr);
         mCtx = context; //<-- fill it with the Context you are passed
@@ -490,8 +492,8 @@ public class MapView extends View {
         testpaint = new Paint();
         paintRegion = new Paint();
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleLister());
+        gestureDetector = new GestureDetector(context, new GestureListener());
         mMatrix = new Matrix();
-
 
     }
     @TargetApi(Build.VERSION_CODES.O)
@@ -551,20 +553,22 @@ public class MapView extends View {
                             catch(Exception e ){};
 
                             textPaint.setColor(Color.rgb(red,green,blue));
-                            textPaint.setTextSize(distance / obj.name.length());
                             Path path = new Path();
                             path.moveTo(p1.x,p1.y);
                             path.lineTo(p2.x,p2.y);
-                        if(mScale <= 1.5 && levelPreference ==1) {
+                        if(mScale <= 1.5f && levelPreference ==1) {
 //                            textPaint.setTextSize(distance / 11f);
+                            textPaint.setTextSize(distance / obj.name.length());
                             canvas.drawTextOnPath(obj.name, path, 0, 0, textPaint);
                         }
-                        else if(mScale > 1.5 && mScale <= 6 && levelPreference ==2){
+                        else if(mScale > 2 && mScale <= 6 && levelPreference ==2){
 //                            textPaint.setTextSize(distance / 10f);
+                            textPaint.setTextSize(distance / obj.name.length());
                             canvas.drawTextOnPath(obj.name, path,0,0, textPaint);
                         }
                         else if (levelPreference == 3 && mScale >6) {
 //                            textPaint.setTextSize(distance / 4f);
+                            textPaint.setTextSize(distance / obj.name.length()/2);
                             canvas.drawTextOnPath(obj.name, path,0,0, textPaint);
                         }
 
@@ -809,26 +813,35 @@ public class MapView extends View {
             invalidate();
         }
         scaleGestureDetector.onTouchEvent(event);
-        invalidate();
+        gestureDetector.onTouchEvent(event);
         return true;
     }
 
     private class ScaleLister extends ScaleGestureDetector.SimpleOnScaleGestureListener{
-
+        @Override
         public boolean onScale(ScaleGestureDetector sgd){
             mScale *= sgd.getScaleFactor();
             textSize *= sgd.getScaleFactor();
             mScale = Math.max(1f, Math.min(mScale, 20));
-            textSize = Math.max(1f, Math.min(textSize, 40));
-            PointF newLatLon = ConvScrPointToWGS((int)(dragStart.x-dragStop.x)+scrCtX,(int)(dragStart.y-dragStop.y)+scrCtY);
-            mlat=newLatLon.y;
-            mlon=newLatLon.x;
+//            textSize = Math.max(1f, Math.min(textSize, 40));
+//            PointF newLatLon = ConvScrPointToWGS((int)(dragStart.x-dragStop.x)+scrCtX,(int)(dragStart.y-dragStop.y)+scrCtY);
+//            mlat=newLatLon.y;
+//            mlon=newLatLon.x;
             dragStart = dragStop;
-
             invalidate();
             return true;
         }
     }
+
+    private class GestureListener extends GestureDetector.SimpleOnGestureListener{
+        @Override
+        public boolean onDoubleTap(MotionEvent e){
+            mScale *= 1.5f;
+            invalidate();
+            return true;
+        }
+    }
+
     private int Distance(Point p1, Point p2){
         return (int) Math.sqrt(Math.pow((p1.x -p2.x),2) + Math.pow((p1.y - p2.y),2));
     }
