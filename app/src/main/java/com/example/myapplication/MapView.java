@@ -8,15 +8,13 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.RectF;
+import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.os.Build;
-import android.os.Parcelable;
+
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.util.Size;
-import android.view.Display;
-import android.view.GestureDetector;
+
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -33,6 +31,7 @@ import java.lang.Object;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.res.ResourcesCompat;
 
 import org.w3c.dom.Text;
 
@@ -200,7 +199,8 @@ class objectClass {
                 else if(mline.contains("Text")){
                     obText = new ObjectText();
                     obText.name = reader.readLine();
-
+                    obText.name = obText.name.replace('"' , ' ');
+                    obText.name = obText.name.trim();
                     String p = reader.readLine();
                     String pSplit[] = p.split(" ");
                     float x1= Float.parseFloat(pSplit[4]);
@@ -462,9 +462,9 @@ public class MapView extends View {
         invalidate();
     }
     Point currentCell;
-    private float mlat = 8.5f;//lattitude of the center of the screen
-    private float mlon = 111.9f;//longtitude of the center of the screen
-    private float mScale = 5;// 1km = mScale*pixcels
+    private float mlat = 18.32f;//lattitude of the center of the screen
+    private float mlon = 108.43f;//longtitude of the center of the screen
+    private float mScale = 4;// 1km = mScale*pixcels
     private int scrCtY,scrCtX;
     private objectClass readFile ;
     int levelPreference =0;
@@ -476,6 +476,7 @@ public class MapView extends View {
     Paint paintRegion;
     TextPaint textPaint;
     float textSize =30f;
+    private Matrix mMatrix;
     Button buttonZoomIn,buttonZoomOut;
     //private Point pt = new Point(scrWidth/2,scrHeight/2);
     private ScaleGestureDetector scaleGestureDetector;
@@ -489,12 +490,15 @@ public class MapView extends View {
         testpaint = new Paint();
         paintRegion = new Paint();
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleLister());
+        mMatrix = new Matrix();
+
 
     }
     @TargetApi(Build.VERSION_CODES.O)
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onDraw(Canvas canvas){// draw function
+
 
         scrCtY = getHeight()/2;
         scrCtX = getWidth()/2;
@@ -504,6 +508,13 @@ public class MapView extends View {
         textPaint.setStyle(Paint.Style.STROKE);
         depthLinePaint.setStyle(Paint.Style.STROKE);
         depthLinePaint.setColor(Color.RED);
+        //draw a condinate center
+        Paint paint_center = new Paint();
+        paint_center.setColor(Color.BLACK);
+        paint_center.setTextSize(scrCtX/40);
+        canvas.drawCircle(scrCtX, scrCtY, 5, paint_center);
+        canvas.drawText(mlat + " + "+ mlon, scrCtX + 10, scrCtY + 15, paint_center);
+        canvas.drawText("mScale : " + mScale , 20, 20, paint_center);
         //textPaint.setTextSize(textSize);
         paintRegion.setStyle(Paint.Style.FILL_AND_STROKE);
         PointF topRightLatLon = ConvScrPointToWGS(scrCtX*2,0);
@@ -527,31 +538,36 @@ public class MapView extends View {
                     for (ObjectText obj : objectList) {
                         Point p1 = ConvWGSToScrPoint(obj.point1.x, obj.point1.y);
                         Point p2 = ConvWGSToScrPoint(obj.point2.x, obj.point2.y);
-                        int distance = (int) Math.sqrt(Math.pow((p1.x -p2.x),2) + Math.pow((p1.y - p2.y),2));
+                        int distance = Distance(p1,p2);
 //                        if (mScale > getWidth() / 70) {
                             int color = obj.pen[2];
                             int red =(int) color /65536;
                             int green = (int) (color - red * 65536) / 256;
                             int blue = (int) (color - red * 65536 - green * 256);
-                            Typeface tf= setFont(obj.pen[0], obj.font);
-                            textPaint.setTypeface(tf);
+                            try {
+                                Typeface tf = setFont(obj.pen[0], obj.font);
+                                textPaint.setTypeface(tf);
+                            }
+                            catch(Exception e ){};
+
                             textPaint.setColor(Color.rgb(red,green,blue));
-                            textPaint.setTextSize(distance / 11f);
+                            textPaint.setTextSize(distance / obj.name.length());
                             Path path = new Path();
                             path.moveTo(p1.x,p1.y);
                             path.lineTo(p2.x,p2.y);
-                            if(mScale <= 1.5 && levelPreference ==1) {
-                                textPaint.setTextSize(distance / 11f);
-                                canvas.drawTextOnPath(obj.name, path, 0, 0, textPaint);
-                            }
-                            else if(mScale > 1.5 && mScale <= 6 && levelPreference ==2){
-                                textPaint.setTextSize(distance / 10f);
-                                canvas.drawTextOnPath(obj.name, path,0,0, textPaint);
-                            }
-                            else if (levelPreference == 3 && mScale >6) {
-                                textPaint.setTextSize(distance / 4f);
-                                canvas.drawTextOnPath(obj.name, path,0,0, textPaint);
-                            }
+                        if(mScale <= 1.5 && levelPreference ==1) {
+//                            textPaint.setTextSize(distance / 11f);
+                            canvas.drawTextOnPath(obj.name, path, 0, 0, textPaint);
+                        }
+                        else if(mScale > 1.5 && mScale <= 6 && levelPreference ==2){
+//                            textPaint.setTextSize(distance / 10f);
+                            canvas.drawTextOnPath(obj.name, path,0,0, textPaint);
+                        }
+                        else if (levelPreference == 3 && mScale >6) {
+//                            textPaint.setTextSize(distance / 4f);
+                            canvas.drawTextOnPath(obj.name, path,0,0, textPaint);
+                        }
+
                             //}
                     }
                 }
@@ -576,23 +592,33 @@ public class MapView extends View {
                     }
             }
             if(ondraw){
-                int i =0;
-                    Path lines = new Path();
-                    for(Point temp: pointOnScreen){
-                        if(i > 0){
-                            lines.lineTo(temp.x,temp.y);
-                        }
-                        else lines.moveTo(temp.x,temp.y);
-                        i++;
-                    }
+//                int i =0;
+//                    Path lines = new Path();
+//                    for(Point temp: pointOnScreen){
+//                        if(i > 0){
+//                            lines.lineTo(temp.x,temp.y);
+//                        }
+//                        else lines.moveTo(temp.x,temp.y);
+//                        i++;
+//                    }
+                int sizeOfVector = pointOnScreen.size() * 4;
+                float[] arr = new float[sizeOfVector];
+                for(int i = 0;i< sizeOfVector - 4;i+=4){
+                    arr[i] = pointOnScreen.elementAt(i/4).x;
+                    arr[i+1] = pointOnScreen.elementAt(i/4).y;
+                    arr[i+2] = pointOnScreen.elementAt(i/4 + 1).x;
+                    arr[i+3] = pointOnScreen.elementAt(i/4 + 1).y;
+                }
+
                     int color = pl.pen[2];
                     int red =(int) color /65536;
                     int green = (int) (color - red * 65536) / 256;
                     int blue = (int) (color - red * 65536 - green * 256);
                     depthLinePaint.setColor(Color.rgb(red, green, blue));
                     depthLinePaint.setStrokeWidth(pl.pen[0]);
-                    canvas.drawPath(lines,depthLinePaint);
-                    ondraw =false;
+       //             canvas.drawPath(lines,depthLinePaint);
+                 canvas.drawLines(arr,depthLinePaint);
+                ondraw =false;
             }
         }
         //draw lines
@@ -659,6 +685,7 @@ public class MapView extends View {
             }
         }
 
+
     }
 
     @TargetApi(Build.VERSION_CODES.O)
@@ -667,61 +694,61 @@ public class MapView extends View {
         Typeface tf;
         if(font.contains("arial")){
             if(valueFont == 0)
-                tf = getResources().getFont(R.font.arial);
+                tf = ResourcesCompat.getFont(mCtx,R.font.arial);
             else if(valueFont ==1 ){
-                tf = getResources().getFont(R.font.arialb);
+                tf = ResourcesCompat.getFont(mCtx,R.font.arialb);
             }
-            else tf = getResources().getFont(R.font.ariali);
+            else tf = ResourcesCompat.getFont(mCtx,R.font.ariali);
             levelPreference = 3;
         }
         else if(font.contains("tahoma")){
             if(valueFont == 0)
-                tf = getResources().getFont(R.font.tahoma);
+                tf = ResourcesCompat.getFont(mCtx,R.font.tahoma);
             else if(valueFont ==1 ){
-                tf = getResources().getFont(R.font.tahomab);
+                tf = ResourcesCompat.getFont(mCtx,R.font.tahomab);
             }
-            else tf = getResources().getFont(R.font.tahomai);
+            else tf = ResourcesCompat.getFont(mCtx,R.font.tahomai);
             levelPreference = 2;
         }
         else if(font.contains("vnarial")){
             if(valueFont == 0)
-                tf = getResources().getFont(R.font.vnarial);
+                tf = ResourcesCompat.getFont(mCtx,R.font.vnarial);
             else if(valueFont ==1 ){
-                tf = getResources().getFont(R.font.vnarialb);
+                tf = ResourcesCompat.getFont(mCtx,R.font.vnarialb);
             }
-            else tf = getResources().getFont(R.font.vnariali);
+            else tf = ResourcesCompat.getFont(mCtx,R.font.vnariali);
             levelPreference =3;
         }
         else if(font.contains("vnarialh")){
             if(valueFont == 0)
-                tf = getResources().getFont(R.font.vnarialh);
+                tf = ResourcesCompat.getFont(mCtx,R.font.vnarialh);
             else if(valueFont ==1 ){
-                tf = getResources().getFont(R.font.vnarialhb);
+                tf = ResourcesCompat.getFont(mCtx,R.font.vnarialhb);
             }
-            else tf = getResources().getFont(R.font.vnarialhi);
+            else tf = ResourcesCompat.getFont(mCtx,R.font.vnarialhi);
             levelPreference = 2;
         }
         else if(font.contains("vntimeh")){
             if(valueFont == 0)
-                tf = getResources().getFont(R.font.vntimeh);
+                tf = ResourcesCompat.getFont(mCtx,R.font.vntimeh);
             else if(valueFont ==1 ){
-                tf = getResources().getFont(R.font.vntimehb);
+                tf = ResourcesCompat.getFont(mCtx,R.font.vntimehb);
             }
-            else tf = getResources().getFont(R.font.vntimehi);
+            else tf = ResourcesCompat.getFont(mCtx,R.font.vntimehi);
             levelPreference =2;
         }
         else if(font.contains("vntime")){
             if(valueFont == 0)
-                tf = getResources().getFont(R.font.vntime);
+                tf = ResourcesCompat.getFont(mCtx,R.font.vntime);
             else if(valueFont ==1 ){
-                tf = getResources().getFont(R.font.vntimehb);
+                tf = ResourcesCompat.getFont(mCtx,R.font.vntimehb);
             }
-            else tf = getResources().getFont(R.font.vntimehi);
+            else tf = ResourcesCompat.getFont(mCtx,R.font.vntimehi);
             levelPreference =2;
         }
         else {
             levelPreference =2;
-            tf = getResources().getFont(R.font.arial);
+            tf = ResourcesCompat.getFont(mCtx,R.font.arial);
         }
         return tf;
     }
@@ -787,6 +814,7 @@ public class MapView extends View {
     }
 
     private class ScaleLister extends ScaleGestureDetector.SimpleOnScaleGestureListener{
+
         public boolean onScale(ScaleGestureDetector sgd){
             mScale *= sgd.getScaleFactor();
             textSize *= sgd.getScaleFactor();
@@ -796,9 +824,13 @@ public class MapView extends View {
             mlat=newLatLon.y;
             mlon=newLatLon.x;
             dragStart = dragStop;
+
             invalidate();
             return true;
         }
+    }
+    private int Distance(Point p1, Point p2){
+        return (int) Math.sqrt(Math.pow((p1.x -p2.x),2) + Math.pow((p1.y - p2.y),2));
     }
 
 }
