@@ -2,6 +2,7 @@ package com.example.myapplication;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -86,18 +87,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Run_check_permission();
 
         fab.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
                 if(googleApiClient == null)
                     turnOnGPS();
                 else {
-                    Intent intent = new Intent(getApplicationContext(), GPS_Services.class);
-                    startService(intent);
+                    StartForegorund();
                 }
             }
         });
     }
 
+    private void StartForegorund(){
+        Intent intent = new Intent(getApplicationContext(), GPS_Services.class);
+        ContextCompat.startForegroundService(this,intent);
+    }
     private boolean Run_check_permission() {
 
         if (Build.VERSION.SDK_INT>=23 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!=
