@@ -100,12 +100,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if(googleApiClient == null)
                     turnOnGPS();
                 else {
-                    Intent intent = new Intent(getApplicationContext(), GPS_Services.class);
-                    startService(intent);
+                    turnOnGPS();
                 }
             }
         });
         drawerble();
+    }
+
+    private void TurnOnGps(){
+        Intent intent = new Intent(getApplicationContext(), GPS_Services.class);
+        ContextCompat.startForegroundService(this,intent);
     }
 
     private void drawerble(){
