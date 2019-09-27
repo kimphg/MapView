@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -18,10 +20,13 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.widget.Button;
 import java.lang.Object;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,11 +45,15 @@ import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     Location location;
-    private FloatingActionButton fab;
+    EditText editTextSearch;
+    DrawerLayout mDrawerLayout;
+    NavigationView navigationView;
+    private ImageButton imageButtonGPS;
     private BroadcastReceiver broadcast;
     private GoogleApiClient googleApiClient;
     private float longitude =0, latitude =0;
@@ -72,11 +81,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mapview);
+        setContentView(R.layout.activity_main);
         //onClick1();
         //addButton();
 
-        fab = findViewById(R.id.fab1);
+        imageButtonGPS = findViewById(R.id.imagebutton_gps);
         map = findViewById(R.id.map);
 
         if(googleApiClient == null) {
@@ -85,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         Run_check_permission();
 
-        fab.setOnClickListener(new View.OnClickListener() {
+        imageButtonGPS.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(googleApiClient == null)
@@ -94,6 +103,43 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     Intent intent = new Intent(getApplicationContext(), GPS_Services.class);
                     startService(intent);
                 }
+            }
+        });
+        drawerble();
+    }
+
+    private void drawerble(){
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        editTextSearch = findViewById(R.id.edit_search);
+
+        navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                // set item as selected to persist highlight
+                menuItem.setChecked(true);
+                // close drawer when item is tapped
+                mDrawerLayout.closeDrawers();
+                return true;
+            }
+        });
+
+
+        editTextSearch.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                final int DRAWABLE_LEFT = 0;
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (event.getRawX() <= (editTextSearch
+                            .getCompoundDrawables()[DRAWABLE_LEFT].getBounds().width() +
+                            editTextSearch.getPaddingLeft() +
+                            editTextSearch.getLeft())) {
+                        mDrawerLayout.openDrawer(GravityCompat.START);
+                    }
+                    return true;
+                }
+                return false;
             }
         });
     }
@@ -181,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (requestCode==100){
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED)
             {
-                fab.setOnClickListener(new View.OnClickListener() {
+                imageButtonGPS.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if(googleApiClient == null) {
