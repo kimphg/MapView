@@ -16,7 +16,7 @@ public class GPS_Services extends Service {
     }
 
     private LocationManager mLocationManager;
-    public static  final int TIME_MIN = 8000;
+    public static  final int TIME_MIN = 5000;
     public static  final float DISTANCE_MIN = 10F;
     private LocationListener mLocationListener;
 
