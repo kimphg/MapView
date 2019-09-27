@@ -1,16 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".MainActivity"
+    android:fitsSystemWindows="true"
+    android:id="@+id/drawer_layout">
 
-    <TextView
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/content_frame">
+
+        <view
+            class = "com.example.myapplication.MapView"
+            android:id = "@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
+        <EditText
+            android:id="@+id/edit_search"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
+            android:hint="Bn muon di dau"
+            android:drawablePadding="10dp"
+            android:background="@drawable/custom_edit_text"
+            android:drawableRight="@drawable/icon_edittext"
+            android:drawableLeft="@drawable/icon_edittext2"
+            />
+
+         <ImageButton
+            android:id="@+id/imagebutton_gps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/icon_gps_location"
+            android:layout_gravity="end|bottom"
+             android:layout_marginBottom="20dp"
+             android:layout_marginRight="20dp"
+            />
+
+        <ImageButton
+            android:id="@+id/imagebutton_navigation"
+            android:background="@drawable/icon_navigation"
+            android:layout_gravity="end|bottom|right"
+            android:layout_marginBottom="80dp"
+            android:layout_marginRight="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:id="@+id/imagebutton_nearme"
+            android:background="@drawable/icon_nearme"
+            android:layout_gravity="end|bottom|right"
+            android:layout_marginBottom="140dp"
+            android:layout_marginRight="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </FrameLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Helloo " />
-</LinearLayout>
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/drawer_view"
+        ></com.google.android.material.navigation.NavigationView>
+</androidx.drawerlayout.widget.DrawerLayout>
 
 
 

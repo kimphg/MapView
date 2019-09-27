@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -24,7 +26,9 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.Display;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -238,6 +242,7 @@ class objectClass {
                     obText.name = reader.readLine();
                     obText.name = obText.name.replace('"' , ' ');
                     obText.name = obText.name.trim();
+
                     String p = reader.readLine();
                     String pSplit[] = p.split(" ");
                     float x1= Float.parseFloat(pSplit[4]);
@@ -570,7 +575,8 @@ public class MapView extends View {
     TextPaint textPaint;
     float textSize =30f;
     private Matrix mMatrix;
-    boolean abc = false;
+    boolean location = false;
+    float location_lon, location_lat;
     Button buttonZoomIn,buttonZoomOut;
     //private Point pt = new Point(scrWidth/2,scrHeight/2);
     private ScaleGestureDetector scaleGestureDetector;
@@ -609,6 +615,16 @@ public class MapView extends View {
         canvas.drawCircle(scrCtX, scrCtY, 5, paint_center);
         canvas.drawText(mlat + " + "+ mlon, scrCtX + 10, scrCtY + 15, paint_center);
         canvas.drawText("mScale : " + mScale , 20, 20, paint_center);
+
+        if(location){
+            //Point p1 = ConvWGSToScrPoint(location_lon, location_lat);
+            //paint_center.setColor(Color.BLUE);
+            //canvas.drawCircle(p1.x,p1.y, 14,paint_center);
+            Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
+            Point p1 = ConvWGSToScrPoint(location_lon, location_lat);
+            Paint locationPaint = new Paint();
+            canvas.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
+        }
         //textPaint.setTextSize(textSize);
         paintRegion.setStyle(Paint.Style.FILL_AND_STROKE);
 //        if(abc){
@@ -931,10 +947,13 @@ public class MapView extends View {
     }
 
     public void setLonLat(float latLoc, float lonLoc){
-        mlat =latLoc;
-        mlon =lonLoc;
+        mlat = location_lat = latLoc;
+        mlon = location_lon = lonLoc;
 //        abc = true;
+        mScale =4;
+        location =true;
         invalidate();
+
     }
 
 }

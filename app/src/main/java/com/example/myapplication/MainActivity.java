@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -18,11 +20,23 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.view.Gravity;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import java.lang.Object;
+import java.util.ArrayList;
+
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,16 +54,27 @@ import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     Location location;
-    private FloatingActionButton fab;
+    private ImageButton imageButtonGPS;
     private BroadcastReceiver broadcast;
     private GoogleApiClient googleApiClient;
+    ListView list;
+    ListViewAdapter adapter;
+    SearchView editsearch;
     private float longitude =0, latitude =0;
     String lonlat[];
     MapView map;
+    private ArrayAdapter arrayAdapter;
+
+    DrawerLayout mDrawerLayout;
+
+    EditText editTextSearch;
+    NavigationView navigationView;
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -67,16 +92,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         };
         IntentFilter filter =new IntentFilter("update_service");
         registerReceiver(broadcast,filter);
-
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mapview);
+        setContentView(R.layout.activity_main);
+
+        drawerNavigation();
+
         //onClick1();
         //addButton();
 
-        fab = findViewById(R.id.fab1);
+        imageButtonGPS = findViewById(R.id.imagebutton_gps);
         map = findViewById(R.id.map);
 
         if(googleApiClient == null) {
@@ -85,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         Run_check_permission();
 
-        fab.setOnClickListener(new View.OnClickListener() {
+        imageButtonGPS.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(googleApiClient == null)
@@ -96,7 +123,65 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
         });
+        //list.setVisibility(View.GONE);
     }
+
+    private void drawerNavigation(){
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        editTextSearch = findViewById(R.id.edit_search);
+
+        navigationView = findViewById(R.id.nav_view);
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                menuItem.setChecked(true);
+                mDrawerLayout.closeDrawers();
+                return true;
+            }
+        });
+
+//        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+//            @Override
+//            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+//
+//            }
+//
+//            @Override
+//            public void onDrawerOpened(@NonNull View drawerView) {
+//
+//            }
+//
+//            @Override
+//            public void onDrawerClosed(@NonNull View drawerView) {
+//
+//            }
+//
+//            @Override
+//            public void onDrawerStateChanged(int newState) {
+//
+//            }
+//        });
+
+
+
+        editTextSearch.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent event){
+                final int DRAWABLE_LEFT = 0;
+                int start=editTextSearch.getSelectionStart();
+                int end=editTextSearch.getSelectionEnd();
+                if(event.getAction() == MotionEvent.ACTION_UP) {
+                    if(event.getRawX() <= (editTextSearch.getLeft() + editTextSearch.getCompoundDrawables()[DRAWABLE_LEFT].getBounds().width())) {
+                        mDrawerLayout.openDrawer(GravityCompat.START);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
 
     private boolean Run_check_permission() {
 
@@ -106,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         {
 
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION
-                    , Manifest.permission.ACCESS_FINE_LOCATION}, 100);
+                    , Manifest.permission.ACCESS_FINE_LOCATION}, 1000);
             return true;
 
         }
@@ -178,10 +263,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (requestCode==100){
+        if (requestCode==1000){
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED)
             {
-                fab.setOnClickListener(new View.OnClickListener() {
+                imageButtonGPS.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if(googleApiClient == null) {
@@ -213,6 +298,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
 
     }
 }
