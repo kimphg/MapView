@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -10,6 +11,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.GpsSatellite;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -20,6 +24,7 @@ import android.provider.Settings;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 public class GPS_Services extends Service {
     private LocationManager mLocationManager;
@@ -43,6 +48,8 @@ public class GPS_Services extends Service {
                 Intent intent = new Intent("update_service");
                 intent.putExtra("coordinate",location.getLongitude()+" "+ location.getLatitude());
                 sendBroadcast(intent);
+
+
             }
 
             @Override
@@ -146,6 +153,37 @@ public class GPS_Services extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    public String checkGlonass(){
+        boolean isFromGlonass = false;
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        final GpsStatus gpsStatus = this.mLocationManager.getGpsStatus(null);
+        final Iterable<GpsSatellite> gpsSatellite = gpsStatus.getSatellites();
+
+        for( GpsSatellite satellite : gpsSatellite ){
+            if ( satellite.usedInFix()){
+                if( satellite.getPrn() > 65 && satellite.getPrn() < 88 ){
+                    isFromGlonass = true;
+                }
+                else{
+                    isFromGlonass = false;
+                }
+            }
+            else {
+                isFromGlonass = false;
+            }
+        }
+
+        if( isFromGlonass ){
+            return "Location is form GLONASS";
+        }
+        else{
+            return  "Location is not from GLONASS";
+        }
+
     }
 
 
