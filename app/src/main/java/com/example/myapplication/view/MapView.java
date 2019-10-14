@@ -9,8 +9,6 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -23,9 +21,7 @@ import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.os.Build;
 
-import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.text.TextPaint;
 import android.util.AttributeSet;
@@ -34,30 +30,19 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.view.SurfaceView;
 import android.view.View;
-import android.view.Display;
-import android.view.WindowManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListAdapter;
 
 import com.example.myapplication.object.Polyline;
-import com.example.myapplication.object.ReadFile;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.example.myapplication.classes.ReadFile;
 
-import java.io.*;
 import java.lang.String;
-import java.lang.Object;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.res.ResourcesCompat;
 
 import java.util.Vector;
 
-import static android.view.View.MeasureSpec.getSize;
 import static java.lang.Math.cos;
 
 /*

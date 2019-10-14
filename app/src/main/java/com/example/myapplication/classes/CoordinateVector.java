@@ -1,4 +1,4 @@
-package com.example.myapplication.services;
+package com.example.myapplication.classes;
 
 import java.util.Vector;
 

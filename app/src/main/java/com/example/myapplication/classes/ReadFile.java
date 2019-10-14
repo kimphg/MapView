@@ -1,8 +1,13 @@
-package com.example.myapplication.object;
+package com.example.myapplication.classes;
 
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.PointF;
+
+import com.example.myapplication.object.Line;
+import com.example.myapplication.object.Polyline;
+import com.example.myapplication.object.Region;
+import com.example.myapplication.object.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;

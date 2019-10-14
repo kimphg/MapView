@@ -8,18 +8,25 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.database.DataSetObserver;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 
 import com.example.myapplication.services.GPS_Services;
@@ -38,15 +45,18 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    EditText editTextSearch;
-    DrawerLayout mDrawerLayout;
-    NavigationView navigationView;
-    private ImageButton imageButtonGPS;
+    private ImageButton imageButtonGPS, imageButtonNearMe, imageButtonNavigation;
+    private ImageButton imageButtonExtensions;
+    private ExpandableListAdapter elva;
     private BroadcastReceiver broadcast;
     private GoogleApiClient googleApiClient;
     private float longitude =0, latitude =0;
+    private  boolean visible = false;
     String lonlat[];
     MapView map;
     @Override
@@ -76,6 +86,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //addButton();
 
         imageButtonGPS = findViewById(R.id.imagebutton_gps);
+        imageButtonExtensions = findViewById(R.id.imageExtensions);
+        imageButtonNearMe = findViewById(R.id.imagebutton_nearme);
+        imageButtonNavigation = findViewById(R.id.imagebutton_navigation);
+
+        imageButtonGPS.setVisibility(View.INVISIBLE);
+        imageButtonNearMe.setVisibility(View.INVISIBLE);
+        imageButtonNavigation.setVisibility(View.INVISIBLE);
+
+
         map = findViewById(R.id.map);
 
         if(googleApiClient == null) {
@@ -94,48 +113,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
         });
-        drawerble();
+
+        imageButtonExtensions.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!visible){
+                    imageButtonGPS.setVisibility(View.VISIBLE);
+                    imageButtonNearMe.setVisibility(View.VISIBLE);
+                    imageButtonNavigation.setVisibility(View.VISIBLE);
+                    imageButtonExtensions.setBackgroundResource(R.drawable.icon_edittext);
+                    visible = true;
+                }
+                else {
+                    imageButtonGPS.setVisibility(View.INVISIBLE);
+                    imageButtonNearMe.setVisibility(View.INVISIBLE);
+                    imageButtonNavigation.setVisibility(View.INVISIBLE);
+                    imageButtonExtensions.setBackgroundResource(R.drawable.icon_edittext2);
+                    visible = false;
+                }
+            }
+        });
+
     }
 
     private void TurnOnGps(){
         Intent intent = new Intent(getApplicationContext(), GPS_Services.class);
         ContextCompat.startForegroundService(this,intent);
-    }
-
-    private void drawerble(){
-        mDrawerLayout = findViewById(R.id.drawer_layout);
-        editTextSearch = findViewById(R.id.edit_search);
-
-        navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem menuItem) {
-                // set item as selected to persist highlight
-                menuItem.setChecked(true);
-                // close drawer when item is tapped
-                mDrawerLayout.closeDrawers();
-                return true;
-            }
-        });
-
-
-        editTextSearch.setOnTouchListener(new View.OnTouchListener(){
-            @Override
-            public boolean onTouch(View view, MotionEvent event) {
-                final int DRAWABLE_LEFT = 0;
-
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (event.getRawX() <= (editTextSearch
-                            .getCompoundDrawables()[DRAWABLE_LEFT].getBounds().width() +
-                            editTextSearch.getPaddingLeft() +
-                            editTextSearch.getLeft())) {
-                        mDrawerLayout.openDrawer(GravityCompat.START);
-                    }
-                    return true;
-                }
-                return false;
-            }
-        });
     }
 
     private boolean Run_check_permission() {

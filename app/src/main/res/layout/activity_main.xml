@@ -20,35 +20,31 @@
             android:layout_height="match_parent"
             />
 
-        <EditText
-            android:id="@+id/edit_search"
-            android:layout_width="match_parent"
+        <ImageButton
+            android:id="@+id/imageExtensions"
+            android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginLeft="20dp"
+            android:layout_gravity="bottom|right"
             android:layout_marginRight="20dp"
-            android:layout_marginTop="20dp"
-            android:hint="Bn muon di dau"
-            android:drawablePadding="10dp"
-            android:background="@drawable/custom_edit_text"
-            android:drawableRight="@drawable/icon_edittext"
-            android:drawableLeft="@drawable/icon_edittext2"
-            />
+            android:layout_marginBottom="20dp"
+            android:dividerHeight="0.5dp"
+            android:background="@drawable/icon_edittext2" />
 
          <ImageButton
             android:id="@+id/imagebutton_gps"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/icon_gps_location"
-            android:layout_gravity="end|bottom"
-             android:layout_marginBottom="20dp"
+             android:layout_gravity="bottom|right"
+             android:layout_marginBottom="70dp"
              android:layout_marginRight="20dp"
             />
 
         <ImageButton
             android:id="@+id/imagebutton_navigation"
             android:background="@drawable/icon_navigation"
-            android:layout_gravity="end|bottom|right"
-            android:layout_marginBottom="80dp"
+            android:layout_gravity="bottom|right"
+            android:layout_marginBottom="120dp"
             android:layout_marginRight="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
@@ -56,23 +52,14 @@
         <ImageButton
             android:id="@+id/imagebutton_nearme"
             android:background="@drawable/icon_nearme"
-            android:layout_gravity="end|bottom|right"
-            android:layout_marginBottom="140dp"
+            android:layout_gravity="bottom|right"
+            android:layout_marginBottom="170dp"
             android:layout_marginRight="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
     </FrameLayout>
 
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/nav_view"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:fitsSystemWindows="true"
-        app:headerLayout="@layout/nav_header"
-        app:menu="@menu/drawer_view"
-        ></com.google.android.material.navigation.NavigationView>
 </androidx.drawerlayout.widget.DrawerLayout>
 
 
