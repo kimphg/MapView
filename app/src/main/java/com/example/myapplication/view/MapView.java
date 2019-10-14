@@ -1,5 +1,11 @@
-package com.example.myapplication;
+package com.example.myapplication.view;
 
+import com.example.myapplication.R;
+import com.example.myapplication.object.Line;
+import com.example.myapplication.object.Region;
+import com.example.myapplication.object.Text;
+
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,12 +23,18 @@ import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.os.Build;
 
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.Display;
 import android.view.WindowManager;
@@ -30,9 +42,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListAdapter;
 
+import com.example.myapplication.object.Polyline;
+import com.example.myapplication.object.ReadFile;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
+
 import java.io.*;
 import java.lang.String;
 import java.lang.Object;
@@ -41,93 +55,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.res.ResourcesCompat;
 
-import org.w3c.dom.Text;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.Vector;
 
 import static android.view.View.MeasureSpec.getSize;
 import static java.lang.Math.cos;
 
-class ObjectLine implements Serializable{
-    public PointF point1, point2;
-    public int pen[];
-    public ObjectLine(PointF ipoint1,  PointF ipoint2){
-        point1 = ipoint1;
-        point2 = ipoint2;
-    }
-    public ObjectLine (){
-        point1 = new PointF();
-        point2 = new PointF();
-        pen = new int [3];
-    }
-}
-
-class ObjectText implements Serializable{
-    public String name;
-    public PointF point1, point2;
-    public String font;
-    public int pen[];
-    public float angle ;
-    public String location;
-
-    public ObjectText (){
-        name = "";
-        point1 = new PointF();
-        point2 = new PointF();
-        font = "";
-        pen = new int [3];
-        angle = 0;
-        location = "";
-    }
-
-    public ObjectText(String iname,PointF ipoint1, PointF ipoint2, String ifont, float iangle, String ilocation){
-        name = iname;
-        point1 = ipoint1;
-        point2 = ipoint2;
-        font = ifont;
-        angle = iangle;
-        location = ilocation;
-    }
-}
-
-class ObjectPoliline implements Serializable{
-    public int numberPoint;
-    Map <Point,Vector<PointF>> lines = new HashMap<Point, Vector<PointF>>();
-    public int pen[];
-
-    public ObjectPoliline(){}
-
-    public ObjectPoliline(int inumberPoint){
-        numberPoint = inumberPoint;
-        pen = new int[3];
-    }
-}
-
-class ObjectRegion implements Serializable{
-    public int numberPoint;
-    Map <Point,Vector<PointF>> lines = new HashMap<Point, Vector<PointF>>();
-    public float brush[], location[];
-    public int pen[];
-
-    public ObjectRegion(){}
-    public ObjectRegion(int inumberPoint){
-        numberPoint = inumberPoint;
-        pen = new int [3];
-        brush = new float[3];
-        location = new float[2];
-    }
-}
-
+/*
 class objectClass {
     private Context mCtx;
     public Map <Point,Vector<ObjectLine>> listLine = new HashMap<Point, Vector<ObjectLine>>();
@@ -547,6 +480,7 @@ class objectClass {
     }
 
 }
+*/
 
 public class MapView extends View {
     private int scrWidth ;
@@ -560,11 +494,11 @@ public class MapView extends View {
         invalidate();
     }
     Point currentCell;
-    private float mlat = 18.32f;//lattitude of the center of the screen
-    private float mlon = 108.43f;//longtitude of the center of the screen
-    private float mScale = 1;// 1km = mScale*pixcels
+    private float mlat = 13.32f;//lattitude of the center of the screen
+    private float mlon = 109.43f;//longtitude of the center of the screen
+    private float mScale = 5;// 1km = mScale*pixcels
     private int scrCtY,scrCtX;
-    private objectClass readFile ;
+    private ReadFile readFile ;
     int levelPreference =0;
     Point pointtemp;
     PointF dragStart,dragStop;
@@ -572,20 +506,40 @@ public class MapView extends View {
     private Context mCtx;
     Paint depthLinePaint, testpaint;
     Paint paintRegion;
+    Path mPath;
     TextPaint textPaint;
     float textSize =30f;
     private Matrix mMatrix;
     boolean location = false;
     float location_lon, location_lat;
+    PointF deltaPointF;
+
+    boolean ontouch = false;
     Button buttonZoomIn,buttonZoomOut;
     //private Point pt = new Point(scrWidth/2,scrHeight/2);
     private ScaleGestureDetector scaleGestureDetector;
     GestureDetector gestureDetector;
     private BroadcastReceiver broadcast;
+    Canvas mCanvas;
+    int count;
+    @SuppressLint("HandlerLeak")
+    Handler handler1 =  new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            //msg.arg1 là giá trị được trả về trong message
+            //của tiến trình con
+            if(mCanvas !=null) {
+                String returnvalue = (String) msg.obj;
+                mCanvas.drawTextOnPath(returnvalue, mPath, 0, 0, textPaint);
+            }
+        }};
+    Handler handler2;
+    Thread thread1;
+    Thread thread2;
     public MapView(Context context, AttributeSet attr) {
-        super(context,attr);
+        super(context, attr);
         mCtx = context; //<-- fill it with the Context you are passed
-        readFile = new objectClass(context);
+        readFile = new ReadFile(context);
         currentCell = new Point();
         textPaint = new TextPaint();
         depthLinePaint = new Paint();
@@ -594,16 +548,18 @@ public class MapView extends View {
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleLister());
         gestureDetector = new GestureDetector(context, new GestureListener());
         mMatrix = new Matrix();
-
+//        handler2 = new Handler();
     }
+    @SuppressLint("DrawAllocation")
     @TargetApi(Build.VERSION_CODES.O)
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void onDraw(Canvas canvas){// draw function
-        scrCtY = getHeight()/2;
-        scrCtX = getWidth()/2;
-        int radius = Math.min(scrCtX,scrCtY);
-        float pi = (float )Math.PI;
+    public void onDraw(Canvas canvas) {// draw function
+        mCanvas = canvas;
+        scrCtY = getHeight() / 2;
+        scrCtX = getWidth() / 2;
+        int radius = Math.min(scrCtX, scrCtY);
+        float pi = (float) Math.PI;
         //canvas.drawColor(Color.rgb(0,0,0));
         textPaint.setStyle(Paint.Style.STROKE);
         depthLinePaint.setStyle(Paint.Style.STROKE);
@@ -611,15 +567,12 @@ public class MapView extends View {
         //draw a condinate center
         Paint paint_center = new Paint();
         paint_center.setColor(Color.BLACK);
-        paint_center.setTextSize(scrCtX/10);
+        paint_center.setTextSize(scrCtX / 10);
         canvas.drawCircle(scrCtX, scrCtY, 5, paint_center);
-        canvas.drawText(mlat + " + "+ mlon, scrCtX + 10, scrCtY + 15, paint_center);
-        canvas.drawText("mScale : " + mScale , 20, 20, paint_center);
+        canvas.drawText(mlat + " + " + mlon, scrCtX + 10, scrCtY + 15, paint_center);
+        canvas.drawText("mScale : " + mScale, 20, 20, paint_center);
 
-        if(location){
-            //Point p1 = ConvWGSToScrPoint(location_lon, location_lat);
-            //paint_center.setColor(Color.BLUE);
-            //canvas.drawCircle(p1.x,p1.y, 14,paint_center);
+        if (location) {
             Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
             Point p1 = ConvWGSToScrPoint(location_lon, location_lat);
             Paint locationPaint = new Paint();
@@ -627,112 +580,145 @@ public class MapView extends View {
         }
         //textPaint.setTextSize(textSize);
         paintRegion.setStyle(Paint.Style.FILL_AND_STROKE);
-//        if(abc){
-//            abc = abc;
-        //}
+        PointF leftbottomPointF = ConvScrPointToWGS(0,0);
+
         PointF topRightLatLon = ConvScrPointToWGS(scrCtX*2,0);
         PointF botLeftLatLon = ConvScrPointToWGS(0,scrCtY*2);
-
+//
         int topX = (int) topRightLatLon.x;
         int topY = (int) topRightLatLon.y;
-
+//
         int botX = (int) botLeftLatLon.x;
         int botY = (int) botLeftLatLon.y;
         //sc all cells inside the screen and draw all text object
 
-        for (int cellLon = botX;cellLon<= topX;cellLon+=1)
-        {
-            for (int cellLat = botY;cellLat<= topY;cellLat+=1)
-            {
+        PointF point = new PointF(0, 0);
+        if(ontouch){
+            int deltaTopY = topY + (int) deltaPointF.y;
+            for (int cellLon = topX; cellLon >= botX; cellLon -=1){
+                for(int cellLat = deltaTopY;cellLat >= topY; cellLat -=1){
+                    currentCell = new Point(cellLon, cellLat);
+
+                    for (Polyline pl : readFile.listPLine) {
+                        Vector<PointF> pointfs = pl.lines.get(currentCell);
+                        if (pointfs == null) continue;
+                        int size = pointfs.size() * 4;
+                        float pointis[] = new float[size];
+                        for (int i = 0; i < size - 4; i += 4) {
+                            PointF pointf1 = pointfs.elementAt(i / 4);
+                            PointF pointf2 = pointfs.elementAt(i / 4 + 1);
+                            if (pointf1.equals(point) || pointf2.equals(point) || pointf1.equals(pointf2))
+                                continue;
+                            Point p1 = ConvWGSToScrPoint(pointf1.x, pointf1.y);
+                            Point p2 = ConvWGSToScrPoint(pointf2.x, pointf2.y);
+                            pointis[i] = (float) p1.x;
+                            pointis[i + 1] = (float) p1.y;
+                            pointis[i + 2] = (float) p2.x;
+                            pointis[i + 3] = (float) p2.y;
+
+                        }
+
+                        int color = pl.pen[2];
+                        int red = (int) color / 65536;
+                        int green = (int) (color - red * 65536) / 256;
+                        int blue = (int) (color - red * 65536 - green * 256);
+                        depthLinePaint.setColor(Color.rgb(red, green, blue));
+                        depthLinePaint.setStrokeWidth(pl.pen[0]);
+                        //             canvas.drawPath(lines,depthLinePaint);
+
+                        canvas.drawLines(pointis,depthLinePaint);
+                        Log.d("line", pointis + "");
+                    }
+                }
+            }
+
+            int deltaTopX = botX + (int) deltaPointF.x;
+            for (int cellLon = botX; cellLon <= deltaTopX; cellLon +=1){
+                for(int cellLat = botY;cellLat <= topY; cellLat +=1){
+                    currentCell = new Point(cellLon, cellLat);
+
+                    for (Polyline pl : readFile.listPLine) {
+                        Vector<PointF> pointfs = pl.lines.get(currentCell);
+                        if (pointfs == null) continue;
+                        int size = pointfs.size() * 4;
+                        float pointis[] = new float[size];
+                        for (int i = 0; i < size - 4; i += 4) {
+                            PointF pointf1 = pointfs.elementAt(i / 4);
+                            PointF pointf2 = pointfs.elementAt(i / 4 + 1);
+                            if (pointf1.equals(point) || pointf2.equals(point) || pointf1.equals(pointf2))
+                                continue;
+                            Point p1 = ConvWGSToScrPoint(pointf1.x, pointf1.y);
+                            Point p2 = ConvWGSToScrPoint(pointf2.x, pointf2.y);
+                            pointis[i] = (float) p1.x;
+                            pointis[i + 1] = (float) p1.y;
+                            pointis[i + 2] = (float) p2.x;
+                            pointis[i + 3] = (float) p2.y;
+
+                        }
+
+                        int color = pl.pen[2];
+                        int red = (int) color / 65536;
+                        int green = (int) (color - red * 65536) / 256;
+                        int blue = (int) (color - red * 65536 - green * 256);
+                        depthLinePaint.setColor(Color.rgb(red, green, blue));
+                        depthLinePaint.setStrokeWidth(pl.pen[0]);
+                        //             canvas.drawPath(lines,depthLinePaint);
+
+                        canvas.drawLines(pointis,depthLinePaint);
+                        Log.d("line", pointis + "");
+                    }
+                }
+            }
+        }
+
+        for (int cellLon = botX; cellLon <= topX; cellLon += 1) {
+            for (int cellLat = botY; cellLat <= topY; cellLat += 1) {
                 //draw data of current cell
-                currentCell = new Point(cellLon,cellLat);
-                if(readFile.listText.containsKey(currentCell)) {
-                    Vector<ObjectText> objectList = readFile.listText.get(currentCell);
-                    for (ObjectText obj : objectList) {
+                currentCell = new Point(cellLon, cellLat);
+
+                // draw text
+                if (readFile.listText.containsKey(currentCell)) {
+                    Vector<Text> objectList = readFile.listText.get(currentCell);
+                    for (Text obj : objectList) {
                         Point p1 = ConvWGSToScrPoint(obj.point1.x, obj.point1.y);
                         Point p2 = ConvWGSToScrPoint(obj.point2.x, obj.point2.y);
-                        int distance = Distance(p1,p2);
+                        int distance = Distance(p1, p2);
 //                        if (mScale > getWidth() / 70) {
-                            int color = obj.pen[2];
-                            int red =(int) color /65536;
-                            int green = (int) (color - red * 65536) / 256;
-                            int blue = (int) (color - red * 65536 - green * 256);
-                            try {
-                                Typeface tf = setFont(obj.pen[0], obj.font);
-                                textPaint.setTypeface(tf);
-                            }
-                            catch(Exception e ){};
+                        int color = obj.pen[2];
+                        int red = (int) color / 65536;
+                        int green = (int) (color - red * 65536) / 256;
+                        int blue = (int) (color - red * 65536 - green * 256);
+                        try {
+                            Typeface tf = setFont(obj.pen[0], obj.font);
+                            textPaint.setTypeface(tf);
+                        } catch (Exception e) {
+                        }
+                        ;
 
-                            textPaint.setColor(Color.rgb(red,green,blue));
-                            Path path = new Path();
-                            path.moveTo(p1.x,p1.y);
-                            path.lineTo(p2.x,p2.y);
-                        if(mScale <= 1.5f && levelPreference ==1) {
+                        textPaint.setColor(Color.rgb(red, green, blue));
+                        mPath = new Path();
+                        mPath.moveTo(p1.x, p1.y);
+                        mPath.lineTo(p2.x, p2.y);
+                        if (mScale <= 1.5f && levelPreference == 1) {
 //                            textPaint.setTextSize(distance / 11f);
                             textPaint.setTextSize(distance / obj.name.length());
-                            canvas.drawTextOnPath(obj.name, path, 0, 0, textPaint);
-                        }
-                        else if(mScale > 2 && mScale <= 6 && levelPreference ==2){
+                            //canvas.drawTextOnPath(obj.name, path, 0, 0, textPaint);
+                        } else if (mScale > 2 && mScale <= 6 && levelPreference == 2) {
 //                            textPaint.setTextSize(distance / 10f);
                             textPaint.setTextSize(distance / obj.name.length());
-                            canvas.drawTextOnPath(obj.name, path,0,0, textPaint);
-                        }
-                        else if (levelPreference == 3 && mScale >6) {
+                            //canvas.drawTextOnPath(obj.name, path, 0, 0, textPaint);
+                        } else if (levelPreference == 3 && mScale > 6) {
 //                            textPaint.setTextSize(distance / 4f);
-                            textPaint.setTextSize(distance / obj.name.length()/2);
-                            canvas.drawTextOnPath(obj.name, path,0,0, textPaint);
+                            textPaint.setTextSize(distance / obj.name.length() / 2);
+                            //canvas.drawTextOnPath(obj.name, path, 0, 0, textPaint);
                         }
-
-                            //}
+                        canvas.drawTextOnPath(obj.name, mPath, 0, 0, textPaint);
                     }
                 }
-            }
-        }
-        //draw polylines
-        PointF point = new PointF(0,0);
-        for (ObjectPoliline pl:readFile.listPLine) //  lay moi polyline
-        {
-            //for each line, loop over interested cells only
-            for (int cellLon = botX;cellLon<=topX;cellLon+=1)
-            {
-                for (int cellLat = botY;cellLat<= topY;cellLat+=1) {
-                    //draw data of current cell
-                    currentCell = new Point(cellLon,cellLat);
-                    Vector<PointF> pointfs = pl.lines.get(currentCell);
-                    if(pointfs==null)continue;
-                    int size = pointfs.size()*4;
-                    float pointis[] = new float[size];
-                    for (int i=0;i<size-4;i+=4) {
-                        PointF pointf1 = pointfs.elementAt(i/4);
-                        PointF pointf2 = pointfs.elementAt(i/4 +1);
-                        if( pointf1.equals(point) || pointf2.equals(point)) continue;
-                        Point p1 = ConvWGSToScrPoint(pointf1.x, pointf1.y);
-                        Point p2 = ConvWGSToScrPoint(pointf2.x, pointf2.y);
-                        pointis[i] = (float) p1.x;
-                        pointis[i+1] =(float) p1.y;
-                        pointis[i+2] = (float) p2.x;
-                        pointis[i+3] =(float) p2.y;
-
-                    }
-                    int color = pl.pen[2];
-                    int red =(int) color /65536;
-                    int green = (int) (color - red * 65536) / 256;
-                    int blue = (int) (color - red * 65536 - green * 256);
-                    depthLinePaint.setColor(Color.rgb(red, green, blue));
-                    depthLinePaint.setStrokeWidth(pl.pen[0]);
-                    //             canvas.drawPath(lines,depthLinePaint);
-                    canvas.drawLines(pointis,depthLinePaint);
-                }
-
-            }
-        }
-        //draw lines
-        for (int cellLon = botX; cellLon<=topX;cellLon+=1) {
-            for (int cellLat = botY; cellLat <= topY; cellLat += 1) {
-                currentCell = new Point(cellLon,cellLat);
+                // draw lines
                 if(readFile.listLine.containsKey(currentCell)){
-                    Vector<ObjectLine> objLineList = readFile.listLine.get(currentCell);
-                    for (ObjectLine obj:objLineList){
+                    Vector<Line> objLineList = readFile.listLine.get(currentCell);
+                    for (Line obj:objLineList){
                         Point p1 = ConvWGSToScrPoint(obj.point1.x, obj.point1.y);
                         Point p2 = ConvWGSToScrPoint(obj.point2.x, obj.point2.y);
                         if(p1.equals(p2)) continue;
@@ -747,19 +733,41 @@ public class MapView extends View {
 
                     }
                 }
-            }
-        }
 
-        //draw region
-        for (ObjectRegion pl:readFile.listRegion) //  lay moi polyline
-        {
-            //for each line, loop over interested cells only
-            for (int cellLon = botX;cellLon<=topX;cellLon+=1)
-            {
-                for (int cellLat = botY;cellLat<= topY;cellLat+=1) {
-                    //draw data of current cell
-                    currentCell = new Point(cellLon,cellLat);
+                // draw Polyline
+
+                for (Polyline pl: readFile.listPLine){
                     Vector<PointF> pointfs = pl.lines.get(currentCell);
+                    if (pointfs == null) continue;
+                    int size = pointfs.size() * 4;
+                    float pointis[] = new float[size];
+                    for (int i = 0; i < size - 4; i += 4) {
+                        PointF pointf1 = pointfs.elementAt(i / 4);
+                        PointF pointf2 = pointfs.elementAt(i / 4 + 1);
+                        if (pointf1.equals(point) || pointf2.equals(point) || pointf1.equals(pointf2))
+                            continue;
+                        Point p1 = ConvWGSToScrPoint(pointf1.x, pointf1.y);
+                        Point p2 = ConvWGSToScrPoint(pointf2.x, pointf2.y);
+                        pointis[i] = (float) p1.x;
+                        pointis[i + 1] = (float) p1.y;
+                        pointis[i + 2] = (float) p2.x;
+                        pointis[i + 3] = (float) p2.y;
+
+                    }
+                    int color = pl.pen[2];
+                    int red = (int) color / 65536;
+                    int green = (int) (color - red * 65536) / 256;
+                    int blue = (int) (color - red * 65536 - green * 256);
+                    depthLinePaint.setColor(Color.rgb(red, green, blue));
+                    depthLinePaint.setStrokeWidth(pl.pen[0]);
+                    //             canvas.drawPath(lines,depthLinePaint);
+                    canvas.drawLines(pointis, depthLinePaint);
+                }
+
+                // draw region
+
+                for(Region obr: readFile.listRegion){
+                    Vector<PointF> pointfs = obr.lines.get(currentCell);
                     if(pointfs==null)continue;
                     int size = pointfs.size()*4;
                     float pointis[] = new float[size];
@@ -775,21 +783,22 @@ public class MapView extends View {
                         pointis[i+3] =(float) p2.y;
 
                     }
-                    int color = pl.pen[2];
+                    int color = obr.pen[2];
                     int red =(int) color /65536;
                     int green = (int) (color - red * 65536) / 256;
                     int blue = (int) (color - red * 65536 - green * 256);
                     depthLinePaint.setColor(Color.rgb(red, green, blue));
-                    depthLinePaint.setStrokeWidth(pl.pen[0]);
+                    depthLinePaint.setStrokeWidth(obr.pen[0]);
                     //             canvas.drawPath(lines,depthLinePaint);
                     canvas.drawLines(pointis,depthLinePaint);
                 }
 
             }
         }
-
+        //draw polylines
 
     }
+
 
     @TargetApi(Build.VERSION_CODES.O)
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -895,25 +904,29 @@ public class MapView extends View {
             //points.add(new Point((int)event.getX(), (int)event.getY()));
             //pt.set((int)event.getX(), (int)event.getY());
             dragStart = new PointF(event.getX(),event.getY());
-            invalidate();
         }
-        else if (event.getAction() == MotionEvent.ACTION_UP) {
-            //pt.set((int)event.getX(), (int)event.getY());
-            //points.add(new Point((int)event.getX(), (int)event.getY()));
-            dragStop = new PointF(event.getX(),event.getY());
-            PointF newLatLon = ConvScrPointToWGS((int)(dragStart.x-dragStop.x)+scrCtX,(int)(dragStart.y-dragStop.y)+scrCtY);
-            mlat=newLatLon.y;
-            mlon=newLatLon.x;
-            invalidate();
-        }
+//        else if (event.getAction() == MotionEvent.ACTION_UP) {
+//            //pt.set((int)event.getX(), (int)event.getY());
+//            //points.add(new Point((int)event.getX(), (int)event.getY()));
+//            dragStop = new PointF(event.getX(),event.getY());
+//            PointF newLatLon = ConvScrPointToWGS((int)(dragStart.x-dragStop.x)+scrCtX,(int)(dragStart.y-dragStop.y)+scrCtY);
+//            mlat=newLatLon.y;
+//            mlon=newLatLon.x;
+//            deltaPointF = ConvScrPointToWGS((int)(dragStart.x - dragStop.x), (int) (dragStart.y - dragStop.y));
+//            ontouch = true;
+//            postInvalidate();
+//        }
         else if(event.getAction()==MotionEvent.ACTION_MOVE)
         {
             dragStop = new PointF(event.getX(),event.getY());
             PointF newLatLon = ConvScrPointToWGS((int)(dragStart.x-dragStop.x)+scrCtX,(int)(dragStart.y-dragStop.y)+scrCtY);
+            deltaPointF = new PointF(newLatLon.x - mlon, newLatLon.y -mlat);
             mlat=newLatLon.y;
             mlon=newLatLon.x;
+
             dragStart = dragStop;
-            invalidate();
+            ontouch = true;
+            postInvalidate();
         }
         scaleGestureDetector.onTouchEvent(event);
         gestureDetector.onTouchEvent(event);
@@ -949,7 +962,6 @@ public class MapView extends View {
     public void setLonLat(float latLoc, float lonLoc){
         mlat = location_lat = latLoc;
         mlon = location_lon = lonLoc;
-//        abc = true;
         mScale =4;
         location =true;
         invalidate();

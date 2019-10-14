@@ -3,7 +3,7 @@ package com.example.myapplication;
 import android.app.Activity;
 import android.os.Bundle;
 
-import androidx.core.app.BundleCompat;
+import com.example.myapplication.view.MapView;
 
 public class testGPs extends Activity {
     protected void onCreate(Bundle saveInstanceState){

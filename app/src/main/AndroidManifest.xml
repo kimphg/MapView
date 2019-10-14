@@ -14,7 +14,7 @@
         android:theme="@style/AppTheme">
 
         <service
-            android:name=".GPS_Services"
+            android:name=".services.GPS_Services"
             android:enabled="true"
             android:exported="true"></service>
 

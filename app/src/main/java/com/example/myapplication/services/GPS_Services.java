@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.services;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -25,6 +25,9 @@ import android.provider.Settings;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
+
+import com.example.myapplication.MainActivity;
+import com.example.myapplication.R;
 
 public class GPS_Services extends Service {
     private LocationManager mLocationManager;
