@@ -30,6 +30,8 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 
@@ -41,6 +43,9 @@ import java.lang.String;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.res.ResourcesCompat;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Vector;
 
 import static java.lang.Math.cos;
@@ -478,6 +483,8 @@ public class MapView extends View {
         mScale/=1.5;
         invalidate();
     }
+    public static int mHeight;
+    public static int mWidth;
     Point currentCell;
     private float mlat = 13.32f;//lattitude of the center of the screen
     private float mlon = 109.43f;//longtitude of the center of the screen
@@ -507,21 +514,23 @@ public class MapView extends View {
     private BroadcastReceiver broadcast;
     Canvas mCanvas;
     int count;
-    @SuppressLint("HandlerLeak")
-    Handler handler1 =  new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            //msg.arg1 là giá trị được trả về trong message
-            //của tiến trình con
-            if(mCanvas !=null) {
-                String returnvalue = (String) msg.obj;
-                mCanvas.drawTextOnPath(returnvalue, mPath, 0, 0, textPaint);
-            }
-        }};
+//    @SuppressLint("HandlerLeak")
+//    Handler handler1 =  new Handler() {
+//        @Override
+//        public void handleMessage(Message msg) {
+//            //msg.arg1 là giá trị được trả về trong message
+//            //của tiến trình con
+//            if(mCanvas !=null) {
+//                String returnvalue = (String) msg.obj;
+//                mCanvas.drawTextOnPath(returnvalue, mPath, 0, 0, textPaint);
+//            }
+//        }};
     Handler handler2;
     Thread thread1;
     Thread thread2;
-    public MapView(Context context, AttributeSet attr) {
+    boolean isItOk = false ;
+    SurfaceHolder holder;
+    public MapView(Context context,AttributeSet attr) {
         super(context, attr);
         mCtx = context; //<-- fill it with the Context you are passed
         readFile = new ReadFile(context);
@@ -535,17 +544,55 @@ public class MapView extends View {
         mMatrix = new Matrix();
 //        handler2 = new Handler();
     }
+
+//    @SuppressLint("WrongCall")
+//    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+//    @Override
+//    public void run() {
+//        //
+//        while( isItOk == true){
+//
+//            Canvas c =holder.lockCanvas();
+//            c.drawARGB(255, 0, 0, 0);
+//            onDraw(c);
+//            holder.unlockCanvasAndPost(c);
+//
+//        }
+//    }
+
+    public void pause(){
+        isItOk = false;
+        while(true){
+            try{
+                thread1.join();
+            }catch(InterruptedException e){
+                e.printStackTrace();
+            }
+            break;
+        }
+        thread1 = null;
+    }
+
+//    public void resume(){
+//        isItOk = true;
+//        thread1 = new Thread(this);
+//        thread1.start();
+//
+//    }
+
     @SuppressLint("DrawAllocation")
     @TargetApi(Build.VERSION_CODES.O)
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onDraw(Canvas canvas) {// draw function
-        mCanvas = canvas;
+        //mCanvas = canvas;
+        mHeight = getHeight();
+        mWidth = getWidth();
         scrCtY = getHeight() / 2;
         scrCtX = getWidth() / 2;
         int radius = Math.min(scrCtX, scrCtY);
         float pi = (float) Math.PI;
-        //canvas.drawColor(Color.rgb(0,0,0));
+        //canvas.drawColor(Color.rgb(30,30,30));
         textPaint.setStyle(Paint.Style.STROKE);
         depthLinePaint.setStyle(Paint.Style.STROKE);
         depthLinePaint.setColor(Color.RED);
@@ -877,6 +924,13 @@ public class MapView extends View {
         float olon = (x-scrCtX)/mScale/(111.31949079327357f*(float)cos(refLat))+ mlon;
         return new PointF(olon,olat);
     }
+
+    public void addDestination(Canvas c, Text destination){
+        Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pin);
+        Point p1 = ConvWGSToScrPoint(destination.point1.x, destination.point1.y);
+        Paint locationPaint = new Paint();
+        c.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
+    }
     //    @Override
 //    public boolean onTouchEvent(MotionEvent event) {
 //        points.add(new Point((int)event.getX(), (int)event.getY()));
@@ -951,6 +1005,18 @@ public class MapView extends View {
         location =true;
         invalidate();
 
+    }
+
+    public List<Text> listPlace(){
+        List<Text> list = new ArrayList<>();
+        Collection<Vector<Text>> listVector = readFile.listText.values();
+        for(Vector<Text> v: listVector){
+            for(int i=0; i<v.size(); i++){
+                if(!v.get(i).name.matches("(^-)*\\d+"))
+                    list.add(v.get(i));
+            }
+        }
+        return list;
     }
 
 }

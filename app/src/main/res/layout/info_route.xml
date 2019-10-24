@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="bottom"
+    android:background="#12000000"
+    android:maxHeight="350dp"
+    android:minHeight="60dp"
+    >
+    <ImageButton
+        android:id="@+id/button_up"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/icon_up"
+        android:layout_centerHorizontal="true"
+        />
+
+    <TextView
+        android:id="@+id/route"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button_up"
+        android:layout_marginTop="5dp"
+        android:text="LO TRINH"
+        android:textAlignment="center"
+        android:layout_gravity="center|top"
+        android:background="#570097A7"
+        />
+    <ListView
+        android:id="@+id/routeplace"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/route"
+        >
+
+    </ListView>
+    <TextView
+        android:layout_marginTop="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/_distance"
+        android:layout_below="@+id/routeplace"
+        android:text="Tong khoang cach: "
+        android:background="#570097A7"
+        />
+
+    <FrameLayout
+        android:id="@+id/search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/_distance"
+        android:layout_marginTop="5dp"
+        android:background="@color/cardview_shadow_end_color"
+        >
+        <SearchView
+            android:id="@+id/search_place"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/_distance"
+            android:layout_marginTop="5dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:layout_marginLeft="90dp"
+            android:layout_marginRight="5dp"
+            android:background="@drawable/background"
+            android:queryHint="Nhap dia diem"
+            >
+        </SearchView>
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_gravity="center|left"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Them lo trinh"
+            android:layout_marginLeft="5dp"
+            android:layout_below="@+id/search_place"
+            android:layout_alignParentTop="true"
+            />
+
+    </FrameLayout>
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/search"
+        android:layout_marginTop="5dp">
+        <ListView
+            android:id="@+id/listplace"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+        </ListView>
+    </FrameLayout>
+
+
+</RelativeLayout>

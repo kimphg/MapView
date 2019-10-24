@@ -23,6 +23,7 @@ public class ReadFile {
     public Map <Point,Vector<Text>> listText = new HashMap<Point,Vector<Text>>();
     public Vector<Region> listRegion = new Vector<Region>();
 
+    Thread threa1, thread2;
     public ReadFile(Context context){
         super();
         mCtx = context;
@@ -40,8 +41,10 @@ public class ReadFile {
             int b = listPLine.size();
             reader = new BufferedReader(new InputStreamReader(mCtx.getAssets().open("lines.txt"), "UTF-8"));
 
+
             while ((mline = reader.readLine()) !=null){
                 if(mline.contains("Line")){
+
                     obLine = new Line();
                     String splitText[] = mline.split(" ");
                     float x1= Float.parseFloat(splitText[1]);

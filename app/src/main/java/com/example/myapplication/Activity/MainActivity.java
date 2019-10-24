@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.example.myapplication.Activity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,20 +15,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.database.DataSetObserver;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.SearchView;
 
+import com.example.myapplication.R;
+import com.example.myapplication.classes.Places;
+import com.example.myapplication.object.Text;
 import com.example.myapplication.services.GPS_Services;
 import com.example.myapplication.view.MapView;
 import com.google.android.gms.common.ConnectionResult;
@@ -46,19 +47,30 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, SearchView.OnQueryTextListener {
 
-    private ImageButton imageButtonGPS, imageButtonNearMe, imageButtonNavigation;
-    private ImageButton imageButtonExtensions;
-    private ExpandableListAdapter elva;
+    DrawerLayout mDrawerLayout;
+    NavigationView navigationView;
+    private ImageButton imageButtonGPS, imageButtonOther, imageButtonUp;
     private BroadcastReceiver broadcast;
     private GoogleApiClient googleApiClient;
     private float longitude =0, latitude =0;
-    private  boolean visible = false;
     String lonlat[];
+    SearchView searchView;
     MapView map;
+    Places places;
+    boolean turnOnRoute = true;
+
+    RelativeLayout routeLayout;
+    //
+    List<Text> route;
+    //listview search trong phan info_route;
+    ListView listPlaceSeacrh;
+    List<Text> list;
+
+    float dYs,dYe;
     @Override
     protected void onResume() {
         super.onResume();
@@ -78,24 +90,72 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         registerReceiver(broadcast,filter);
 
     }
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //onClick1();
-        //addButton();
 
         imageButtonGPS = findViewById(R.id.imagebutton_gps);
-        imageButtonExtensions = findViewById(R.id.imageExtensions);
-        imageButtonNearMe = findViewById(R.id.imagebutton_nearme);
-        imageButtonNavigation = findViewById(R.id.imagebutton_navigation);
-
-        imageButtonGPS.setVisibility(View.INVISIBLE);
-        imageButtonNearMe.setVisibility(View.INVISIBLE);
-        imageButtonNavigation.setVisibility(View.INVISIBLE);
-
-
         map = findViewById(R.id.map);
+
+        //----------------info_layout--------//
+        routeLayout = findViewById(R.id.route_layout);
+        routeLayout.setVisibility(View.INVISIBLE);
+        listPlaceSeacrh = findViewById(R.id.listplace);
+
+        list = map.listPlace();
+
+        //.............tao adpter.....
+        places = new Places(this,list);
+        listPlaceSeacrh.setAdapter(places);
+
+        searchView = findViewById(R.id.search_place);
+        searchView.setOnQueryTextListener(this);
+
+        listPlaceSeacrh.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Text place = places.getItem(i);
+            }
+        });
+        //.....................................
+        imageButtonUp = findViewById(R.id.button_up);
+//        imageButtonUp.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if(turnOnRoute) {
+//                    routeLayout.getLayoutParams().height = 150;
+//                    routeLayout.requestLayout();
+//                    turnOnRoute = false;
+//                }
+//                else {
+//                    routeLayout.getLayoutParams().height = 900;
+//                    routeLayout.requestLayout();
+//                    turnOnRoute = true;
+//                }
+//            }
+//        });
+
+        imageButtonUp.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                    dYs = motionEvent.getY();
+                }
+                else if(motionEvent.getAction() == MotionEvent.ACTION_MOVE){
+                    dYe = motionEvent.getY();
+                    routeLayout.getLayoutParams().height += (int) dYs - (int)dYe;
+                    int maxheight = routeLayout.getLayoutParams().height;
+                        if(maxheight >=100 && maxheight <= 1300)
+                            routeLayout.requestLayout();
+
+                }
+                return true;
+            }
+        });
+        ///-----------------------------------//
+
 
         if(googleApiClient == null) {
             turnOnGPS();
@@ -109,37 +169,46 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if(googleApiClient == null)
                     turnOnGPS();
                 else {
-                    turnOnGPS();
+                    Intent intent = new Intent(getApplicationContext(), GPS_Services.class);
+                    startService(intent);
                 }
             }
         });
+        drawerble();
+    }
+    //---------------------------------------//
 
-        imageButtonExtensions.setOnClickListener(new View.OnClickListener() {
+    private void drawerble(){
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        imageButtonOther = findViewById(R.id.ibt_others);
+
+        navigationView = findViewById(R.id.nav_view);
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                // set item as selected to persist highlight
+                menuItem.setChecked(true);
+                //Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+                //startActivity(intent);
+                // close drawer when item is tapped
+                map.setEnabled(false);
+                routeLayout.setVisibility(View.VISIBLE);
+
+                mDrawerLayout.closeDrawers();
+                return true;
+            }
+        });
+
+        imageButtonOther.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!visible){
-                    imageButtonGPS.setVisibility(View.VISIBLE);
-                    imageButtonNearMe.setVisibility(View.VISIBLE);
-                    imageButtonNavigation.setVisibility(View.VISIBLE);
-                    imageButtonExtensions.setBackgroundResource(R.drawable.icon_edittext);
-                    visible = true;
-                }
-                else {
-                    imageButtonGPS.setVisibility(View.INVISIBLE);
-                    imageButtonNearMe.setVisibility(View.INVISIBLE);
-                    imageButtonNavigation.setVisibility(View.INVISIBLE);
-                    imageButtonExtensions.setBackgroundResource(R.drawable.icon_edittext2);
-                    visible = false;
-                }
+
+                mDrawerLayout.openDrawer(GravityCompat.START);
             }
         });
-
     }
-
-    private void TurnOnGps(){
-        Intent intent = new Intent(getApplicationContext(), GPS_Services.class);
-        ContextCompat.startForegroundService(this,intent);
-    }
+    /////////////---------------Drawer-----------------/////////////
 
     private boolean Run_check_permission() {
 
@@ -256,6 +325,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        String text = newText;
+        places.filter(text);
+        return false;
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+
+    }
+
+    private void adapterListPlace(){
 
     }
 }

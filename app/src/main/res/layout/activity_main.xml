@@ -4,61 +4,116 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".MainActivity"
+    tools:context=".Activity.MainActivity"
     android:fitsSystemWindows="true"
     android:id="@+id/drawer_layout">
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/content_frame">
+        android:id="@+id/content_frame"
+
+        >
 
         <view
-            class = "com.example.myapplication.view.MapView"
-            android:id = "@+id/map"
+            android:id="@+id/map"
+            class="com.example.myapplication.view.MapView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
+            android:layout_height="match_parent" />
 
-        <ImageButton
-            android:id="@+id/imageExtensions"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="bottom|right"
-            android:layout_marginRight="20dp"
-            android:layout_marginBottom="20dp"
-            android:dividerHeight="0.5dp"
-            android:background="@drawable/icon_edittext2" />
+        <!--phai-->
+        <!--<ImageButton-->
+            <!--android:id="@+id/imageExtensions"-->
+            <!--android:layout_width="50dp"-->
+            <!--android:layout_height="50dp"-->
+            <!--android:layout_gravity="bottom|right"-->
+            <!--android:layout_marginRight="20dp"-->
+            <!--android:layout_marginBottom="20dp"-->
+            <!--android:dividerHeight="0.5dp"-->
+            <!--android:background="@drawable/icon_edittext2" />-->
 
-         <ImageButton
-            android:id="@+id/imagebutton_gps"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/icon_gps_location"
-             android:layout_gravity="bottom|right"
-             android:layout_marginBottom="70dp"
-             android:layout_marginRight="20dp"
-            />
+            android:layout_gravity="bottom"
+            >
+            <ImageButton
+                android:id="@+id/imagebutton_gps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/icon_gps_location"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="20dp"
+                />
+
+            <include layout="@layout/info_route"
+                android:id="@+id/route_layout"
+                android:layout_marginTop="10dp"
+                android:layout_height="250dp"
+                android:layout_width="match_parent"
+                android:layout_below="@+id/imagebutton_gps"
+                />
+        </RelativeLayout>
+
+
+        <!--<ImageButton-->
+            <!--android:id="@+id/imagebutton_navigation"-->
+            <!--android:background="@drawable/icon_navigation"-->
+            <!--android:layout_gravity="bottom|right"-->
+            <!--android:layout_marginBottom="120dp"-->
+            <!--android:layout_marginRight="20dp"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content" />-->
+
+        <!--<ImageButton-->
+            <!--android:id="@+id/imagebutton_nearme"-->
+            <!--android:background="@drawable/icon_nearme"-->
+            <!--android:layout_gravity="bottom|right"-->
+            <!--android:layout_marginBottom="170dp"-->
+            <!--android:layout_marginRight="20dp"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content" />-->
+
+        <!--trai-->
 
         <ImageButton
-            android:id="@+id/imagebutton_navigation"
-            android:background="@drawable/icon_navigation"
-            android:layout_gravity="bottom|right"
-            android:layout_marginBottom="120dp"
-            android:layout_marginRight="20dp"
+            android:id="@+id/ibt_others"
+            android:background="@drawable/icon_other"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <ImageButton
-            android:id="@+id/imagebutton_nearme"
-            android:background="@drawable/icon_nearme"
-            android:layout_gravity="bottom|right"
-            android:layout_marginBottom="170dp"
-            android:layout_marginRight="20dp"
+            android:id="@+id/ibt_setting"
+            android:background="@drawable/icon_setting"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="70dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
+        <!--<FrameLayout-->
+            <!--android:layout_gravity="bottom"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content">-->
+            <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="Lo trinh"-->
+                <!--/>-->
+
+        <!--</FrameLayout>-->
 
     </FrameLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:menu="@menu/drawer_view"
+        />
 
 </androidx.drawerlayout.widget.DrawerLayout>
 
