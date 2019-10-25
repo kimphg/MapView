@@ -483,6 +483,7 @@ public class MapView extends View {
         mScale/=1.5;
         invalidate();
     }
+
     public static int mHeight;
     public static int mWidth;
     Point currentCell;
@@ -496,7 +497,7 @@ public class MapView extends View {
     PointF dragStart,dragStop;
     PointF pointTestlatlon;
     private Context mCtx;
-    Paint depthLinePaint, testpaint;
+    Paint depthLinePaint, testpaint, paintRoute;
     Paint paintRegion;
     Path mPath;
     TextPaint textPaint;
@@ -512,8 +513,10 @@ public class MapView extends View {
     private ScaleGestureDetector scaleGestureDetector;
     GestureDetector gestureDetector;
     private BroadcastReceiver broadcast;
-    Canvas mCanvas;
     int count;
+    //lo trinh
+    List<Text> routes;
+    boolean onRoute = false;
 //    @SuppressLint("HandlerLeak")
 //    Handler handler1 =  new Handler() {
 //        @Override
@@ -585,7 +588,6 @@ public class MapView extends View {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onDraw(Canvas canvas) {// draw function
-        //mCanvas = canvas;
         mHeight = getHeight();
         mWidth = getWidth();
         scrCtY = getHeight() / 2;
@@ -610,6 +612,24 @@ public class MapView extends View {
             Paint locationPaint = new Paint();
             canvas.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
         }
+        if (onRoute){
+            Path path= new Path();
+            paintRoute = new Paint();
+            paintRoute.setColor(Color.rgb(120,120,10));
+            paintRoute.setStyle(Paint.Style.STROKE);
+            paintRoute.setStrokeWidth(5);
+            int i =0;
+            for(Text t:routes) {
+                Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pin);
+                Point p1 = ConvWGSToScrPoint(t.point1.x, t.point1.y);
+                Paint locationPaint = new Paint();
+                canvas.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
+                if(i == 0) path.moveTo(p1.x, p1.y);
+                else path.lineTo(p1.x, p1.y);
+                i++;
+            }
+            canvas.drawPath(path,paintRoute);
+        }
         //textPaint.setTextSize(textSize);
         paintRegion.setStyle(Paint.Style.FILL_AND_STROKE);
         PointF leftbottomPointF = ConvScrPointToWGS(0,0);
@@ -625,84 +645,6 @@ public class MapView extends View {
         //sc all cells inside the screen and draw all text object
 
         PointF point = new PointF(0, 0);
-        if(ontouch){
-            int deltaTopY = topY + (int) deltaPointF.y;
-            for (int cellLon = topX; cellLon >= botX; cellLon -=1){
-                for(int cellLat = deltaTopY;cellLat >= topY; cellLat -=1){
-                    currentCell = new Point(cellLon, cellLat);
-
-                    for (Polyline pl : readFile.listPLine) {
-                        Vector<PointF> pointfs = pl.lines.get(currentCell);
-                        if (pointfs == null) continue;
-                        int size = pointfs.size() * 4;
-                        float pointis[] = new float[size];
-                        for (int i = 0; i < size - 4; i += 4) {
-                            PointF pointf1 = pointfs.elementAt(i / 4);
-                            PointF pointf2 = pointfs.elementAt(i / 4 + 1);
-                            if (pointf1.equals(point) || pointf2.equals(point) || pointf1.equals(pointf2))
-                                continue;
-                            Point p1 = ConvWGSToScrPoint(pointf1.x, pointf1.y);
-                            Point p2 = ConvWGSToScrPoint(pointf2.x, pointf2.y);
-                            pointis[i] = (float) p1.x;
-                            pointis[i + 1] = (float) p1.y;
-                            pointis[i + 2] = (float) p2.x;
-                            pointis[i + 3] = (float) p2.y;
-
-                        }
-
-                        int color = pl.pen[2];
-                        int red = (int) color / 65536;
-                        int green = (int) (color - red * 65536) / 256;
-                        int blue = (int) (color - red * 65536 - green * 256);
-                        depthLinePaint.setColor(Color.rgb(red, green, blue));
-                        depthLinePaint.setStrokeWidth(pl.pen[0]);
-                        //             canvas.drawPath(lines,depthLinePaint);
-
-                        canvas.drawLines(pointis,depthLinePaint);
-                        Log.d("line", pointis + "");
-                    }
-                }
-            }
-
-            int deltaTopX = botX + (int) deltaPointF.x;
-            for (int cellLon = botX; cellLon <= deltaTopX; cellLon +=1){
-                for(int cellLat = botY;cellLat <= topY; cellLat +=1){
-                    currentCell = new Point(cellLon, cellLat);
-
-                    for (Polyline pl : readFile.listPLine) {
-                        Vector<PointF> pointfs = pl.lines.get(currentCell);
-                        if (pointfs == null) continue;
-                        int size = pointfs.size() * 4;
-                        float pointis[] = new float[size];
-                        for (int i = 0; i < size - 4; i += 4) {
-                            PointF pointf1 = pointfs.elementAt(i / 4);
-                            PointF pointf2 = pointfs.elementAt(i / 4 + 1);
-                            if (pointf1.equals(point) || pointf2.equals(point) || pointf1.equals(pointf2))
-                                continue;
-                            Point p1 = ConvWGSToScrPoint(pointf1.x, pointf1.y);
-                            Point p2 = ConvWGSToScrPoint(pointf2.x, pointf2.y);
-                            pointis[i] = (float) p1.x;
-                            pointis[i + 1] = (float) p1.y;
-                            pointis[i + 2] = (float) p2.x;
-                            pointis[i + 3] = (float) p2.y;
-
-                        }
-
-                        int color = pl.pen[2];
-                        int red = (int) color / 65536;
-                        int green = (int) (color - red * 65536) / 256;
-                        int blue = (int) (color - red * 65536 - green * 256);
-                        depthLinePaint.setColor(Color.rgb(red, green, blue));
-                        depthLinePaint.setStrokeWidth(pl.pen[0]);
-                        //             canvas.drawPath(lines,depthLinePaint);
-
-                        canvas.drawLines(pointis,depthLinePaint);
-                        Log.d("line", pointis + "");
-                    }
-                }
-            }
-        }
-
         for (int cellLon = botX; cellLon <= topX; cellLon += 1) {
             for (int cellLat = botY; cellLat <= topY; cellLat += 1) {
                 //draw data of current cell
@@ -925,12 +867,6 @@ public class MapView extends View {
         return new PointF(olon,olat);
     }
 
-    public void addDestination(Canvas c, Text destination){
-        Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pin);
-        Point p1 = ConvWGSToScrPoint(destination.point1.x, destination.point1.y);
-        Paint locationPaint = new Paint();
-        c.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
-    }
     //    @Override
 //    public boolean onTouchEvent(MotionEvent event) {
 //        points.add(new Point((int)event.getX(), (int)event.getY()));
@@ -1017,6 +953,20 @@ public class MapView extends View {
             }
         }
         return list;
+    }
+
+
+
+    public void drawRoute(List<Text> list){
+        onRoute = true;
+        mlat = list.get(0).point1.y;
+        mlon = list.get(0).point1.x;
+        routes = list;
+        invalidate();
+    }
+    public void canceldrawRoute(){
+        onRoute = false;
+        invalidate();
     }
 
 }

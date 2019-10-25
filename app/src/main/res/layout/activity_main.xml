@@ -11,27 +11,13 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/content_frame"
-
-        >
+        android:id="@+id/content_frame">
 
         <view
             android:id="@+id/map"
             class="com.example.myapplication.view.MapView"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-
-        <!--phai-->
-        <!--<ImageButton-->
-            <!--android:id="@+id/imageExtensions"-->
-            <!--android:layout_width="50dp"-->
-            <!--android:layout_height="50dp"-->
-            <!--android:layout_gravity="bottom|right"-->
-            <!--android:layout_marginRight="20dp"-->
-            <!--android:layout_marginBottom="20dp"-->
-            <!--android:dividerHeight="0.5dp"-->
-            <!--android:background="@drawable/icon_edittext2" />-->
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,26 +39,20 @@
                 android:layout_width="match_parent"
                 android:layout_below="@+id/imagebutton_gps"
                 />
+            <Button
+                android:id="@+id/bt_startroute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bat dau" />
         </RelativeLayout>
 
-
-        <!--<ImageButton-->
-            <!--android:id="@+id/imagebutton_navigation"-->
-            <!--android:background="@drawable/icon_navigation"-->
-            <!--android:layout_gravity="bottom|right"-->
-            <!--android:layout_marginBottom="120dp"-->
-            <!--android:layout_marginRight="20dp"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content" />-->
-
-        <!--<ImageButton-->
-            <!--android:id="@+id/imagebutton_nearme"-->
-            <!--android:background="@drawable/icon_nearme"-->
-            <!--android:layout_gravity="bottom|right"-->
-            <!--android:layout_marginBottom="170dp"-->
-            <!--android:layout_marginRight="20dp"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content" />-->
+        <ImageButton
+            android:id="@+id/imgbt_cancel_route"
+            android:layout_margin="20dp"
+            android:layout_gravity="right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/icon_cancel"/>
 
         <!--trai-->
 
@@ -112,8 +92,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
-        app:menu="@menu/drawer_view"
-        />
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/drawer_view"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>
 

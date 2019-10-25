@@ -3,12 +3,12 @@
         <group android:checkableBehavior="single">
                 <item
                     android:id="@+id/nav_camera"
-                    android:icon="@drawable/ic_camera_alt_black_24dp"
-                    android:title="Camera" />
+                    android:icon="@drawable/ic_directions_black_24dp"
+                    android:title="Lo trinh" />
                 <item
                     android:id="@+id/nav_gallery"
-                    android:icon="@drawable/ic_file_download_black_24dp"
-                    android:title="Dowload" />
+                    android:icon="@drawable/ic_info_outline_black_24dp"
+                    android:title="Info" />
         </group>
 
 </menu>

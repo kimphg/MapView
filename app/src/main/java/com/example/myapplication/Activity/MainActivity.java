@@ -22,6 +22,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -53,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     DrawerLayout mDrawerLayout;
     NavigationView navigationView;
-    private ImageButton imageButtonGPS, imageButtonOther, imageButtonUp;
+    private ImageButton imageButtonGPS, imageButtonOther, imageButtonUp, imageButtonCancelRoute;
     private BroadcastReceiver broadcast;
     private GoogleApiClient googleApiClient;
     private float longitude =0, latitude =0;
@@ -61,16 +63,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     SearchView searchView;
     MapView map;
     Places places;
+    Button startRoute;
+
     boolean turnOnRoute = true;
 
     RelativeLayout routeLayout;
-    //
+    //khai bao cho route
+    ArrayAdapter<String> arrayAdapter;
     List<Text> route;
+    List<String> namePlaces;
     //listview search trong phan info_route;
-    ListView listPlaceSeacrh;
+    ListView listPlaceSeacrh, routesListView;
     List<Text> list;
 
     float dYs,dYe;
+    boolean start = false;
     @Override
     protected void onResume() {
         super.onResume();
@@ -98,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         imageButtonGPS = findViewById(R.id.imagebutton_gps);
         map = findViewById(R.id.map);
+        routesListView = findViewById(R.id.route_LV);
 
         //----------------info_layout--------//
         routeLayout = findViewById(R.id.route_layout);
@@ -110,33 +118,61 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         places = new Places(this,list);
         listPlaceSeacrh.setAdapter(places);
 
-        searchView = findViewById(R.id.search_place);
+        searchView = findViewById(R.id.searchview_place);
         searchView.setOnQueryTextListener(this);
 
+        //##### su kien an vao item cua listview: 1.route  2.search //
+        adapterListPlace();
+        //1.search
         listPlaceSeacrh.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Text place = places.getItem(i);
+                route.add(place);
+                namePlaces.add(place.name);
+                arrayAdapter.notifyDataSetChanged();
             }
         });
+        //2.route
+        routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                route.remove(i);
+                namePlaces.remove(i);
+                arrayAdapter.notifyDataSetChanged();
+            }
+        });
+        //su kien cancel route quay ve ban dau
+        imageButtonCancelRoute = findViewById(R.id.imgbt_cancel_route);
+
+        imageButtonCancelRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                routeLayout.setVisibility(View.INVISIBLE);
+                cancelROute();
+            }
+        });
+        // su kien bat dau lo trinh
+        startRoute = findViewById(R.id.bt_startroute);
+        startRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!start) {
+                    map.drawRoute(route);
+                    startRoute.setText("Dung lo trinh");
+                    start = true;
+                }else {
+                    startRoute.setText("Bat dau");
+                    start = false;
+                    map.canceldrawRoute();
+                }
+
+            }
+        });
+
         //.....................................
         imageButtonUp = findViewById(R.id.button_up);
-//        imageButtonUp.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if(turnOnRoute) {
-//                    routeLayout.getLayoutParams().height = 150;
-//                    routeLayout.requestLayout();
-//                    turnOnRoute = false;
-//                }
-//                else {
-//                    routeLayout.getLayoutParams().height = 900;
-//                    routeLayout.requestLayout();
-//                    turnOnRoute = true;
-//                }
-//            }
-//        });
-
+        /// su kien di chuyen layout lo trinh //
         imageButtonUp.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -174,16 +210,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
         });
-        drawerble();
+
+        navigationDrawer();
     }
     //---------------------------------------//
 
-    private void drawerble(){
+    private void navigationDrawer(){
         mDrawerLayout = findViewById(R.id.drawer_layout);
         imageButtonOther = findViewById(R.id.ibt_others);
 
         navigationView = findViewById(R.id.nav_view);
 
+        //su kien an vao item
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
@@ -193,6 +231,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 //startActivity(intent);
                 // close drawer when item is tapped
                 map.setEnabled(false);
+                //hien view
                 routeLayout.setVisibility(View.VISIBLE);
 
                 mDrawerLayout.closeDrawers();
@@ -200,6 +239,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        // su kien mo drawer//
         imageButtonOther.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -346,7 +386,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
+    //ham setting for listview lo trinh
     private void adapterListPlace(){
+        route = new ArrayList<Text>();
+        namePlaces = new ArrayList<String>();
+        arrayAdapter = new ArrayAdapter<String>(this,R.layout.places_view,R.id.tx_namePlace,namePlaces);
+        routesListView.setAdapter(arrayAdapter);
+    }
 
+    //Ham dung lo trinh
+    public void cancelROute(){
+        route.clear();
+        arrayAdapter.clear();
+        arrayAdapter.notifyDataSetChanged();
     }
 }
