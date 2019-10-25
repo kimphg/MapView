@@ -28,8 +28,10 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.classes.MapCoordinate;
 import com.example.myapplication.classes.Places;
 import com.example.myapplication.object.Text;
 import com.example.myapplication.services.GPS_Services;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     MapView map;
     Places places;
     Button startRoute;
+    TextView _distance;
 
     boolean turnOnRoute = true;
 
@@ -154,11 +157,21 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
         // su kien bat dau lo trinh
         startRoute = findViewById(R.id.bt_startroute);
+        _distance = findViewById(R.id._distance);
         startRoute.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(!start) {
+                    double distanceKm =0;
                     map.drawRoute(route);
+                    MapCoordinate mC = new MapCoordinate();
+                    for(int i=0; i< route.size()-1;i++ ){
+                        distanceKm += mC.distanceToOtherCoord(route.get(i).point1, route.get(i+1).point1);
+                    }
+
+                    double distanceNM = mC.convertKmToNm(distanceKm);
+
+                    _distance.append((int)distanceNM +" NM");
                     startRoute.setText("Dung lo trinh");
                     start = true;
                 }else {
