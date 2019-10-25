@@ -183,6 +183,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+
         //.....................................
         imageButtonUp = findViewById(R.id.button_up);
         /// su kien di chuyen layout lo trinh //
