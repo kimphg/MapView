@@ -25,6 +25,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
@@ -33,8 +34,10 @@ import android.widget.TextView;
 import com.example.myapplication.R;
 import com.example.myapplication.classes.MapCoordinate;
 import com.example.myapplication.classes.Places;
+import com.example.myapplication.classes.StableArrayAdapter;
 import com.example.myapplication.object.Text;
 import com.example.myapplication.services.GPS_Services;
+import com.example.myapplication.view.DynamicListView;
 import com.example.myapplication.view.MapView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -67,17 +70,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     Places places;
     Button startRoute;
     TextView _distance;
+    ImageView removeImgView;
 
     boolean turnOnRoute = true;
 
     RelativeLayout routeLayout;
     //khai bao cho route
-    ArrayAdapter<String> arrayAdapter;
     List<Text> route;
-    List<String> namePlaces;
+    ArrayList<String> mCheeseList;
     //listview search trong phan info_route;
-    ListView listPlaceSeacrh, routesListView;
+    ListView listPlaceSeacrh;
+    DynamicListView routesListView;
     List<Text> list;
+    StableArrayAdapter adapter;
 
     float dYs,dYe;
     boolean start = false;
@@ -108,13 +113,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         imageButtonGPS = findViewById(R.id.imagebutton_gps);
         map = findViewById(R.id.map);
-        routesListView = findViewById(R.id.route_LV);
+        routesListView = findViewById(R.id.route_listview);
 
         //----------------info_layout--------//
         routeLayout = findViewById(R.id.route_layout);
-        routeLayout.setVisibility(View.INVISIBLE);
         listPlaceSeacrh = findViewById(R.id.listplace);
-
+        removeImgView = findViewById(R.id.removeImage);
         list = map.listPlace();
 
         //.............tao adpter.....
@@ -132,30 +136,33 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Text place = places.getItem(i);
                 route.add(place);
-                namePlaces.add(place.name);
-                arrayAdapter.notifyDataSetChanged();
+                mCheeseList.add(place.name);
+                adapter.notifyDataSetChanged();
             }
         });
         //2.route
-        routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                route.remove(i);
-                namePlaces.remove(i);
-                arrayAdapter.notifyDataSetChanged();
-            }
-        });
+        routesListView.setCheeseList(mCheeseList);
+        routesListView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+//        routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                route.remove(i);
+//                mCheeseList.remove(i);
+//                adapter.notifyDataSetChanged();
+//            }
+//        });
         //su kien cancel route quay ve ban dau
         imageButtonCancelRoute = findViewById(R.id.imgbt_cancel_route);
 
-        imageButtonCancelRoute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                routeLayout.setVisibility(View.INVISIBLE);
-                cancelROute();
-            }
-        });
-        // su kien bat dau lo trinh
+//        imageButtonCancelRoute.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                routeLayout.setVisibility(View.INVISIBLE);
+//                cancelROute();
+//            }
+//        });
+//        // su kien bat dau lo trinh
         startRoute = findViewById(R.id.bt_startroute);
         _distance = findViewById(R.id._distance);
         startRoute.setOnClickListener(new View.OnClickListener() {
@@ -187,18 +194,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //.....................................
         imageButtonUp = findViewById(R.id.button_up);
         /// su kien di chuyen layout lo trinh //
-        imageButtonUp.setOnTouchListener(new View.OnTouchListener() {
+        routeLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
                     dYs = motionEvent.getY();
                 }
                 else if(motionEvent.getAction() == MotionEvent.ACTION_MOVE){
+                    int height = map.getHeight();
                     dYe = motionEvent.getY();
                     routeLayout.getLayoutParams().height += (int) dYs - (int)dYe;
-                    int maxheight = routeLayout.getLayoutParams().height;
-                        if(maxheight >=100 && maxheight <= 1300)
-                            routeLayout.requestLayout();
+                    routeLayout.requestLayout();
+//                    if(routeLayout.getLayoutParams().height > height * 1 /2)
+//                        routeLayout.getLayoutParams().height = height * 9 /10;
+//                    else if(routeLayout.getLayoutParams().height < height * 1 / 2 && routeLayout.getLayoutParams().height > height * 1/3)
+//                        routeLayout.getLayoutParams().height = height * 1 /3;
+//                    else routeLayout.getLayoutParams().height = height * 1 /10;
+//                            routeLayout.requestLayout();
 
                 }
                 return true;
@@ -245,9 +257,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 //startActivity(intent);
                 // close drawer when item is tapped
                 map.setEnabled(false);
-                //hien view
-                routeLayout.setVisibility(View.VISIBLE);
-
                 mDrawerLayout.closeDrawers();
                 return true;
             }
@@ -403,15 +412,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     //ham setting for listview lo trinh
     private void adapterListPlace(){
         route = new ArrayList<Text>();
-        namePlaces = new ArrayList<String>();
-        arrayAdapter = new ArrayAdapter<String>(this,R.layout.places_view,R.id.tx_namePlace,namePlaces);
-        routesListView.setAdapter(arrayAdapter);
+        mCheeseList = new ArrayList<String>();
+        adapter = new StableArrayAdapter(this, R.layout.places_view,R.id.tx_namePlace,mCheeseList);
+        routesListView.setAdapter(adapter);
     }
 
     //Ham dung lo trinh
     public void cancelROute(){
         route.clear();
-        arrayAdapter.clear();
-        arrayAdapter.notifyDataSetChanged();
+        adapter.clear();
+        adapter.notifyDataSetChanged();
     }
 }

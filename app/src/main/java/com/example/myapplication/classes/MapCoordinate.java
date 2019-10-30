@@ -3,6 +3,7 @@ package com.example.myapplication.classes;
 import android.graphics.PointF;
 
 public class MapCoordinate {
+    public float pi = 3.14f;
     public PointF getCoordinate() {
         return coordinate;
     }
@@ -16,10 +17,10 @@ public class MapCoordinate {
     public double distanceToOtherCoord(PointF point1 , PointF point2){
         final double R = 6371;
 
-        double dlat = R * Math.abs( point1.y - point2.y );
-        double dlong = R * Math.abs( point1.x - point2.x );
+        double dlat = R * (Math.abs( point1.y - point2.y ) * ((float) pi / 360));
+        double dlong = R * (Math.abs( point1.x - point2.x ) * ((float) pi / 360));
 
-        double distance = Math.sqrt( Math.pow( dlat, 2 ) + Math.pow( dlong, 2 ));
+        double distance = Math.sqrt( Math.abs (Math.pow( dlat, 2 ) - Math.pow( dlong, 2 )));
 
         return distance;
     }

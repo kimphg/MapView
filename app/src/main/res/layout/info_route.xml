@@ -26,20 +26,20 @@
         android:layout_gravity="center|top"
         android:background="#570097A7"
         />
-    <ListView
-        android:id="@+id/route_LV"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <com.example.myapplication.view.DynamicListView
+        android:id="@+id/route_listview"
         android:layout_below="@+id/route_TX"
-        >
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
-    </ListView>
+    </com.example.myapplication.view.DynamicListView>
+
     <TextView
         android:layout_marginTop="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/_distance"
-        android:layout_below="@+id/route_LV"
+        android:layout_below="@+id/route_listview"
         android:text="Tong khoang cach: "
         android:background="#570097A7"
         />
