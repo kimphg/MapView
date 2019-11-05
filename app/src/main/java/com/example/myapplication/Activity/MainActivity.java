@@ -17,7 +17,6 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -166,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     map.drawRoute(route);
                     MapCoordinate mC = new MapCoordinate();
                     for(int i=0; i< route.size()-1;i++ ){
-                        distanceKm += mC.distanceToOtherCoord(route.get(i).point1, route.get(i+1).point1);
+                        distanceKm += mC.distanceSmall(route.get(i).point1, route.get(i+1).point1);
                     }
 
                     double distanceNM = mC.convertKmToNm(distanceKm);
