@@ -11,6 +11,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Point;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -27,14 +28,16 @@ import androidx.core.content.ContextCompat;
 
 import com.example.myapplication.Activity.MainActivity;
 import com.example.myapplication.R;
-
+import com.example.myapplication.classes.Coordinate;
+import  com.example.myapplication.function.Distance;
 public class GPS_Services extends Service {
     private LocationManager mLocationManager;
     public static  final int TIME_MIN = 1000 * 60 * 2;//2 minute will get location
     public static  final float DISTANCE_MIN = 100F;//100m will get location
     private LocationListener mLocationListener;
-    private Location lastLocation;
+    private Location lastLocation = null;
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
+    public double Speed;
     public GPS_Services() {
     }
 
@@ -42,13 +45,16 @@ public class GPS_Services extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Speed = 0;//set speed in start is zero
 
         mLocationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                lastLocation = location;
                 Intent intent = new Intent("update_service");
                 intent.putExtra("coordinate",location.getLongitude()+" "+ location.getLatitude());
+                Speed = GetSpeed(location);
+                lastLocation = location;
+                intent.putExtra("instantaneous_speed",Speed);
                 sendBroadcast(intent);
 
 
@@ -186,6 +192,33 @@ public class GPS_Services extends Service {
             return  "Location is not from GLONASS";
         }
 
+    }
+
+    //custom get speed function
+    private double GetSpeed(Location currentLocation){
+
+
+        if (currentLocation.hasSpeed()){
+            return currentLocation.getSpeed();
+        }
+        else if(lastLocation!=null) {
+
+            Coordinate point1, point2;
+            point1 = new Coordinate(lastLocation.getLatitude(), lastLocation.getLongitude());
+            point2 = new Coordinate(currentLocation.getLatitude(), currentLocation.getLongitude());
+
+            //distance between two location
+            Distance FunctionDistance = new Distance();
+            double distance = FunctionDistance.DistanceHaversine(point1, point2);//distance is km
+            //time is second
+
+            double timeDif = currentLocation.getTime() - lastLocation.getTime();
+
+            //calculate v by v = s/t
+
+            return (distance * 1000) / timeDif;//current Speed is m/s
+        }
+        return 0;
     }
 
 
