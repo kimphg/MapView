@@ -10,7 +10,7 @@ public class CoordinateVector extends MapCoordinate{
 //    public double getVectorLength(){
 //        vectorLength = 0;
 //        for( int i = 0; i < this.coordinateVector.size(); i++ ){
-//            vectorLength += this.coordinateVector.elementAt( i ).distanceToOtherCoord( coordinateVector.elementAt( i + 1 ));
+//            vectorLength += this.coordinateVector.elementAt( i ).distanceSmall( coordinateVector.elementAt( i + 1 ));
 //
 //        }
 //        return vectorLength;

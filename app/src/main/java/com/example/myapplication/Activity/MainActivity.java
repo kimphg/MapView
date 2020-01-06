@@ -15,7 +15,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -25,9 +24,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
@@ -36,12 +33,8 @@ import android.widget.TextView;
 import com.example.myapplication.R;
 import com.example.myapplication.classes.MapCoordinate;
 import com.example.myapplication.classes.Places;
-import com.example.myapplication.classes.Route;
-import com.example.myapplication.classes.StableArrayAdapter;
-import com.example.myapplication.function.f_setEventViewRoute;
 import com.example.myapplication.object.Text;
 import com.example.myapplication.services.GPS_Services;
-import com.example.myapplication.view.DynamicListView;
 import com.example.myapplication.view.MapView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -60,34 +53,31 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, SearchView.OnQueryTextListener {
 
     DrawerLayout mDrawerLayout;
     NavigationView navigationView;
-     ImageButton imageButtonGPS, imageButtonOther, imageButtonUp, imageButtonCancelRoute;
-     BroadcastReceiver broadcast;
-     GoogleApiClient googleApiClient;
-     float longitude =0, latitude =0;
+    private ImageButton imageButtonGPS, imageButtonOther, imageButtonUp, imageButtonCancelRoute;
+    private BroadcastReceiver broadcast;
+    private GoogleApiClient googleApiClient;
+    private float longitude =0, latitude =0;
     String lonlat[];
     SearchView searchView;
     MapView map;
     Places places;
     Button startRoute;
     TextView _distance;
-    ImageView removeImgView, addPlace;
 
     boolean turnOnRoute = true;
 
     RelativeLayout routeLayout;
-    FrameLayout contentFrame;
     //khai bao cho route
-    Route route;
-    ArrayList<String> mCheeseList;
+    ArrayAdapter<String> arrayAdapter;
+    List<Text> route;
+    List<String> namePlaces;
     //listview search trong phan info_route;
-    ListView listPlaceSeacrh;
-    DynamicListView routesListView;
+    ListView listPlaceSeacrh, routesListView;
     List<Text> list;
-    StableArrayAdapter adapter;
 
     float dYs,dYe;
     boolean start = false;
@@ -118,11 +108,102 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         imageButtonGPS = findViewById(R.id.imagebutton_gps);
         map = findViewById(R.id.map);
+        routesListView = findViewById(R.id.route_LV);
 
         //----------------info_layout--------//
         routeLayout = findViewById(R.id.route_layout);
-        contentFrame = findViewById(R.id.content_frame);
-        f_setEventViewRoute f_setEven = new f_setEventViewRoute(this, map, contentFrame);
+        routeLayout.setVisibility(View.INVISIBLE);
+        listPlaceSeacrh = findViewById(R.id.listplace);
+
+        list = map.listPlace();
+
+        //.............tao adpter.....
+        places = new Places(this,list);
+        listPlaceSeacrh.setAdapter(places);
+
+        searchView = findViewById(R.id.searchview_place);
+        searchView.setOnQueryTextListener(this);
+
+        //##### su kien an vao item cua listview: 1.route  2.search //
+        adapterListPlace();
+        //1.search
+        listPlaceSeacrh.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Text place = places.getItem(i);
+                route.add(place);
+                namePlaces.add(place.name);
+                arrayAdapter.notifyDataSetChanged();
+            }
+        });
+        //2.route
+        routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                route.remove(i);
+                namePlaces.remove(i);
+                arrayAdapter.notifyDataSetChanged();
+            }
+        });
+        //su kien cancel route quay ve ban dau
+        imageButtonCancelRoute = findViewById(R.id.imgbt_cancel_route);
+
+        imageButtonCancelRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                routeLayout.setVisibility(View.INVISIBLE);
+                cancelROute();
+            }
+        });
+        // su kien bat dau lo trinh
+        startRoute = findViewById(R.id.bt_startroute);
+        _distance = findViewById(R.id._distance);
+        startRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!start) {
+                    double distanceKm =0;
+                    map.drawRoute(route);
+                    MapCoordinate mC = new MapCoordinate();
+                    for(int i=0; i< route.size()-1;i++ ){
+                        distanceKm += mC.distanceToOtherCoord(route.get(i).point1, route.get(i+1).point1);
+                    }
+
+                    double distanceNM = mC.convertKmToNm(distanceKm);
+
+                    _distance.append((int)distanceNM +" NM");
+                    startRoute.setText("Dung lo trinh");
+                    start = true;
+                }else {
+                    startRoute.setText("Bat dau");
+                    start = false;
+                    map.canceldrawRoute();
+                }
+
+            }
+        });
+
+
+        //.....................................
+        imageButtonUp = findViewById(R.id.button_up);
+        /// su kien di chuyen layout lo trinh //
+        imageButtonUp.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
+                    dYs = motionEvent.getY();
+                }
+                else if(motionEvent.getAction() == MotionEvent.ACTION_MOVE){
+                    dYe = motionEvent.getY();
+                    routeLayout.getLayoutParams().height += (int) dYs - (int)dYe;
+                    int maxheight = routeLayout.getLayoutParams().height;
+                        if(maxheight >=100 && maxheight <= 1300)
+                            routeLayout.requestLayout();
+
+                }
+                return true;
+            }
+        });
         ///-----------------------------------//
 
 
@@ -163,8 +244,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 //Intent intent = new Intent(MainActivity.this, SearchActivity.class);
                 //startActivity(intent);
                 // close drawer when item is tapped
-                map.choosePlacetoRoute();
-                //map.setEnabled(false);
+                map.setEnabled(false);
+                //hien view
+                routeLayout.setVisibility(View.VISIBLE);
+
                 mDrawerLayout.closeDrawers();
                 return true;
             }
@@ -299,12 +382,36 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
+    @Override
+    public boolean onQueryTextSubmit(String query) {
 
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        String text = newText;
+        places.filter(text);
+        return false;
+    }
 
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
 
     }
 
+    //ham setting for listview lo trinh
+    private void adapterListPlace(){
+        route = new ArrayList<Text>();
+        namePlaces = new ArrayList<String>();
+        arrayAdapter = new ArrayAdapter<String>(this,R.layout.places_view,R.id.tx_namePlace,namePlaces);
+        routesListView.setAdapter(arrayAdapter);
+    }
 
+    //Ham dung lo trinh
+    public void cancelROute(){
+        route.clear();
+        arrayAdapter.clear();
+        arrayAdapter.notifyDataSetChanged();
+    }
 }
