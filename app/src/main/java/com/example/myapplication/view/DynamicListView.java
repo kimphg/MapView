@@ -305,7 +305,7 @@ public class DynamicListView extends ListView {
 
             final ViewTreeObserver observer = getViewTreeObserver();
             observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                @SuppressLint("NewApi")
+                @Override
                 public boolean onPreDraw() {
                     observer.removeOnPreDrawListener(this);
 
@@ -422,7 +422,6 @@ public class DynamicListView extends ListView {
 
         @Override
         public Object evaluate(float arg0, Object arg1, Object arg2) {
-            // TODO Auto-generated method stub
             return null;
         }
     };

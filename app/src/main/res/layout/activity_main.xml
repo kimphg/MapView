@@ -46,6 +46,14 @@
                 android:text="Bat dau" />
         </RelativeLayout>
 
+        <ImageView
+            android:id="@+id/addplace"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/icon_add"
+            android:layout_gravity="center"
+            />
+
         <ImageButton
             android:id="@+id/imgbt_cancel_route"
             android:layout_margin="20dp"

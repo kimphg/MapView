@@ -34,7 +34,7 @@ public class MapCoordinate {
     protected double convertNmToKm( double value ){
         return value * 1.852;
     }
-
+    //
 }
 
 //package com.example.myapplication.classes;

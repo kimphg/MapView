@@ -20,6 +20,19 @@ public class StableArrayAdapter extends ArrayAdapter<String> {
         }
     }
 
+    public void setAdapter(ArrayList<String> mList){
+        mIdMap.clear();
+        for (int i = 0; i < mList.size(); ++i) {
+            mIdMap.put(mList.get(i), i);
+        }
+    }
+
+    public void addPlaceToAdapter(String namePlace){
+        int i = mIdMap.size();
+        mIdMap.put(namePlace, i + 1);
+
+    }
+
 
     @Override
     public long getItemId(int position) {
