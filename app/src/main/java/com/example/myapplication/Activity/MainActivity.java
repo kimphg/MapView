@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         imageButtonGPS = findViewById(R.id.imagebutton_gps);
         map = findViewById(R.id.map);
-        routesListView = findViewById(R.id.route_LV);
+        routesListView = findViewById(R.id.route_listview);
 
         //----------------info_layout--------//
         routeLayout = findViewById(R.id.route_layout);
