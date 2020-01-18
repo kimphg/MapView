@@ -69,11 +69,10 @@ public class f_setEventViewRoute implements SearchView.OnQueryTextListener{
         //Khai bao cac view
         routeLayout = contentFrame.findViewById(R.id.route_layout);
         listPlaceSeacrh = contentFrame.findViewById(R.id.listplace);
-        addPlace = contentFrame.findViewById(R.id.addplace);
+//        addPlace = contentFrame.findViewById(R.id.addplace);
         routesListView = contentFrame.findViewById(R.id.route_listview);
-        imageButtonCancelRoute = contentFrame.findViewById(R.id.imgbt_cancel_route);
 //        // su kien bat dau lo trinh
-        startRoute = contentFrame.findViewById(R.id.bt_startroute);
+//        startRoute = contentFrame.findViewById(R.id.bt_startroute);
         _distance = contentFrame.findViewById(R.id._distance);
         //
         imageButtonUp = contentFrame.findViewById(R.id.button_up);

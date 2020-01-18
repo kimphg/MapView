@@ -36,6 +36,7 @@ import com.example.myapplication.classes.Places;
 import com.example.myapplication.object.Text;
 import com.example.myapplication.services.GPS_Services;
 import com.example.myapplication.view.MapView;
+import com.example.myapplication.view.SeaMap;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -53,7 +54,7 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, SearchView.OnQueryTextListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
     DrawerLayout mDrawerLayout;
     NavigationView navigationView;
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private float longitude =0, latitude =0;
     String lonlat[];
     SearchView searchView;
-    MapView map;
+    SeaMap map;
     Places places;
     Button startRoute;
     TextView _distance;
@@ -111,31 +112,29 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         routesListView = findViewById(R.id.route_listview);
 
         //----------------info_layout--------//
-        routeLayout = findViewById(R.id.route_layout);
-        routeLayout.setVisibility(View.INVISIBLE);
         listPlaceSeacrh = findViewById(R.id.listplace);
 
-        list = map.listPlace();
+        //list = map.listPlace();
 
         //.............tao adpter.....
-        places = new Places(this,list);
-        listPlaceSeacrh.setAdapter(places);
+        //places = new Places(this,list);
+        //listPlaceSeacrh.setAdapter(places);
 
         searchView = findViewById(R.id.searchview_place);
-        searchView.setOnQueryTextListener(this);
+        //searchView.setOnQueryTextListener(this);
 
         //##### su kien an vao item cua listview: 1.route  2.search //
-        adapterListPlace();
+        //adapterListPlace();
         //1.search
-        listPlaceSeacrh.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Text place = places.getItem(i);
-                route.add(place);
-                namePlaces.add(place.name);
-                arrayAdapter.notifyDataSetChanged();
-            }
-        });
+//        listPlaceSeacrh.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                Text place = places.getItem(i);
+//                route.add(place);
+//                namePlaces.add(place.name);
+//                arrayAdapter.notifyDataSetChanged();
+//            }
+//        });
         //2.route
         routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -145,43 +144,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 arrayAdapter.notifyDataSetChanged();
             }
         });
-        //su kien cancel route quay ve ban dau
-        imageButtonCancelRoute = findViewById(R.id.imgbt_cancel_route);
-
-        imageButtonCancelRoute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                routeLayout.setVisibility(View.INVISIBLE);
-                cancelROute();
-            }
-        });
         // su kien bat dau lo trinh
-        startRoute = findViewById(R.id.bt_startroute);
         _distance = findViewById(R.id._distance);
-        startRoute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(!start) {
-                    double distanceKm =0;
-                    map.drawRoute(route);
-                    MapCoordinate mC = new MapCoordinate();
-                    for(int i=0; i< route.size()-1;i++ ){
-                        distanceKm += mC.distanceToOtherCoord(route.get(i).point1, route.get(i+1).point1);
-                    }
-
-                    double distanceNM = mC.convertKmToNm(distanceKm);
-
-                    _distance.append((int)distanceNM +" NM");
-                    startRoute.setText("Dung lo trinh");
-                    start = true;
-                }else {
-                    startRoute.setText("Bat dau");
-                    start = false;
-                    map.canceldrawRoute();
-                }
-
-            }
-        });
+//        startRoute.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if(!start) {
+//                    double distanceKm =0;
+//                    //map.drawRoute(route);
+//                    MapCoordinate mC = new MapCoordinate();
+//                    for(int i=0; i< route.size()-1;i++ ){
+//                        distanceKm += mC.distanceToOtherCoord(route.get(i).point1, route.get(i+1).point1);
+//                    }
+//
+//                    double distanceNM = mC.convertKmToNm(distanceKm);
+//
+//                    _distance.append((int)distanceNM +" NM");
+//                    startRoute.setText("Dung lo trinh");
+//                    start = true;
+//                }else {
+//                    startRoute.setText("Bat dau");
+//                    start = false;
+//                    map.canceldrawRoute();
+//                }
+//
+//            }
+//        });
 
 
         //.....................................
@@ -382,36 +370,36 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
-    @Override
-    public boolean onQueryTextSubmit(String query) {
+//    @Override
+//    public boolean onQueryTextSubmit(String query) {
+//
+//        return false;
+//    }
 
-        return false;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String newText) {
-        String text = newText;
-        places.filter(text);
-        return false;
-    }
+//    @Override
+//    public boolean onQueryTextChange(String newText) {
+//        String text = newText;
+//        places.filter(text);
+//        return false;
+//    }
 
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
 
     }
 
-    //ham setting for listview lo trinh
-    private void adapterListPlace(){
-        route = new ArrayList<Text>();
-        namePlaces = new ArrayList<String>();
-        arrayAdapter = new ArrayAdapter<String>(this,R.layout.places_view,R.id.tx_namePlace,namePlaces);
-        routesListView.setAdapter(arrayAdapter);
-    }
-
-    //Ham dung lo trinh
-    public void cancelROute(){
-        route.clear();
-        arrayAdapter.clear();
-        arrayAdapter.notifyDataSetChanged();
-    }
+//    //ham setting for listview lo trinh
+//    private void adapterListPlace(){
+//        route = new ArrayList<Text>();
+//        namePlaces = new ArrayList<String>();
+//        arrayAdapter = new ArrayAdapter<String>(this,R.layout.places_view,R.id.tx_namePlace,namePlaces);
+//        routesListView.setAdapter(arrayAdapter);
+//    }
+//
+//    //Ham dung lo trinh
+//    public void cancelROute(){
+//        route.clear();
+//        arrayAdapter.clear();
+//        arrayAdapter.notifyDataSetChanged();
+//    }
 }

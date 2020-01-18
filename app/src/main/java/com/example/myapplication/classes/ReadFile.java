@@ -3,18 +3,25 @@ package com.example.myapplication.classes;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.util.JsonWriter;
 
 import com.example.myapplication.object.Line;
 import com.example.myapplication.object.Polyline;
 import com.example.myapplication.object.Region;
 import com.example.myapplication.object.Text;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
+
+
 
 public class ReadFile {
     private Context mCtx;
@@ -225,9 +232,9 @@ public class ReadFile {
 
                             String ibrush = reader.readLine();
                             String brush[] = ibrush.substring(11, ibrush.length() - 1).split(",");
-                            obRegion.brush[0] = Float.parseFloat(brush[0]);
-                            obRegion.brush[1] = Float.parseFloat(brush[1]);
-                            obRegion.brush[2] = Float.parseFloat(brush[2]);
+                            obRegion.brush[0] = Integer.parseInt(brush[0]);
+                            obRegion.brush[1] = Integer.parseInt(brush[1]);
+                            obRegion.brush[2] = Integer.parseInt(brush[2]);
 
                             String ilocation = reader.readLine();
                             String location[] = ilocation.split(" ");
@@ -298,9 +305,9 @@ public class ReadFile {
                             obR.get(i).pen[2] = Integer.parseInt(pen[2]);
 
                             String brush[] = ibrush.substring(11,ibrush.length()-1).split(",");
-                            obR.get(i).brush[0] = Float.parseFloat(brush[0]);
-                            obR.get(i).brush[1] = Float.parseFloat(brush[1]);
-                            obR.get(i).brush[2] = Float.parseFloat(brush[2]);
+                            obR.get(i).brush[0] = Integer.parseInt(brush[0]);
+                            obR.get(i).brush[1] = Integer.parseInt(brush[1]);
+                            obR.get(i).brush[2] = Integer.parseInt(brush[2]);
 
                             String location[] = ilocation.split(" ");
                             obR.get(i).location[0] = Float.parseFloat(location[5]);
@@ -329,5 +336,14 @@ public class ReadFile {
                 }
             }
         }
+    }
+
+    public void writefileJSON(Line line){
+
+        JSONObject tline = new JSONObject();
+
+        JSONArray p1 = new JSONArray();
+
+
     }
 }

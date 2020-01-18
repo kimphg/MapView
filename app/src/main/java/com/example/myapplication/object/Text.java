@@ -10,6 +10,7 @@ public class Text {
     public int pen[];
     public float angle ;
     public String location;
+    public int type;
 
     public Text (){
         name = "";
@@ -19,6 +20,7 @@ public class Text {
         pen = new int [3];
         angle = 0;
         location = "";
+        type = 0;
     }
 
     public Text(String iname,PointF ipoint1, PointF ipoint2, String ifont, float iangle, String ilocation){
