@@ -7,11 +7,12 @@
     android:gravity="center"
     android:background="#3E0288D1">
     <ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_marginBottom="15dp"
         android:layout_marginTop="15dp"
+        android:background="@drawable/ic_account_circle_black_24dp"
         ></ImageView>
-        <!--android:background="@drawable/ic_gps"/>-->
+
 
 </LinearLayout>

@@ -107,12 +107,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imageButtonGPS = findViewById(R.id.imagebutton_gps);
+        imageButtonGPS = findViewById(R.id.ic_btn_location);
         map = findViewById(R.id.map);
         routesListView = findViewById(R.id.route_listview);
 
         //----------------info_layout--------//
         listPlaceSeacrh = findViewById(R.id.listplace);
+        routeLayout = findViewById(R.id.route_layout);
 
         //list = map.listPlace();
 
@@ -146,31 +147,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
         // su kien bat dau lo trinh
         _distance = findViewById(R.id._distance);
-//        startRoute.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if(!start) {
-//                    double distanceKm =0;
-//                    //map.drawRoute(route);
-//                    MapCoordinate mC = new MapCoordinate();
-//                    for(int i=0; i< route.size()-1;i++ ){
-//                        distanceKm += mC.distanceToOtherCoord(route.get(i).point1, route.get(i+1).point1);
-//                    }
-//
-//                    double distanceNM = mC.convertKmToNm(distanceKm);
-//
-//                    _distance.append((int)distanceNM +" NM");
-//                    startRoute.setText("Dung lo trinh");
-//                    start = true;
-//                }else {
-//                    startRoute.setText("Bat dau");
-//                    start = false;
-//                    map.canceldrawRoute();
-//                }
-//
-//            }
-//        });
-
 
         //.....................................
         imageButtonUp = findViewById(R.id.button_up);

@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
 import static java.lang.Math.abs;
@@ -81,6 +82,7 @@ public class SeaMap  extends View {
     HashMap<String,Vector<Polylines>> PLines = new HashMap<String, Vector<Polylines>>();
     HashMap<String,Vector<Texts>> tTexts = new HashMap<String, Vector<Texts>>();
     HashMap<String,Vector<Regions>> Poligons = new HashMap<String, Vector<Regions>>();
+//    TreeMap<String, >
 
     Paint depthLinePaint = new Paint(), paintCenter = new Paint(), textPaint = new Paint(), paintRegion = new Paint();
     Path mPath= new Path();

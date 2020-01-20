@@ -24,10 +24,19 @@
             android:layout_gravity="bottom"
             >
             <ImageButton
-                android:id="@+id/imagebutton_gps"
+                android:id="@+id/ic_btn_location"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/icon_gps_location"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="20dp"
+                />
+            <ImageButton
+                android:id="@+id/ic_btn_directions"
+                android:layout_marginTop="60dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/icon_directions"
                 android:layout_alignParentRight="true"
                 android:layout_marginRight="20dp"
                 />
@@ -37,13 +46,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_height="250dp"
                 android:layout_width="match_parent"
-                android:layout_below="@+id/imagebutton_gps"
-                />
-<!--            <Button-->
-<!--                android:id="@+id/bt_startroute"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:text="Bat dau" />-->
+                android:layout_below="@+id/ic_btn_directions" />
         </RelativeLayout>
 
 <!--        <ImageView-->
@@ -58,20 +61,33 @@
 
         <ImageButton
             android:id="@+id/ibt_others"
-            android:background="@drawable/icon_other"
+            android:background="@drawable/icon_cancel"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="20dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            />
 
-        <ImageButton
-            android:id="@+id/ibt_setting"
-            android:background="@drawable/icon_setting"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="70dp"
+        <GridLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            >
+            <ImageButton
+                android:id="@+id/ic_btn_search"
+                android:background="@drawable/icon_search"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <ImageButton
+                android:id="@+id/ic_btn_layers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="20dp"
+                android:background="@drawable/icon_layers" />
+        </GridLayout>
         <!--<FrameLayout-->
             <!--android:layout_gravity="bottom"-->
             <!--android:layout_width="match_parent"-->

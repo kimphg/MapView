@@ -7,10 +7,9 @@
             <solid android:color="#B2FFFFFF"/>
         </shape>
     </item>
-    <item android:drawable="@drawable/ic_view_headline_black_24dp"
+    <item android:drawable="@drawable/ic_search_black_24dp"
         android:gravity="center"
         android:height="30dp"
         android:width="30dp"
         />
 </layer-list>
-
