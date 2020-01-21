@@ -17,7 +17,6 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -31,11 +30,9 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.example.myapplication.R;
-import com.example.myapplication.classes.MapCoordinate;
 import com.example.myapplication.classes.Places;
 import com.example.myapplication.object.Text;
 import com.example.myapplication.services.GPS_Services;
-import com.example.myapplication.view.MapView;
 import com.example.myapplication.view.SeaMap;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -51,7 +48,6 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import com.google.android.material.navigation.NavigationView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{

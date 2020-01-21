@@ -3,21 +3,62 @@ package com.example.myapplication.object;
 import android.graphics.Point;
 import android.graphics.PointF;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
-public class Region {
-    public int numberPoint;
-    public Map<Point, Vector<PointF>> lines = new HashMap<Point, Vector<PointF>>();
-    public float  location[];
-    public int brush[],pen[];
+public class Region implements Serializable {
 
-    public Region(){}
-    public Region(int inumberPoint){
-        numberPoint = inumberPoint;
-        pen = new int [3];
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    /**
+     *
+     */
+    private float coordinate[];
+    private float  location[];
+    private int brush[],pen[];
+
+    public Region(int number) {
+        pen = new int[3];
         brush = new int[3];
         location = new float[2];
+        coordinate = new float[number];
+    }
+
+    public float[] getCoordinate() {
+        return coordinate;
+    }
+
+    public void setCoordinate(float[] coordinate) {
+        this.coordinate = coordinate;
+    }
+
+    public float[] getLocation() {
+        return location;
+    }
+
+    public void setLocation(float[] location) {
+        this.location = location;
+    }
+
+    public int[] getBrush() {
+        return brush;
+    }
+
+    public void setBrush(int[] brush) {
+        this.brush = brush;
+    }
+
+    public int[] getPen() {
+        return pen;
+    }
+
+    public void setPen(int[] pen) {
+        this.pen = pen;
     }
 }

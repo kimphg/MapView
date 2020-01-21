@@ -1,7 +1,5 @@
 package com.example.myapplication.classes;
 
-import androidx.annotation.Nullable;
-
 import com.example.myapplication.object.Text;
 
 import java.util.ArrayList;
@@ -18,7 +16,7 @@ public class Route extends ArrayList<Text> {
     public ArrayList<String> namePlacesOnRoute(){
         ArrayList<String> namePlace = new ArrayList<>();
         for(int i =0; i< size(); i++){
-            namePlace.add(get(i).name);
+            namePlace.add(get(i).getName());
         }
         return namePlace;
     }

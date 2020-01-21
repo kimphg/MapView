@@ -1,9 +1,7 @@
 package com.example.myapplication.function;
 
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.text.Layout;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -16,8 +14,6 @@ import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
 
-import androidx.drawerlayout.widget.DrawerLayout;
-
 import com.example.myapplication.R;
 import com.example.myapplication.classes.MapCoordinate;
 import com.example.myapplication.classes.Places;
@@ -26,8 +22,6 @@ import com.example.myapplication.classes.StableArrayAdapter;
 import com.example.myapplication.object.Text;
 import com.example.myapplication.view.DynamicListView;
 import com.example.myapplication.view.MapView;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +92,7 @@ public class f_setEventViewRoute implements SearchView.OnQueryTextListener{
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Text place = places.getItem(i);
                 route.add(place);
-                mCheeseList.add(place.name);
+                mCheeseList.add(place.getName());
                 adapter.setAdapter(mCheeseList);
                 adapter.notifyDataSetChanged();
             }
@@ -123,7 +117,7 @@ public class f_setEventViewRoute implements SearchView.OnQueryTextListener{
                 mCheeseList.clear();
                 route = map.coordinateRoute();
                 for (int i = 0; i < route.size(); i++) {
-                    mCheeseList.add(route.get(i).name);
+                    mCheeseList.add(route.get(i).getName());
                 }
                 adapter.setAdapter(mCheeseList);
                 adapter.notifyDataSetChanged();
@@ -137,9 +131,6 @@ public class f_setEventViewRoute implements SearchView.OnQueryTextListener{
                     double distanceKm = 0;
                     map.drawRoute(route);
                     MapCoordinate mC = new MapCoordinate();
-                    for (int i = 0; i < route.size() - 1; i++) {
-                        distanceKm += mC.distanceToOtherCoord(route.get(i).point1, route.get(i + 1).point1);
-                    }
 
                     double distanceNM = mC.convertKmToNm(distanceKm);
 

@@ -26,7 +26,7 @@ public class SearchActivity extends AppCompatActivity {
 
         imgbtback = findViewById(R.id.back);
         editText = findViewById(R.id.textView2);
-        listView = findViewById(R.id.listView);
+        //listView = findViewById(R.id.listView);
 
         imgbtback.setOnClickListener(new View.OnClickListener(){
             @Override

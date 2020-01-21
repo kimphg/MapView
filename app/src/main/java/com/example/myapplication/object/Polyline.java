@@ -3,19 +3,58 @@ package com.example.myapplication.object;
 import android.graphics.Point;
 import android.graphics.PointF;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
-public class Polyline {
-    public int numberPoint;
-    public Map<Point, Vector<PointF>> lines = new HashMap<Point, Vector<PointF>>();
-    public int pen[];
+public class Polyline implements Serializable {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-    public Polyline(){}
+    public float[] getCoordinate() {
+        return coordinate;
+    }
 
-    public Polyline(int inumberPoint){
-        numberPoint = inumberPoint;
+    public void setCoordinate(float[] coordinate) {
+        this.coordinate = coordinate;
+    }
+
+    /**
+     *
+     */
+    private float coordinate[];
+    private int type;
+    private int pen[];
+
+    // public Polyline() {
+    //     pen = new int[3];
+    //     type = 0;
+    // }
+
+    public Polyline(int number) {
+        coordinate = new float[number];
         pen = new int[3];
+        type = 0;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public int[] getPen() {
+        return pen;
+    }
+
+    public void setPen(int[] pen) {
+        this.pen = pen;
     }
 }

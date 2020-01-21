@@ -1,6 +1,5 @@
 package com.example.myapplication.view;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -12,48 +11,38 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Typeface;
-import android.os.Build;
-import android.os.Environment;
-import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
-import androidx.annotation.RequiresApi;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.example.myapplication.R;
-import com.example.myapplication.classes.Places;
 import com.example.myapplication.object.Line;
 import com.example.myapplication.object.Polyline;
-import com.example.myapplication.object.Polylines;
 import com.example.myapplication.object.Region;
-import com.example.myapplication.object.Regions;
 import com.example.myapplication.object.Text;
-import com.example.myapplication.object.Texts;
-import com.google.android.gms.maps.model.Polygon;
 import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.AccessMode;
-import java.util.ArrayList;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import static java.lang.Math.abs;
@@ -79,10 +68,13 @@ public class SeaMap  extends View {
     private int AreaY[];
     private ScaleGestureDetector scaleGestureDetector;
 
-    HashMap<String,Vector<Polylines>> PLines = new HashMap<String, Vector<Polylines>>();
-    HashMap<String,Vector<Texts>> tTexts = new HashMap<String, Vector<Texts>>();
-    HashMap<String,Vector<Regions>> Poligons = new HashMap<String, Vector<Regions>>();
+    HashMap<String,Vector<Line>> Lines = new HashMap<String, Vector<Line>>();
+    HashMap<String,Vector<Polyline>> PLines = new HashMap<String, Vector<Polyline>>();
+    HashMap<String,Vector<Text>> tTexts = new HashMap <String, Vector<Text>>();
+    HashMap<String,Vector<Region>> Poligons = new HashMap<String, Vector<Region>>();
+    Set<Text> listPlace = new TreeSet<Text>(new Text.PlaceComparator());
 //    TreeMap<String, >
+
 
     Paint depthLinePaint = new Paint(), paintCenter = new Paint(), textPaint = new Paint(), paintRegion = new Paint();
     Path mPath= new Path();
@@ -91,7 +83,8 @@ public class SeaMap  extends View {
         super(context, attrs);
         mCtx = context;
         initArea();
-        loadJSONFromAsset(isScreens((int)(n /(int) mScale )));
+        //loadJSONFromAsset(isScreens((int)(n /(int) mScale )));
+        readFileByte();
         scaleGestureDetector = new ScaleGestureDetector(context, new SeaMap.ScaleLister());
         setOnLongClickListener(infoAcoordinate);
     }
@@ -138,11 +131,13 @@ public class SeaMap  extends View {
 //        }
         int dem = 0;
         int demduong = 0;
-//        for(Map.Entry m : PLines.entrySet()){
-//           Vector<Polylines> pl =(Vector<Polylines>) m.getValue();
-//           dem += pl.size();
-//           for(int i =0 ;i< pl.size(); i++){if(pl.get(i).getType() == 1) demduong++;}
-//        }
+        for(Map.Entry m : PLines.entrySet()){
+           Vector<Polyline> pl =(Vector<Polyline>) m.getValue();
+           dem += pl.size();
+           //if(pl.size() != 0) demduong++;
+           for(int i =0 ;i< pl.size(); i++){if(pl.get(i) == null) demduong++;}
+        }
+        int j = demduong;
 
         if (location) {
             Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
@@ -150,44 +145,88 @@ public class SeaMap  extends View {
             Paint locationPaint = new Paint();
             canvas.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
         }
+/*
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // draw polygon
+                for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x  ; lon++) {
+                    for (int lat = (int) pointT3.y; lat <= (int) pointT1.y; lat++) {
+                        String area = lon + "-" + lat;
+                        Vector<Regions> rE = Poligons.get(area);
+                        if(rE == null) continue;
+                        for(int k =0;  k< rE.size() ; k++){
+                            Regions polygon = rE.get(k);
+                            Path pathRegion = new Path();
+                            for(int i =0; i< polygon.getCoordinates().size() ; i = i+2){
+                                if(i == 0){
+                                    Point point1 = ConvWGSToScrPoint(polygon.getCoordinates().get(i), polygon.getCoordinates().get(i + 1));
+                                    pathRegion.moveTo(point1.x, point1.y);
+                                }
+                                else {
+                                    Point point1 = ConvWGSToScrPoint(polygon.getCoordinates().get(i), polygon.getCoordinates().get(i + 1));
+                                    pathRegion.lineTo(point1.x, point1.y);
+                                }
+                            }
+                            paintRegion.setStyle(Paint.Style.STROKE);
+                            int color = polygon.getPen()[2];
+                            int red =(int) color /65536;
+                            int green = (int) (color - red * 65536) / 256;
+                            int blue = (int) (color - red * 65536 - green * 256);
+                            paintRegion.setColor(Color.rgb(red, green, blue));
+                            paintRegion.setStrokeWidth(polygon.getPen()[0]);
+                            //paintRegion.setDither(true);
+                            paintRegion.setAntiAlias(true);
 
+                            canvas.drawPath(pathRegion,paintRegion);
+                    }
+                } }
+            }
+        });
+        thread1.start();
+*/
         //draw polylyline
-        for(int lon = (int) pointT3.x - 1 ; lon<= (int) pointT1.x  + 1; lon++){
-            for(int lat = (int) pointT3.y - 1 ; lat <= (int) pointT1.y  + 1; lat++ ){
+        for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x  ; lon++){
+            for(int lat = (int) pointT3.y  ; lat <= (int) pointT1.y  ; lat++ ){
                 String area = lon + "-" + lat;
-                Vector<Polylines> PL = PLines.get(area);
+                Vector<Polyline> PL = PLines.get(area);
                 if(PL == null) continue;
                 for(int k=0; k < PL.size(); k++){
-                    Polylines pl = PL.get(k);
-                    if(mScale <=5 && pl.getType() == 1) continue;
-                    int size = pl.getCoordinates().size();
-                    float pointis[] = new float[size * 2];
-                    for (int i = 0; i < size - 4; i += 2) {
-                        Point p1 = ConvWGSToScrPoint(pl.getCoordinates().get(i), pl.getCoordinates().get(i + 1));
-                        Point p2 = ConvWGSToScrPoint(pl.getCoordinates().get(i + 2), pl.getCoordinates().get(i + 3));
-                        pointis[2 * i] = (float) p1.x;
-                        pointis[2 * i + 1] = (float) p1.y;
-                        pointis[i * 2 + 2 ] = (float) p2.x;
-                        pointis[i * 2 + 3 ] = (float) p2.y;
+                    Polyline pl = PL.get(k);
+                    if(PL.get(k) != null) {
+                        if (mScale <= 5 && pl.getType() == 1) continue;
+                        int size = pl.getCoordinate().length;
+                        float pointis[] = new float[size * 2];
+                        for (int i = 0; i < size - 2; i += 2) {
+                            Point p1 = ConvWGSToScrPoint(pl.getCoordinate()[i], pl.getCoordinate()[i + 1]);
+                            Point p2 = ConvWGSToScrPoint(pl.getCoordinate()[i + 2], pl.getCoordinate()[i + 3]);
+                            pointis[2 * i] = (float) p1.x;
+                            pointis[2 * i + 1] = (float) p1.y;
+                            pointis[i * 2 + 2] = (float) p2.x;
+                            pointis[i * 2 + 3] = (float) p2.y;
+                        }
+                        int color = pl.getPen()[2];
+                        int red = (int) color / 65536;
+                        int green = (int) (color - red * 65536) / 256;
+                        int blue = (int) (color - red * 65536 - green * 256);
+                        depthLinePaint.setColor(Color.rgb(red, green, blue));
+                        depthLinePaint.setStrokeWidth(2);
+                        //depthLinePaint.setAntiAlias(true);
+                        canvas.drawLines(pointis, depthLinePaint);
+
                     }
-                    int color = pl.getPen()[2];
-                    int red = (int) color / 65536;
-                    int green = (int) (color - red * 65536) / 256;
-                    int blue = (int) (color - red * 65536 - green * 256);
-                    depthLinePaint.setColor(Color.rgb(red, green, blue));
-                    depthLinePaint.setStrokeWidth(2);
-                    //depthLinePaint.setAntiAlias(true);
-                    canvas.drawLines(pointis, depthLinePaint);
-                    dem ++;
+                    else {
+                        dem++;
+                    }
                 }
                 //draw text
-                Vector<Texts> tT = tTexts.get(area);
+                Vector<Text> tT = tTexts.get(area);
                 if(tT == null) continue;
                 for (int k =0; k< tT.size(); k++) {
-                    Texts text = tT.get(k);
+                    Text text = tT.get(k);
                     if(mScale < 5 && text.getType() !=3) continue;
-                    Point p1 = ConvWGSToScrPoint(text.getCoordinates().get(0), text.getCoordinates().get(1));
-                    Point p2 = ConvWGSToScrPoint(text.getCoordinates().get(2), text.getCoordinates().get(3));
+                    Point p1 = ConvWGSToScrPoint(text.getCoordinate()[0], text.getCoordinate()[1]);
+                    Point p2 = ConvWGSToScrPoint(text.getCoordinate()[2], text.getCoordinate()[3]);
                     int distance = Distance(p1, p2);
 //                        if (mScale > getWidth() / 70) {
                     int color = text.getPen()[2];
@@ -226,38 +265,35 @@ public class SeaMap  extends View {
                             textPaint.setTextSize(distance / text.getName().length());
                         canvas.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
                     }
-
                 }
-
-                // draw polygon
-                Vector<Regions> rE = Poligons.get(area);
-                if(rE == null) continue;
-                for(int k =0;  k< rE.size() ; k++){
-                    Regions polygon = rE.get(k);
-                    Path pathRegion = new Path();
-                    for(int i =0; i< polygon.getCoordinates().size() ; i = i+2){
-                        if(i == 0){
-                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinates().get(i), polygon.getCoordinates().get(i + 1));
-                            pathRegion.moveTo(point1.x, point1.y);
-                        }
-                        else {
-                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinates().get(i), polygon.getCoordinates().get(i + 1));
-                            pathRegion.lineTo(point1.x, point1.y);
-                        }
-                    }
-                    paintRegion.setStyle(Paint.Style.STROKE);
-                    int color = polygon.getPen()[2];
-                    int red =(int) color /65536;
-                    int green = (int) (color - red * 65536) / 256;
-                    int blue = (int) (color - red * 65536 - green * 256);
-                    paintRegion.setColor(Color.rgb(red, green, blue));
-                    paintRegion.setStrokeWidth(polygon.getPen()[0]);
-                    //paintRegion.setDither(true);
-                    paintRegion.setAntiAlias(true);
-
-                    canvas.drawPath(pathRegion,paintRegion);
-                }
-
+//              draw polygons
+//                Vector<Region> rE = Poligons.get(area);
+//                if(rE == null) continue;
+//                for(int k =0;  k< rE.size() ; k++) {
+//                    Region polygon = rE.get(k);
+//                    if(polygon == null) continue;
+//                    Path pathRegion = new Path();
+//                    for (int i = 0; i < polygon.getCoordinate().length; i = i + 2) {
+//                        if (i == 0) {
+//                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
+//                            pathRegion.moveTo(point1.x, point1.y);
+//                        } else {
+//                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
+//                            pathRegion.lineTo(point1.x, point1.y);
+//                        }
+//                    }
+//                    paintRegion.setStyle(Paint.Style.STROKE);
+//                    int color = polygon.getPen()[2];
+//                    int red = (int) color / 65536;
+//                    int green = (int) (color - red * 65536) / 256;
+//                    int blue = (int) (color - red * 65536 - green * 256);
+//                    paintRegion.setColor(Color.rgb(red, green, blue));
+//                    paintRegion.setStrokeWidth(polygon.getPen()[0]);
+//                    //paintRegion.setDither(true);
+//                    paintRegion.setAntiAlias(true);
+//
+//                    canvas.drawPath(pathRegion, paintRegion);
+//                }
             }
         }
         //draw pline
@@ -278,105 +314,122 @@ public class SeaMap  extends View {
         }
     }
 
-    public String[] isScreens (int n){
-
-        int index[] = new int [2];
-
-        for(int i=0; i<20; i++){if(AreaX[i] < mlon && mlon < AreaX[i] + 1) index[0] = i;}
-        for(int i=0; i<20; i++){if(AreaY[i] < mlat && mlat < AreaX[i] + 1) index[1] = i;}
-
-        int canh = (int) sqrt(n);
-        int delta = canh / 2;
-        int deltaX =0, deltaY =0;
-
-        if(index[0] - delta <= 0) deltaX = 0;
-        else deltaX = index[0] - delta ;
-
-        if(index[1] + delta > 20) deltaY = 20;
-        else deltaY = index[1] + delta ;
-
-        String area[] = new String [(deltaY - deltaX) * (deltaY - deltaX)];
-        int dem = 0;
-        for(int i = deltaX; i< deltaY ;i++){
-            for(int j = deltaX; j< deltaY; j++){
-                area[dem] = AreaX[i] + "-" + AreaY[j];
-                dem++;
-            }
-        }
-        return area;
-    }
-
-
-    public void loadJSONFromAsset(String [] area) {
-        String json = null;
-        try {
-            String [] List ;
-            AssetManager am = mCtx.getAssets();
-            List = mCtx.getAssets().list("location");
-            for(String a: area){
-                InputStream is = am.open("location" + "/" + a + ".json");
-                int size = is.available();
-                if(size <= 2) continue;
-                byte[] buffer = new byte[size];
-
-                is.read(buffer);
-
-                is.close();
-                json = new String(buffer, "UTF-8");
-                readJson(json, a);
-
-            }
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void readJson(String json, String area) {
-        try {
-            JSONObject jsonRoot = new JSONObject(json);
-            JSONArray PLine = jsonRoot.getJSONArray("Polyline");
-            Vector<Polylines> vtrPl = new Vector<Polylines>();
-            for (int i = 0; i < PLine.length(); i++) {
-                Polylines pl = null;
+    void readFileByte(){
+        AssetManager am = mCtx.getAssets();
+        for (int u = 0; u < 20; u++) {
+            for(int v = 0; v<20; v++) {
+                String area = AreaX[u] + "-" + AreaY[v];
+                String keyLatLon = AreaX[u] + "-" + AreaY[v] + ".bin";
+                ObjectInputStream ois = null;
+                int size = 0;
                 try {
-                    pl = new Gson().fromJson(PLine.get(i).toString(), Polylines.class);
-                } catch (JSONException e) {
+                    InputStream is = am.open("locationBytes" + "/" + keyLatLon);
+                    ois = new ObjectInputStream(is);
+                } catch (FileNotFoundException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                vtrPl.add(pl);
-            }
-            PLines.put(area,vtrPl);
-
-            JSONArray mT = jsonRoot.getJSONArray("Text");
-            Vector<Texts> vtTexts = new Vector<Texts>();
-            for (int i = 0; i < mT.length(); i++) {
-                Texts text = null;
                 try {
-                    text = new Gson().fromJson(mT.get(i).toString(), Texts.class);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    size = ois.readInt();
+                } catch (IOException e) {
                 }
-                vtTexts.add(text);
-            }
-            tTexts.put(area, vtTexts);
 
-            JSONArray mPolygons = jsonRoot.getJSONArray("Region");
-            Vector<Regions> vtRegions = new Vector<Regions>();
-            for (int i = 0; i < mPolygons.length(); i++) {
-                Regions region = null;
-                try {
-                    region = new Gson().fromJson(mPolygons.get(i).toString(), Regions.class);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                //Text
+                if (size != 0) {
+                    Vector<Text> t = new Vector<>();
+                    for (int j = 0; j < size; j++) {
+                        Text obj = null;
+                        try {
+                            obj = (Text) ois.readObject();
+                        } catch (ClassNotFoundException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                        }
+                        t.add(obj);
+                        //System.out.println(s);
+                    }
+                    tTexts.put(area, t);
                 }
-                vtRegions.add(region);
+
+                // Line
+                try {
+                    size = ois.readInt();
+                } catch (IOException e) {
+                }
+                if (size != 0) {
+                    Vector<Line> l = new Vector<>();
+                    for (int j = 0; j < size; j++) {
+                        Line obj = null;
+                        try {
+                            obj = (Line) ois.readObject();
+                        } catch (ClassNotFoundException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                        }
+                        l.add(obj);
+                        //areaLine[i].add(obj);
+                        // System.out.println(s);
+                    }
+                    Lines.put(area, l);
+
+                }
+
+                //Pline
+                try {
+                    size = ois.readInt();
+                } catch (IOException e) {
+                }
+                if (size != 0) {
+                    Vector<Polyline> pl = new Vector<>();
+                    for (int j = 0; j < size; j++) {
+                        Polyline obj = null;
+                        try {
+                            obj = (Polyline) ois.readObject();
+                        } catch (ClassNotFoundException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                        }
+                        pl.add(obj);
+                        //areaPline[i].add(obj);
+                        // System.out.println(s);
+                    }
+                    PLines.put(area,pl);
+                }
+
+                //Region
+                try {
+                    size = ois.readInt();
+                } catch (IOException e) {
+                }
+
+                if (size != 0) {
+                    Vector<Region> r = new Vector<>();
+                    for (int j = 0; j < size; j++) {
+                        Region obj = null;
+                        try {
+                            obj = (Region) ois.readObject();
+                        } catch (ClassNotFoundException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                        }
+                        r.add(obj);
+//                        areaRegion[i].add(obj);
+                        // System.out.println(s);
+                    }
+                    Poligons.put(area,r);
+                }
             }
-            Poligons.put(area,vtRegions);
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
+        //System.out.println("read xong");
     }
+
 
     public Point ConvWGSToScrPoint(float m_Long,float m_Lat)// converting lat lon  WGS coordinates to screen XY coordinates
     {

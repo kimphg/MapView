@@ -1,14 +1,9 @@
 package com.example.myapplication.view;
 
-import com.example.myapplication.Activity.MainActivity;
 import com.example.myapplication.R;
 import com.example.myapplication.classes.Route;
 import com.example.myapplication.object.Line;
-import com.example.myapplication.object.Polylines;
-import com.example.myapplication.object.Region;
-import com.example.myapplication.object.Text;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,7 +11,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
@@ -25,45 +19,32 @@ import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.os.Build;
 
-import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 
-import android.util.JsonReader;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 
-import com.example.myapplication.object.Polyline;
 import com.example.myapplication.classes.ReadFile;
+import com.example.myapplication.object.Text;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.String;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.content.res.ResourcesCompat;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
 import static java.lang.Math.cos;
-import com.google.gson.*;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class MapView extends View {
@@ -179,6 +160,7 @@ public class MapView extends View {
         scrCtX = getWidth() / 2;
         //canvas.drawColor(Color.YELLOW);
 
+        /*
         int radius = Math.min(scrCtX, scrCtY);
         float pi = (float) Math.PI;
         //canvas.drawColor(Color.rgb(30,30,30));
@@ -444,115 +426,10 @@ public class MapView extends View {
 
         //
 
+         */
 
 
-    }
 
-    public void getDataUseThread(){
-
-
-            PointF topRightLatLon = ConvScrPointToWGS(mWidth, 0);
-            PointF botLeftLatLon = ConvScrPointToWGS(0, mHeight);
-//
-             topX = (int) topRightLatLon.x + 2;
-             topY = (int) topRightLatLon.y + 2;
-//
-             botX = (int) botLeftLatLon.x - 2;
-             botY = (int) botLeftLatLon.y - 2;
-            //sc all cells inside the screen and draw all text object
-                thread1 = new Thread(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                for (int cellLon = botX; cellLon <= topX; cellLon += 1) {
-                                    for (int cellLat = botY; cellLat <= topY; cellLat += 1) {
-                                        //draw data of current cell
-                                        currentCell = new Point(cellLon, cellLat);
-
-                                        //line
-                                        if (readFile.listLine.containsKey(currentCell)) {
-                                            Vector<Line> objLineList = readFile.listLine.get(currentCell);
-                                            for (Line l : objLineList) {
-                                                lineScreens.add(l);
-                                                Log.d("line", l + "");
-                                            }
-                                        }
-                                    }
-                                }
-                                Log.d("complete", "line");
-
-                            }
-                        });
-                thread1.setPriority(Thread.MAX_PRIORITY);
-            //plane
-                thread2 = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        for (int cellLon = botX; cellLon <= topX; cellLon += 1) {
-                            for (int cellLat = botY; cellLat <= topY; cellLat += 1) {
-                                //draw data of current cell
-                                currentCell = new Point(cellLon, cellLat);
-                                if (readFile.listText.containsKey(currentCell)) {
-                                    Vector<Text> objectList = readFile.listText.get(currentCell);
-                                    for (Text t : objectList) {
-                                        textScreen.add(t);
-                                    }
-                                }
-
-                            }
-                        }
-
-
-                    }
-                });
-                thread2.setPriority(Thread.MAX_PRIORITY);
-
-                if(start) {
-                    thread2.start();
-                    thread1.start();
-                }
-
-
-//                thread3 = new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        for (int cellLon = botX ; cellLon <= topX ; cellLon += 1) {
-//                            for (int cellLat = botY; cellLat <= topY; cellLat += 1) {
-//                                //draw data of current cell
-//                                currentCell = new Point(cellLon, cellLat);
-//
-//                                for (Polyline pl : readFile.listPLine) {
-//                                    Vector<PointF> pointfs = pl.lines.get(currentCell);
-//                                    if (pointfs == null) continue;
-//                                    polylineScreens.add(pointfs);
-//                                    Log.d("polyline", pointfs + "");
-//                                }
-//                            }
-//                        }
-//                    }
-//                });
-//                thread3.setPriority(Thread.MAX_PRIORITY);
-//
-//                if(start){
-//                    thread3.start();
-//                }
-
-        for (int cellLon = botX ; cellLon <= topX ; cellLon += 1) {
-            for (int cellLat = botY; cellLat <= topY; cellLat += 1) {
-                //draw data of current cell
-                currentCell = new Point(cellLon, cellLat);
-
-                for (Polyline pl : readFile.listPLine) {
-                    Vector<PointF> pointfs = pl.lines.get(currentCell);
-                    if (pointfs == null) continue;
-                    polylineScreens.add(pointfs);
-                    Log.d("polyline", pointfs + "");
-                }
-            }
-        }
-
-                invalidate();
     }
 
 
@@ -758,8 +635,8 @@ public class MapView extends View {
         chooseplace = true;
         int i = places.size();
         Text t = new Text();
-        t.name = "Dia diem "+ (i+1);
-        t.point1 = ConvScrPointToWGS(scrCtX, scrCtY);
+        //t.name = "Dia diem "+ (i+1);
+        //t.point1 = ConvScrPointToWGS(scrCtX, scrCtY);
         places.add(t);
         invalidate();
     }
@@ -768,9 +645,11 @@ public class MapView extends View {
         int i=0;
         Path path = new Path();
         paintRoute = new Paint();
+
         paintRoute.setColor(Color.rgb(120,120,10));
         paintRoute.setStyle(Paint.Style.STROKE);
         paintRoute.setStrokeWidth(3);
+        /*
         for(Text t:places) {
             Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pin);
             Point p1 = ConvWGSToScrPoint(t.point1.x, t.point1.y);
@@ -783,18 +662,25 @@ public class MapView extends View {
         if(i>1)
             canvas.drawPath(path,paintRoute);
 
+         */
+
     }
 
     public List<Text> listPlace(){
+
         List<Text> list = new ArrayList<>();
-        Collection<Vector<Text>> listVector = readFile.listText.values();
+
+        /*Collection<Vector<Text>> listVector = readFile.listText.values();
         for(Vector<Text> v: listVector){
             for(int i=0; i<v.size(); i++){
                 if(!v.get(i).name.matches("(^-)*\\d+"))
                     list.add(v.get(i));
             }
         }
+
+         */
         return list;
+
     }
 
     public Route coordinateRoute(){
@@ -804,8 +690,8 @@ public class MapView extends View {
 
     public void drawRoute(List<Text> list){
         onRoute = true;
-        mlat = list.get(0).point1.y;
-        mlon = list.get(0).point1.x;
+        //mlat = list.get(0).point1.y;
+        //mlon = list.get(0).point1.x;
         routes = list;
         invalidate();
     }

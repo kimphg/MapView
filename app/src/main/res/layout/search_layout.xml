@@ -20,15 +20,47 @@
         android:layout_marginRight="5dp"
          />
 
-    <ListView
+    <HorizontalScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/listView"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="10dp"
+        android:scrollbars="none"
         android:layout_below="@+id/textView2"
-        android:layout_alignLeft="@+id/textView2"
-        android:layout_alignStart="@+id/textView2" />
+        android:layout_marginLeft="60dp"
+        >
+        b<com.google.android.material.chip.Chip
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.Chip.Entry"
+            android:layout_marginBottom="8dp"
+            android:padding="12dp"
+            android:textAlignment="center"
+            android:text="Cac thanh pho"
+            android:textSize="20dp"
+            />
+
+        <com.google.android.material.chip.Chip
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.Chip.Entry"
+            android:layout_marginBottom="8dp"
+            android:padding="12dp"
+            android:textAlignment="center"
+            android:text="Cac thanh pho"
+            android:textSize="20dp"
+            />
+
+    </HorizontalScrollView>
+
+
+<!--    <ListView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:id="@+id/listView"-->
+<!--        android:layout_marginRight="5dp"-->
+<!--        android:layout_marginTop="50dp"-->
+<!--        android:layout_below="@+id/relative_layout_1"-->
+<!--        android:layout_alignLeft="@+id/textView2"-->
+<!--        android:layout_alignStart="@+id/textView2" />-->
 
 
 

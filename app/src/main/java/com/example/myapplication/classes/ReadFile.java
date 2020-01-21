@@ -2,8 +2,6 @@ package com.example.myapplication.classes;
 
 import android.content.Context;
 import android.graphics.Point;
-import android.graphics.PointF;
-import android.util.JsonWriter;
 
 import com.example.myapplication.object.Line;
 import com.example.myapplication.object.Polyline;
@@ -14,9 +12,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -39,6 +34,7 @@ public class ReadFile {
 
     private void readFile() {
         BufferedReader reader = null;
+        /*
         try {
             String mline;
             Line obLine;
@@ -336,6 +332,8 @@ public class ReadFile {
                 }
             }
         }
+        */
+
     }
 
     public void writefileJSON(Line line){

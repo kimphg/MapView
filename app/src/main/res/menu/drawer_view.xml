@@ -1,15 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-        <group android:checkableBehavior="single">
-                <item
-                    android:id="@+id/nav_camera"
-                    android:icon="@drawable/ic_directions_black_24dp"
-                    android:title="Lo trinh" />
-                <item
-                    android:id="@+id/nav_gallery"
-                    android:icon="@drawable/ic_info_outline_black_24dp"
-                    android:title="Info" />
+        <item android:title="General">
+                <menu>
+                        <group android:checkableBehavior="single">
+                                <item
+                                    android:id="@+id/nav_camera"
+                                    android:icon="@drawable/ic_directions_black_24dp"
+                                    android:title="Lo trinh" />
+                                <item
+                                    android:id="@+id/nav_gallery"
+                                    android:icon="@drawable/ic_info_outline_black_24dp"
+                                    android:title="Info" />
 
-        </group>
+                        </group>
+                </menu>
+        </item>
+
+        <item android:title="Communicate">
+                <menu>
+                        <group android:checkableBehavior="single">
+<!--                                <item-->
+<!--                                    android:id="@+id/Share"-->
+<!--                                    android:icon="@drawable/ic_directions_black_24dp"-->
+<!--                                    android:title="Lo trinh" />-->
+<!--                                <item-->
+<!--                                    android:id="@+id/Sent"-->
+<!--                                    android:icon="@drawable/ic_info_outline_black_24dp"-->
+<!--                                    android:title="Info" />-->
+
+                        </group>
+                </menu>
+        </item>
 
 </menu>

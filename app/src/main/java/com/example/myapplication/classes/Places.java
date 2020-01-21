@@ -38,7 +38,7 @@ public class Places extends BaseAdapter{
     public List<String> getNameFromText(List<Text> list){
         List<String> listName = new ArrayList<>();
         for(Text t:list){
-            listName.add(t.name);
+            listName.add(t.getName());
         }
         return listName;
     }
@@ -79,7 +79,7 @@ public class Places extends BaseAdapter{
             holder = (ViewHolder) view.getTag();
         }
         // Set the results into TextViews
-        holder.name.setText(mData.get(i).name);
+        holder.name.setText(mData.get(i).getName());
         return view;
     }
 
@@ -90,7 +90,7 @@ public class Places extends BaseAdapter{
             mData.addAll(temp);
         } else {
             for (Text s : temp) {
-                if (s.name.toLowerCase(Locale.getDefault()).contains(charText)) {
+                if (s.getName().toLowerCase(Locale.getDefault()).contains(charText)) {
                     mData.add(s);
                 }
             }
