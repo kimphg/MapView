@@ -55,6 +55,7 @@ public class SeaMap  extends View {
 
     private static boolean SEARCHPLACE = false;
     private static boolean MYLOCATION = false;
+    private static boolean DIRECTIONS = false;
 
     private float mlat = 18.32f;//lattitude of the center of the screen
     private float mlon = 105.43f;//longtitude of the center of the screen
@@ -67,8 +68,8 @@ public class SeaMap  extends View {
     int dx1, dy1 , dx2, dy2;
     int levelPreference =0;
 
-    float location_lon, location_lat;
-    private float searchPlace_lon, searchPlace_lat;
+    float location_lon = 18.32f, location_lat = 105.43f;
+    float searchPlace_lon, searchPlace_lat;
 
     private int AreaX[];
     private int AreaY[];
@@ -154,10 +155,22 @@ public class SeaMap  extends View {
 
         if(SEARCHPLACE){
             Point p1 = ConvWGSToScrPoint(searchPlace_lon, searchPlace_lat);
+//            Point p2 = ConvWGSToScrPoint(location_lon, location_lat);
+//            Paint searchPl = new Paint();
+//            searchPl.setColor(Color.RED);
+//
+//            float pointf [] = {p1.x, p1.y, p2.x, p2.y};
+//            canvas.drawLines(pointf,searchPl);
+            Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
+            Paint searchPl = new Paint();
+            canvas.drawBitmap(mbitmap, p1.x, p1.y, searchPl);
+        }
+
+        if(DIRECTIONS){
+            Point p1 = ConvWGSToScrPoint(searchPlace_lon, searchPlace_lat);
             Point p2 = ConvWGSToScrPoint(location_lon, location_lat);
             Paint searchPl = new Paint();
             searchPl.setColor(Color.RED);
-
             float pointf [] = {p1.x, p1.y, p2.x, p2.y};
             canvas.drawLines(pointf,searchPl);
         }
@@ -540,16 +553,8 @@ public class SeaMap  extends View {
             mScale *= sgd.getScaleFactor();
             mScale = Math.max(2f, Math.min(mScale, 20));
             invalidate();
-            //getDataUseThread();
             return true;
         }
-
-//        @Override
-//        public boolean onScaleBegin(ScaleGestureDetector detector) {
-//            detector.
-//
-//            return true;
-//        }
     }
 
     private View.OnLongClickListener infoAcoordinate = new View.OnLongClickListener() {
@@ -561,7 +566,7 @@ public class SeaMap  extends View {
         }
     };
 
-    public void setLonLat(float latLoc, float lonLoc){
+    public void setLonLatMyLocation(float latLoc, float lonLoc){
         mlat = location_lat = latLoc;
         mlon = location_lon = lonLoc;
         mScale = 10;
@@ -573,13 +578,19 @@ public class SeaMap  extends View {
         return ListPlace;
     }
 
-    public void setPlaceSearch(Text placeSearch){
-        searchPlace_lon = (placeSearch.getCoordinate()[0] + placeSearch.getCoordinate()[2]) / 2;
-        searchPlace_lat = (placeSearch.getCoordinate()[1] + placeSearch.getCoordinate()[3]) / 2;
-        int temp1 = (int) (searchPlace_lat - mlat);
-        int temp2 = (int) (searchPlace_lon - mlon);
-        if(temp1 >= temp2) mScale = abs(temp1 / temp2);
-        else mScale = abs(temp2);
+    public void myLocationToDirection(){
+        DIRECTIONS = true;
+        int temp1 = (int) abs(location_lat - searchPlace_lat);
+        int temp2 = (int) abs(location_lon - searchPlace_lon);
+        if(temp1 >= temp2) mScale = temp1 / temp2;
+        else mScale = temp2 / temp1;
+        invalidate();
+    }
+
+    public void setLonLatSearchPlace(float latLoc, float lonLoc){
+        mlat = searchPlace_lat = latLoc;
+        mlon = searchPlace_lon = lonLoc;
+        mScale = 10;
         SEARCHPLACE = true;
         invalidate();
     }

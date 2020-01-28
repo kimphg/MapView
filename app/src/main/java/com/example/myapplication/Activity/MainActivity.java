@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 longitude =  Float.parseFloat(lonlat[0]);
                 latitude = Float.parseFloat(lonlat[1]);
                 //map.setLonLat(18,109f);
-                map.setLonLat(latitude,longitude);
+                map.setLonLatMyLocation(latitude,longitude);
             }
         };
         IntentFilter filter =new IntentFilter("update_service");
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 switch (REQUEST_SEARCH){
                     case 1:
                         //float
-                        map.setPlaceSearch(textSearch);
+                        map.myLocationToDirection();
                         break;
                     case 0:
                         Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
@@ -381,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 float mlon = (textSearch.getCoordinate()[0] + textSearch.getCoordinate()[2]) / 2;
                 float mlat = (textSearch.getCoordinate()[1] + textSearch.getCoordinate()[3]) / 2;
                 REQUEST_SEARCH = 1;
-                map.setLonLat(mlat, mlon);
+                map.setLonLatSearchPlace(mlat, mlon);
             } else {
                 // DetailActivity không thành công, không có data trả về.
             }
