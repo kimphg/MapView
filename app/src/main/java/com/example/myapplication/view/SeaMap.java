@@ -39,7 +39,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -51,6 +53,9 @@ import static java.lang.Math.sqrt;
 
 public class SeaMap  extends View {
 
+    private static boolean SEARCHPLACE = false;
+    private static boolean MYLOCATION = false;
+
     private float mlat = 18.32f;//lattitude of the center of the screen
     private float mlon = 105.43f;//longtitude of the center of the screen
     private float mScale = 2f;// 1km = mScale*pixcels
@@ -61,8 +66,9 @@ public class SeaMap  extends View {
     PointF dragStart,dragStop;
     int dx1, dy1 , dx2, dy2;
     int levelPreference =0;
-    boolean location = false;
+
     float location_lon, location_lat;
+    private float searchPlace_lon, searchPlace_lat;
 
     private int AreaX[];
     private int AreaY[];
@@ -72,7 +78,7 @@ public class SeaMap  extends View {
     HashMap<String,Vector<Polyline>> PLines = new HashMap<String, Vector<Polyline>>();
     HashMap<String,Vector<Text>> tTexts = new HashMap <String, Vector<Text>>();
     HashMap<String,Vector<Region>> Poligons = new HashMap<String, Vector<Region>>();
-    Set<Text> listPlace = new TreeSet<Text>(new Text.PlaceComparator());
+    List<Text> ListPlace = new ArrayList<>();
 //    TreeMap<String, >
 
 
@@ -130,20 +136,30 @@ public class SeaMap  extends View {
 //            mScaleN = mScale;
 //        }
         int dem = 0;
-        int demduong = 0;
-        for(Map.Entry m : PLines.entrySet()){
-           Vector<Polyline> pl =(Vector<Polyline>) m.getValue();
-           dem += pl.size();
-           //if(pl.size() != 0) demduong++;
-           for(int i =0 ;i< pl.size(); i++){if(pl.get(i) == null) demduong++;}
-        }
-        int j = demduong;
+//        int demduong = 0;
+//        for(Map.Entry m : PLines.entrySet()){
+//           Vector<Polyline> pl =(Vector<Polyline>) m.getValue();
+//           dem += pl.size();
+//           //if(pl.size() != 0) demduong++;
+//           for(int i =0 ;i< pl.size(); i++){if(pl.get(i) == null) demduong++;}
+//        }
+//        int j = listPlace.size();
 
-        if (location) {
+        if (MYLOCATION) {
             Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
             Point p1 = ConvWGSToScrPoint(location_lon, location_lat);
             Paint locationPaint = new Paint();
             canvas.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
+        }
+
+        if(SEARCHPLACE){
+            Point p1 = ConvWGSToScrPoint(searchPlace_lon, searchPlace_lat);
+            Point p2 = ConvWGSToScrPoint(location_lon, location_lat);
+            Paint searchPl = new Paint();
+            searchPl.setColor(Color.RED);
+
+            float pointf [] = {p1.x, p1.y, p2.x, p2.y};
+            canvas.drawLines(pointf,searchPl);
         }
 /*
         Thread thread1 = new Thread(new Runnable() {
@@ -349,7 +365,11 @@ public class SeaMap  extends View {
                             e.printStackTrace();
                         } catch (IOException e) {
                         }
-                        t.add(obj);
+
+                        if(obj != null) {
+                            t.add(obj);
+                            if (obj.getType() != 1) ListPlace.add(obj);
+                        }
                         //System.out.println(s);
                     }
                     tTexts.put(area, t);
@@ -371,7 +391,8 @@ public class SeaMap  extends View {
                             e.printStackTrace();
                         } catch (IOException e) {
                         }
-                        l.add(obj);
+                        if(obj != null)
+                            l.add(obj);
                         //areaLine[i].add(obj);
                         // System.out.println(s);
                     }
@@ -395,7 +416,8 @@ public class SeaMap  extends View {
                             e.printStackTrace();
                         } catch (IOException e) {
                         }
-                        pl.add(obj);
+                        if(obj != null)
+                            pl.add(obj);
                         //areaPline[i].add(obj);
                         // System.out.println(s);
                     }
@@ -419,7 +441,8 @@ public class SeaMap  extends View {
                             e.printStackTrace();
                         } catch (IOException e) {
                         }
-                        r.add(obj);
+                        if(obj != null)
+                            r.add(obj);
 //                        areaRegion[i].add(obj);
                         // System.out.println(s);
                     }
@@ -542,8 +565,22 @@ public class SeaMap  extends View {
         mlat = location_lat = latLoc;
         mlon = location_lon = lonLoc;
         mScale = 10;
-        location =true;
+        MYLOCATION =true;
         invalidate();
     }
 
+    public List<Text> getListPlace() {
+        return ListPlace;
+    }
+
+    public void setPlaceSearch(Text placeSearch){
+        searchPlace_lon = (placeSearch.getCoordinate()[0] + placeSearch.getCoordinate()[2]) / 2;
+        searchPlace_lat = (placeSearch.getCoordinate()[1] + placeSearch.getCoordinate()[3]) / 2;
+        int temp1 = (int) (searchPlace_lat - mlat);
+        int temp2 = (int) (searchPlace_lon - mlon);
+        if(temp1 >= temp2) mScale = abs(temp1 / temp2);
+        else mScale = abs(temp2);
+        SEARCHPLACE = true;
+        invalidate();
+    }
 }

@@ -9,6 +9,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +19,7 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -48,13 +51,18 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
-
+    //dung dinh danh moi request
+    private static final int REQUEST_INPUT = 1001;
+    private int REQUEST_SEARCH = 0;
+    private Text textSearch;
     DrawerLayout mDrawerLayout;
     NavigationView navigationView;
-    private ImageButton imageButtonGPS, imageButtonOther, imageButtonUp, imageButtonCancelRoute;
+    private ImageButton imageButtonGPS, imageButtonOther, imageButtonUp, imageBtnSearch, imageButtonDirection;
     private BroadcastReceiver broadcast;
     private GoogleApiClient googleApiClient;
     private float longitude =0, latitude =0;
@@ -74,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     List<String> namePlaces;
     //listview search trong phan info_route;
     ListView listPlaceSeacrh, routesListView;
-    List<Text> list;
+    List<Text> searchListPlace;
 
     float dYs,dYe;
     boolean start = false;
@@ -95,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         };
         IntentFilter filter =new IntentFilter("update_service");
         registerReceiver(broadcast,filter);
+
 
     }
     @SuppressLint("ClickableViewAccessibility")
@@ -132,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 //                arrayAdapter.notifyDataSetChanged();
 //            }
 //        });
-        //2.route
+        imageBtnSearch = findViewById(R.id.ic_btn_search);
         routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -166,6 +175,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
         ///-----------------------------------//
 
+        imageBtnSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
+                searchListPlace = map.getListPlace();
+                searchIntent.putParcelableArrayListExtra("List Place", (ArrayList<? extends Parcelable>) searchListPlace);
+                startActivityForResult(searchIntent, REQUEST_INPUT);
+            }
+        });
+        ///-----------------------------------//
 
         if(googleApiClient == null) {
             turnOnGPS();
@@ -186,6 +205,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
 
         navigationDrawer();
+
+        imageButtonDirection = findViewById(R.id.ic_btn_directions);
+        imageButtonDirection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (REQUEST_SEARCH){
+                    case 1:
+                        //float
+                        map.setPlaceSearch(textSearch);
+                        break;
+                    case 0:
+                        Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
+                        searchListPlace = map.getListPlace();
+                        searchIntent.putParcelableArrayListExtra("List Place", (ArrayList<? extends Parcelable>) searchListPlace);
+                        startActivityForResult(searchIntent, REQUEST_INPUT);
+                        break;
+                }
+            }
+        });
     }
     //---------------------------------------//
 
@@ -325,6 +363,29 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         }
 
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Kiểm tra requestCode có trùng với REQUEST_CODE vừa dùng
+        if(requestCode == REQUEST_INPUT) {
+
+            // resultCode được set bởi DetailActivity
+            // RESULT_OK chỉ ra rằng kết quả này đã thành công
+            if(resultCode == Activity.RESULT_OK) {
+                // Nhận dữ liệu từ Intent trả về
+                textSearch = (Text) data.getSerializableExtra(SearchActivity.EXTRA_DATA);
+                // Sử dụng kết quả result
+                float mlon = (textSearch.getCoordinate()[0] + textSearch.getCoordinate()[2]) / 2;
+                float mlat = (textSearch.getCoordinate()[1] + textSearch.getCoordinate()[3]) / 2;
+                REQUEST_SEARCH = 1;
+                map.setLonLat(mlat, mlon);
+            } else {
+                // DetailActivity không thành công, không có data trả về.
+            }
+        }
     }
 
     @Override

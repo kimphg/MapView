@@ -29,7 +29,7 @@ public class Places extends BaseAdapter{
         this.context = context;
         //mData = getNameFromText(list);
         //places = list;
-        mData =list;
+        mData = list;
         inflter = LayoutInflater.from(context);
         temp = new ArrayList<Text>();
         temp.addAll(mData);

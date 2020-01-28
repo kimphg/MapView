@@ -1,10 +1,13 @@
 package com.example.myapplication.object;
 
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.io.Serializable;
 import java.util.Comparator;
 
-public class Text implements Serializable {
+public class Text implements Serializable, Parcelable {
 
     /**
      *
@@ -40,6 +43,28 @@ public class Text implements Serializable {
         type = 0;
     }
 
+    protected Text(Parcel in) {
+        name = in.readString();
+        coordinate = in.createFloatArray();
+        font = in.readString();
+        pen = in.createIntArray();
+        angle = in.readFloat();
+        location = in.readString();
+        type = in.readInt();
+    }
+
+    public static final Creator<Text> CREATOR = new Creator<Text>() {
+        @Override
+        public Text createFromParcel(Parcel in) {
+            return new Text(in);
+        }
+
+        @Override
+        public Text[] newArray(int size) {
+            return new Text[size];
+        }
+    };
+
     @Override
     public int hashCode(){
         return this.hashCode();
@@ -49,6 +74,22 @@ public class Text implements Serializable {
     public boolean equals(Object obj) {
         Text t = (Text) obj;
         return this.name.equals(t);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeFloatArray(coordinate);
+        dest.writeString(font);
+        dest.writeIntArray(pen);
+        dest.writeFloat(angle);
+        dest.writeString(location);
+        dest.writeInt(type);
     }
 
     public static class PlaceComparator implements Comparator<Text>{
