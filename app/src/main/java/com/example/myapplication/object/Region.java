@@ -22,12 +22,14 @@ public class Region implements Serializable {
     private float coordinate[];
     private float  location[];
     private int brush[],pen[];
+    private int type;
 
     public Region(int number) {
         pen = new int[3];
         brush = new int[3];
         location = new float[2];
         coordinate = new float[number];
+        type = 0;
     }
 
     public float[] getCoordinate() {
@@ -61,4 +63,8 @@ public class Region implements Serializable {
     public void setPen(int[] pen) {
         this.pen = pen;
     }
+
+    public int getType() { return type; }
+
+    public void setType(int type) { this.type = type; }
 }

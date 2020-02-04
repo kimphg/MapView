@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.myapplication.R;
 import com.example.myapplication.classes.Places;
 import com.example.myapplication.object.Text;
+import com.example.myapplication.view.SeaMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -10,11 +10,15 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Typeface;
+import android.text.StaticLayout;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.inspector.StaticInspectionCompanionProvider;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -56,6 +60,7 @@ public class SeaMap  extends View {
     private static boolean SEARCHPLACE = false;
     private static boolean MYLOCATION = false;
     private static boolean DIRECTIONS = false;
+    private static boolean BACKSEARCH = false;
 
     private float mlat = 18.32f;//lattitude of the center of the screen
     private float mlon = 105.43f;//longtitude of the center of the screen
@@ -68,7 +73,7 @@ public class SeaMap  extends View {
     int dx1, dy1 , dx2, dy2;
     int levelPreference =0;
 
-    float location_lon = 18.32f, location_lat = 105.43f;
+    float location_lon = 105.43f, location_lat = 18.32f;
     float searchPlace_lon, searchPlace_lat;
 
     private int AreaX[];
@@ -85,6 +90,7 @@ public class SeaMap  extends View {
 
     Paint depthLinePaint = new Paint(), paintCenter = new Paint(), textPaint = new Paint(), paintRegion = new Paint();
     Path mPath= new Path();
+    Paint cusPaint = new Paint();
 
     public SeaMap(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -104,6 +110,7 @@ public class SeaMap  extends View {
 
         scrCtY = getHeight() / 2;
         scrCtX = getWidth() / 2;
+
 
         PointF pointLU = ConvScrPointToWGS(0,0);
         PointF pointT1 = ConvScrPointToWGS(scrCtX * 2,0);
@@ -145,6 +152,16 @@ public class SeaMap  extends View {
 //           for(int i =0 ;i< pl.size(); i++){if(pl.get(i) == null) demduong++;}
 //        }
 //        int j = listPlace.size();
+
+//        paintRegion.setAntiAlias(true);
+//        paintRegion.setColor(Color.BLACK);
+//        paintRegion.setStyle(Paint.Style.FILL_AND_STROKE);
+//        paintRegion.setStrokeWidth(4);
+
+        cusPaint.setAntiAlias(true);
+        cusPaint.setStyle(Paint.Style.FILL);
+        cusPaint.setColor(Color.rgb(255, 239, 213));
+        //cusPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.ADD));
 
         if (MYLOCATION) {
             Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
@@ -218,6 +235,32 @@ public class SeaMap  extends View {
         for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x  ; lon++){
             for(int lat = (int) pointT3.y  ; lat <= (int) pointT1.y  ; lat++ ){
                 String area = lon + "-" + lat;
+
+                //              draw polygons
+                Vector<Region> rE = Poligons.get(area);
+                if(rE == null) continue;
+                for(int k =0;  k< rE.size() ; k++) {
+                    Region polygon = rE.get(k);
+                    if(polygon == null) continue;
+                    Path pathRegion = new Path();
+                    for (int i = 0; i < polygon.getCoordinate().length; i = i + 2) {
+                        if (i == 0) {
+                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
+                            pathRegion.moveTo(point1.x, point1.y);
+                        } else {
+                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
+                            pathRegion.lineTo(point1.x, point1.y);
+                        }
+                    }
+//                    int color = polygon.getPen()[2];
+//                    int red = (int) color / 65536;
+//                    int green = (int) (color - red * 65536) / 256;
+//                    int blue = (int) (color - red * 65536 - green * 256);
+
+                    //canvas.drawPath(pathRegion, paintRegion);
+                    canvas.drawPath(pathRegion, cusPaint);
+                }
+                //draw polyline
                 Vector<Polyline> PL = PLines.get(area);
                 if(PL == null) continue;
                 for(int k=0; k < PL.size(); k++){
@@ -295,39 +338,15 @@ public class SeaMap  extends View {
                         canvas.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
                     }
                 }
-//              draw polygons
-//                Vector<Region> rE = Poligons.get(area);
-//                if(rE == null) continue;
-//                for(int k =0;  k< rE.size() ; k++) {
-//                    Region polygon = rE.get(k);
-//                    if(polygon == null) continue;
-//                    Path pathRegion = new Path();
-//                    for (int i = 0; i < polygon.getCoordinate().length; i = i + 2) {
-//                        if (i == 0) {
-//                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
-//                            pathRegion.moveTo(point1.x, point1.y);
-//                        } else {
-//                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
-//                            pathRegion.lineTo(point1.x, point1.y);
-//                        }
-//                    }
-//                    paintRegion.setStyle(Paint.Style.STROKE);
-//                    int color = polygon.getPen()[2];
-//                    int red = (int) color / 65536;
-//                    int green = (int) (color - red * 65536) / 256;
-//                    int blue = (int) (color - red * 65536 - green * 256);
-//                    paintRegion.setColor(Color.rgb(red, green, blue));
-//                    paintRegion.setStrokeWidth(polygon.getPen()[0]);
-//                    //paintRegion.setDither(true);
-//                    paintRegion.setAntiAlias(true);
-//
-//                    canvas.drawPath(pathRegion, paintRegion);
-//                }
+
             }
         }
+
+
         //draw pline
 
         int m = dem;
+        canvas.save();
     }
 
     public void initArea(){
@@ -594,4 +613,6 @@ public class SeaMap  extends View {
         SEARCHPLACE = true;
         invalidate();
     }
+
+
 }
