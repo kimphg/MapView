@@ -161,7 +161,8 @@ public class SeaMap  extends View {
         cusPaint.setAntiAlias(true);
         cusPaint.setStyle(Paint.Style.FILL);
         cusPaint.setColor(Color.rgb(255, 239, 213));
-        //cusPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.ADD));
+
+        //cusPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
 
         if (MYLOCATION) {
             Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
@@ -231,11 +232,10 @@ public class SeaMap  extends View {
         });
         thread1.start();
 */
-        //draw polylyline
+
         for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x  ; lon++){
             for(int lat = (int) pointT3.y  ; lat <= (int) pointT1.y  ; lat++ ){
                 String area = lon + "-" + lat;
-
                 //              draw polygons
                 Vector<Region> rE = Poligons.get(area);
                 if(rE == null) continue;
@@ -259,6 +259,7 @@ public class SeaMap  extends View {
 
                     //canvas.drawPath(pathRegion, paintRegion);
                     canvas.drawPath(pathRegion, cusPaint);
+
                 }
                 //draw polyline
                 Vector<Polyline> PL = PLines.get(area);
