@@ -21,10 +21,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/button_up"
         android:layout_marginTop="5dp"
-        android:text="LO TRINH"
+        android:text="LỘ TRÌNH"
         android:textAlignment="center"
         android:layout_gravity="center|top"
-        android:background="#570097A7"
+        android:background="#003F51B5"
         />
     <com.example.myapplication.view.DynamicListView
         android:id="@+id/route_listview"
@@ -36,12 +36,22 @@
     </com.example.myapplication.view.DynamicListView>
 
     <TextView
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/_distance"
         android:layout_below="@+id/route_listview"
-        android:text="Tong khoang cach: "
+        android:text="Tổng khoảng cách: "
+        android:background="#570097A7"
+        />
+
+    <TextView
+        android:layout_marginTop="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/_timeRun"
+        android:layout_below="@+id/_distance"
+        android:text="Thơi gian ước tính: "
         android:background="#570097A7"
         />
 
@@ -49,8 +59,8 @@
         android:id="@+id/search"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/_distance"
-        android:layout_marginTop="5dp"
+        android:layout_below="@+id/_timeRun"
+        android:layout_marginTop="10dp"
         android:background="@color/cardview_shadow_end_color"
         >
         <SearchView
@@ -64,7 +74,7 @@
             android:layout_marginLeft="90dp"
             android:layout_marginRight="5dp"
             android:background="@drawable/background"
-            android:queryHint="Nhap dia diem"
+            android:queryHint="Nhập . . ."
             >
         </SearchView>
 
@@ -73,7 +83,7 @@
             android:layout_gravity="center|left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Them lo trinh"
+            android:text="Thêm địa điểm"
             android:layout_marginLeft="5dp"
             android:layout_below="@+id/search_place"
             android:layout_alignParentTop="true"

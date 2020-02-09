@@ -18,6 +18,7 @@
             class="com.example.myapplication.view.SeaMap"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -44,18 +45,19 @@
             <include layout="@layout/info_route"
                 android:id="@+id/route_layout"
                 android:layout_marginTop="10dp"
-                android:layout_height="250dp"
+                android:layout_height="150dp"
                 android:layout_width="match_parent"
                 android:layout_below="@+id/ic_btn_directions" />
         </RelativeLayout>
 
-<!--        <ImageView-->
-<!--            android:id="@+id/addplace"-->
-<!--            android:layout_width="50dp"-->
-<!--            android:layout_height="50dp"-->
-<!--            android:background="@drawable/icon_add"-->
-<!--            android:layout_gravity="center"-->
-<!--            />-->
+
+        <ImageButton
+            android:id="@+id/icon_addDirect"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/ic_golf_course_black_24dp"
+            android:layout_gravity="center"
+            />
 
         <!--trai-->
 
@@ -69,6 +71,7 @@
             />
 
         <GridLayout
+            android:id="@+id/gridLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
