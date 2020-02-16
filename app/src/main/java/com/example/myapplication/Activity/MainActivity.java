@@ -274,6 +274,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         imgButtonAddDirections.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 switch (CHOOSE_DISTANE_OR_ROUTE) {
                     case DISTANCE: {
 
