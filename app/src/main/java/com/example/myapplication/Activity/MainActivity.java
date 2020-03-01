@@ -3,11 +3,15 @@ package com.example.myapplication.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityOptions;
@@ -26,6 +30,8 @@ import android.os.Parcelable;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -59,6 +65,8 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.Serializable;
@@ -74,13 +82,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public static DistancePTPView distancePTPView;
     //public BuoyView buoyView;
     public DensityView densityView;
-    SeaMap map;
+    public SeaMap map;
     ReadFile read;
 
     private Text textSearch;
     DrawerLayout mDrawerLayout;
     NavigationView navigationView;
-    private ImageButton imageButtonGPS, imageButtonOther, imageButtonUp, imageBtnSearch, imageButtonDirection, imgButtonAddDirections, imageBtnLayer;
+    private ImageButton imageButtonGPS, imageButtonOther, imageBtnSearch, imageButtonDirection, imgButtonAddDirections, imageBtnLayer;
     private BroadcastReceiver broadcast;
     private GoogleApiClient googleApiClient;
     private float longitude =0, latitude =0;
@@ -95,8 +103,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private int onViewMain = 0;
     private int REQUEST_SEARCH = 0;
 
-    RelativeLayout routeLayout;
     FrameLayout frameLayout;
+    CoordinatorLayout coordinatorLayout;
     //khai bao cho route
     private StableArrayAdapter arrayAdapter;
     private List<Text> route;
@@ -105,8 +113,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     ListView listPlaceSeacrh, routesListView;
     private Places adapter;
 
-    float dYs,dYe;
-    boolean start = false;
+    private BottomSheetBehavior bottomsheet_inforoute;
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -118,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 lonlat = text.split(" ");
                 longitude =  Float.parseFloat(lonlat[0]);
                 latitude = Float.parseFloat(lonlat[1]);
-
                 map.setLonLatMyLocation(latitude,longitude);
             }
         };
@@ -133,74 +140,30 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imageButtonGPS = findViewById(R.id.ic_btn_location);
-        //map = findViewById(R.id.map);
-        routesListView = findViewById(R.id.route_listview);
         frameLayout = findViewById(R.id.content_frame);
-
-        //----------------info_layout--------//
-        listPlaceSeacrh = findViewById(R.id.listplace);
-        routeLayout = findViewById(R.id.route_layout);
-        routeLayout.setVisibility(View.INVISIBLE);
-
         read = new ReadFile(this);
-
-        imageBtnSearch = findViewById(R.id.ic_btn_search);
-        routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                route.remove(i);
-                namePlaces.remove(i);
-                arrayAdapter.notifyDataSetChanged();
-            }
-        });
         // su kien bat dau lo trinh
         _distance = findViewById(R.id._distance);
-
-        onDistancePTPView();
 
         //setting map;
         map = new SeaMap(this);
         frameLayout.addView(map, 0 );
                 ///
-        //.....................................
-        imageButtonUp = findViewById(R.id.button_up);
-        /// su kien di chuyen layout lo trinh //
-        imageButtonUp.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
-                    dYs = motionEvent.getY();
-                }
-                else if(motionEvent.getAction() == MotionEvent.ACTION_MOVE){
-                    dYe = motionEvent.getY();
-                    routeLayout.getLayoutParams().height += (int) dYs - (int)dYe;
-                    int maxheight = routeLayout.getLayoutParams().height;
-                        if(maxheight >=100 && maxheight <= 1300)
-                            routeLayout.requestLayout();
-
-                }
-                return true;
-            }
-        });
-        ///-----------------------------------//
-
-        imageBtnSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                v.setAlpha(0.5f);
-                Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
-                startActivityForResult(searchIntent, REQUEST_INPUT);
-            }
-        });
-        ///-----------------------------------//
-
         if(googleApiClient == null) {
             turnOnGPS();
         }
 
+        onDistancePTPView();
         Run_check_permission();
+        navigationDrawer();
+        onRoute();
+        onDensityView();
+        onScreecBtn_Direction_GPS_Search();
+    }
 
+    //Todo: init and add onclick for button on screen
+    private void onScreecBtn_Direction_GPS_Search(){
+        imageButtonGPS = findViewById(R.id.ic_btn_location);
         imageButtonGPS.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -212,8 +175,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
         });
-
-        navigationDrawer();
 
         imageButtonDirection = findViewById(R.id.ic_btn_directions);
         imageButtonDirection.setOnClickListener(new View.OnClickListener() {
@@ -232,23 +193,36 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
-        onRoute();
+        imageBtnSearch = findViewById(R.id.ic_btn_search);
+        imageBtnSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
+                startActivityForResult(searchIntent, REQUEST_INPUT);
+//                searchSet.start();
 
-//        onBuoy();
-        onDensityView();
+            }
+        });
+        ///-----------------------------------//
+
+
     }
-
     //---------------------------------------//
 
     private void onRoute(){
-        List list = ReadFile.ListPlace;
+        View view = getLayoutInflater().inflate(R.layout.info_route, null);
 
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        dialog.setContentView(view);
+
+        routesListView = findViewById(R.id.route_listview);
+        listPlaceSeacrh = findViewById(R.id.listplace);
+        searchView = findViewById(R.id.searchview_place);
+
+        List list = ReadFile.ListPlace;
         //.............tao adpter.....
         places = new Places(this,list);
         listPlaceSeacrh.setAdapter(places);
-
-        searchView = findViewById(R.id.searchview_place);
-
         searchView.setOnQueryTextListener(this);
         //##### su kien an vao item cua listview: 1.route  2.search //
         adapterListPlace();
@@ -259,6 +233,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Text place = places.getItem(i);
                 route.add(place);
                 namePlaces.add(place.getName());
+                arrayAdapter.notifyDataSetChanged();
+            }
+        });
+
+        routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                route.remove(i);
+                namePlaces.remove(i);
                 arrayAdapter.notifyDataSetChanged();
             }
         });
@@ -274,14 +257,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         imgButtonAddDirections.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 switch (CHOOSE_DISTANE_OR_ROUTE) {
                     case DISTANCE: {
 
                         break;
                     }
                     case ROUTE: {
-                        PointF p = SeaMap.ConvScrPointToWGS(SeaMap.scrCtX, SeaMap.scrCtY);
+                        PointF p = SeaMap.ConvScrPointToWGS(SeaMap.scrCtXView, SeaMap.scrCtYView);
                         ArrayList<PointF> arr = distancePTPView.getListCoor();
                         arr.add(p);
                         distancePTPView.setListCoor(arr);
@@ -294,10 +276,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         imgButtonAddDirections.setVisibility(View.INVISIBLE);
     }
 
-//    public void onBuoy(){
-//        buoyView = new BuoyView(this);
-//        frameLayout.addView(buoyView);
-//    }
 
     public void onDensityView(){
         densityView = new DensityView(getApplicationContext());
@@ -344,7 +322,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         onViewMain = 1;
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         imgButtonAddDirections.setVisibility(View.VISIBLE);
-                        routeLayout.setVisibility(View.VISIBLE);
                         break;
                     }
                     case R.id.nav_tinhkhoangcach: {
@@ -352,7 +329,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         onViewMain = 1;
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         imgButtonAddDirections.setVisibility(View.VISIBLE);
-                        routeLayout.setVisibility(View.INVISIBLE);
                         break;
                     }
                     default:{
@@ -372,7 +348,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onClick(View view) {
                 switch (onViewMain) {
                     case 0: {
-                        view.setAlpha(0.5f);
                         mDrawerLayout.openDrawer(GravityCompat.START);
                         break;
                     }
@@ -380,8 +355,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         CHOOSE_DISTANE_OR_ROUTE = 0;
                         onViewMain = 0;
                         imageButtonOther.setBackgroundResource(R.drawable.icon_cancel);
-                        routeLayout.setVisibility(View.INVISIBLE);
                         imgButtonAddDirections.setVisibility(View.INVISIBLE);
+                        navigationView.getCheckedItem().setChecked(false);
                         break;
                     }
                 }
@@ -404,6 +379,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         return false;
     }
+
+    //Todo: turn onGPS location
 
     public void turnOnGPS(){
         googleApiClient = new GoogleApiClient.Builder(this)

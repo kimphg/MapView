@@ -1,6 +1,8 @@
 package com.example.myapplication.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -10,17 +12,22 @@ import android.graphics.PointF;
 import android.os.Build;
 import android.view.View;
 
+
 import androidx.annotation.RequiresApi;
 
+import com.example.myapplication.R;
 import com.example.myapplication.classes.ReadFile;
 import com.example.myapplication.object.Density;
 import com.example.myapplication.object.Region;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.internal.IGoogleMapDelegate;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polygon;
 
 import java.util.Vector;
 
 public class DensityView extends PolygonsView {
-
-    private int scrCtY,scrCtX;
 
     public DensityView(Context context) {
         super(context);
@@ -31,15 +38,11 @@ public class DensityView extends PolygonsView {
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        scrCtY = getHeight() / 2;
-        scrCtX = getWidth() / 2;
-
         PointF pointT1 = ConvScrPointToWGS(scrCtX * 2,0);
         PointF pointT3 = ConvScrPointToWGS(0, scrCtY * 2);
 
         Paint pointDensity = new Paint();
         pointDensity.setColor(Color.RED);
-
         for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
             for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
                 String area = lon + "-" + lat;

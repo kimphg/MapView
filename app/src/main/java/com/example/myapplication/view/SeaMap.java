@@ -39,13 +39,10 @@ import static java.lang.Math.sqrt;
 public class SeaMap  extends PolygonsView {
 
     private static boolean SEARCHPLACE = false;
-    private static boolean MYLOCATION = false;
     private static boolean DIRECTIONS = false;
     private static boolean BACKSEARCH = false;
 
-    public static int scrCtY,scrCtX;
-
-    float location_lon = 105.43f, location_lat = 18.32f;
+    public static int scrCtYView , scrCtXView;
     float searchPlace_lon, searchPlace_lat;
 
     List<Text> ListPlace = new ArrayList<>();
@@ -56,18 +53,14 @@ public class SeaMap  extends PolygonsView {
 
     public SeaMap(Context context) {
         super(context);
+        scrCtXView = scrCtX;
+        scrCtYView = scrCtY;
     }
-
-
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onDraw(Canvas canvas){
         super.onDraw(canvas);
-
-        scrCtY = getHeight() / 2;
-        scrCtX = getWidth() / 2;
-
 
         PointF pointT1 = ConvScrPointToWGS(scrCtX * 2,0);
         PointF pointT3 = ConvScrPointToWGS(0, scrCtY * 2);
@@ -77,21 +70,8 @@ public class SeaMap  extends PolygonsView {
         cusPaint.setColor(Color.rgb(255, 239, 213));
         cusPaint.setStyle(Paint.Style.FILL);
 
-        if (MYLOCATION) {
-            Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
-            Point p1 = ConvWGSToScrPoint(location_lon, location_lat);
-            Paint locationPaint = new Paint();
-            canvas.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
-        }
-
         if(SEARCHPLACE){
             Point p1 = ConvWGSToScrPoint(searchPlace_lon, searchPlace_lat);
-//            Point p2 = ConvWGSToScrPoint(location_lon, location_lat);
-//            Paint searchPl = new Paint();
-//            searchPl.setColor(Color.RED);
-//
-//            float pointf [] = {p1.x, p1.y, p2.x, p2.y};
-//            canvas.drawLines(pointf,searchPl);
             Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
             Paint searchPl = new Paint();
             canvas.drawBitmap(mbitmap, p1.x, p1.y, searchPl);
@@ -151,14 +131,6 @@ public class SeaMap  extends PolygonsView {
         return (int) Math.sqrt(Math.pow((p1.x -p2.x),2) + Math.pow((p1.y - p2.y),2));
     }
 
-    public void setLonLatMyLocation(float latLoc, float lonLoc){
-        mlat = location_lat = latLoc;
-        mlon = location_lon = lonLoc;
-        mScale = 10;
-        MYLOCATION =true;
-        invalidate();
-    }
-
     public List<Text> getListPlace() {
         return ListPlace;
     }
@@ -179,6 +151,4 @@ public class SeaMap  extends PolygonsView {
         SEARCHPLACE = true;
         invalidate();
     }
-
-
 }

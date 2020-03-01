@@ -1,6 +1,8 @@
 package com.example.myapplication.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -15,6 +17,7 @@ import android.view.View;
 import androidx.annotation.RequiresApi;
 
 import com.example.myapplication.Activity.MainActivity;
+import com.example.myapplication.R;
 import com.example.myapplication.classes.ReadFile;
 import com.example.myapplication.object.Polyline;
 import com.example.myapplication.object.Region;
@@ -25,13 +28,15 @@ import static java.lang.Math.cos;
 
 public class PolygonsView extends View {
 
-    public static float mlat = 18.32f;//lattitude of the center of the screen
-    public static float mlon = 105.43f;//longtitude of the center of the screen
-    public static float mScale = 3f;// 1km = mScale*pixcels
+    protected static float mlat = 18.32f;//lattitude of the center of the screen
+    protected static float mlon = 105.43f;//longtitude of the center of the screen
+    protected static float mScale = 3f;// 1km = mScale*pixcels
 
-    private static int scrCtY,scrCtX;
+    protected static int scrCtY,scrCtX;
+    protected float location_lon = 105.43f, location_lat = 18.32f;
+    protected boolean MYLOCATION = false;
 
-    private Paint cusPaint = new Paint(), depthLinePaint = new Paint();
+    private Paint cusPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint();
     private ScaleGestureDetector scaleGestureDetector;
     PointF dragStart,dragStop;
 
@@ -54,15 +59,25 @@ public class PolygonsView extends View {
 
         cusPaint.setAntiAlias(true);
         cusPaint.setStyle(Paint.Style.FILL);
-        cusPaint.setColor(Color.rgb(255, 239, 213));
+        cusPaint.setColor(Color.rgb(249, 164, 23));
 
-        for(int lon = (int) pointT3.x - 2; lon<= (int) pointT1.x + 1; lon++) {
-            for (int lat = (int) pointT3.y - 2; lat <= (int) pointT1.y + 1; lat++) {
+        riverPaint.setAntiAlias(true);
+        riverPaint.setStyle(Paint.Style.FILL);
+        riverPaint.setColor(Color.rgb(102, 178, 255));
+
+        //DRAW POLYGON
+        for(int lon = (int) pointT3.x - 2; lon<= (int) pointT1.x + 2; lon++) {
+            for (int lat = (int) pointT3.y - 2; lat <= (int) pointT1.y + 2; lat++) {
                 String area = lon + "-" + lat;
-                Vector<Region> rE = ReadFile.Poligons.get(area);
-                if(rE == null) continue;
-                for(int k =0;  k< rE.size() ; k++){
-                    Region polygon = rE.get(k);
+                Vector<Region> regions;
+                if(mScale < 8) {
+                    regions = ReadFile.BaseRegions.get(area);
+                }
+                else
+                    regions = ReadFile.Poligons.get(area);
+                if(regions == null) continue;
+                for(int k =0;  k< regions.size() ; k++){
+                    Region polygon = regions.get(k);
                     if(polygon == null) continue;
                     Path pathRegion = new Path();
                     for (int i = 0; i < polygon.getCoordinate().length; i = i + 2) {
@@ -78,17 +93,43 @@ public class PolygonsView extends View {
                 }
             }
         }
-
-        for(int lon = (int) pointT3.x - 2; lon<= (int) pointT1.x + 1; lon++) {
-            for (int lat = (int) pointT3.y - 2; lat <= (int) pointT1.y + 1; lat++) {
+        //DRAW RIVER
+        for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
+            for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
                 String area = lon + "-" + lat;
-                //draw polyline
-                Vector<Polyline> PL = ReadFile.PLines.get(area);
-                if (PL == null) continue;
-                for (int k = 0; k < PL.size(); k++) {
-                    Polyline pl = PL.get(k);
-                    if (PL.get(k) != null) {
-                        if (mScale <= 5 && pl.getType() == 1) continue;
+                Vector<Region> river;
+                if(mScale < 8) {
+                    river = ReadFile.BasePlgRiver.get(area);
+                }
+                else river = ReadFile.PolygonRivers.get(area);
+                if(river == null) continue;
+                for(int k =0;  k< river.size() ; k++){
+                    Region polygon = river.get(k);
+                    if(polygon == null) continue;
+                    Path pathRegion = new Path();
+                    for (int i = 0; i < polygon.getCoordinate().length; i = i + 2) {
+                        if (i == 0) {
+                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
+                            pathRegion.moveTo(point1.x, point1.y);
+                        } else {
+                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
+                            pathRegion.lineTo(point1.x, point1.y);
+                        }
+                    }
+                    canvas.drawPath(pathRegion, riverPaint);
+                }
+            }
+        }
+
+        if(mScale > 6){
+            for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
+                for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
+                    String area = lon + "-" + lat;
+                    //draw polyline
+                    Vector<Polyline> PL = ReadFile.PLines.get(area);
+                    if (PL == null) continue;
+                    for (int k = 0; k < PL.size(); k++) {
+                        Polyline pl = PL.get(k);
                         int size = pl.getCoordinate().length;
                         float pointis[] = new float[size * 2];
                         for (int i = 0; i < size - 2; i += 2) {
@@ -104,12 +145,17 @@ public class PolygonsView extends View {
                         int green = (int) (color - red * 65536) / 256;
                         int blue = (int) (color - red * 65536 - green * 256);
                         depthLinePaint.setColor(Color.rgb(red, green, blue));
-                        depthLinePaint.setStrokeWidth(2);
                         canvas.drawLines(pointis, depthLinePaint);
-
                     }
                 }
             }
+        }
+
+        if (MYLOCATION) {
+            Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
+            Point p1 = ConvWGSToScrPoint(location_lon, location_lat);
+            Paint locationPaint = new Paint();
+            canvas.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
         }
     }
 
@@ -178,5 +224,13 @@ public class PolygonsView extends View {
         float refLat = (mlat +(olat))*0.00872664625997f;//3.14159265358979324/180.0/2;
         float olon = (x-scrCtX)/mScale/(111.31949079327357f*(float)cos(refLat))+ mlon;
         return new PointF(olon,olat);
+    }
+
+    public void setLonLatMyLocation(float latLoc, float lonLoc){
+        mlat = location_lat = latLoc;
+        mlon = location_lon = lonLoc;
+        mScale = 10;
+        MYLOCATION =true;
+        invalidate();
     }
 }

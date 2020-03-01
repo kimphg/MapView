@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="bottom"
     android:background="#12000000"
-    android:maxHeight="350dp"
-    android:minHeight="60dp"
+    app:behavior_hideable = "true"
+    app:behavior_peekHeight ="56dp"
+    app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
+    android:id="@+id/route_layout"
+    android:fitsSystemWindows="true"
     >
     <ImageButton
         android:id="@+id/button_up"
