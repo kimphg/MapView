@@ -2,12 +2,7 @@ package com.SeaMap.myapplication.classes;
 
 import android.content.Context;
 
-import com.SeaMap.myapplication.object.Buoy;
-import com.SeaMap.myapplication.object.Density;
-import com.SeaMap.myapplication.object.Line;
-import com.SeaMap.myapplication.object.Polyline;
-import com.SeaMap.myapplication.object.Region;
-import com.SeaMap.myapplication.object.Text;
+import com.SeaMap.myapplication.object.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,19 +31,16 @@ public class ReadFile {
     public static List<Text> ListPlace = new ArrayList<>();
 
     private Context mCtx;
-
-    private int AreaX[];
-    private int AreaY[];
-
     public ReadFile(Context context){
         super();
         mCtx = context;
         //readBoat();
         readDensity();
         readRiver();
+        readDataSeaMap();
         readBaseRegions();
         readBasePlgRivers();
-        readDataSeaMap();
+
     }
 
     private void readDataSeaMap(){
@@ -236,7 +228,7 @@ public class ReadFile {
         int sizeList = 0;
         String key = "";
         try {
-            InputStream is = mCtx.getAssets().open("riverBytes.bin");
+            InputStream is = mCtx.getAssets().open("data_river_lake.bin");
             ois = new ObjectInputStream(is);
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block

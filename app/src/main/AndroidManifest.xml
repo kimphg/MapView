@@ -19,15 +19,14 @@
             android:enabled="true"
             android:exported="true"></service>
 
-        <activity android:name="com.SeaMap.myapplication.Activity.MainActivity">
+        <activity android:name=".Activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.SeaMap.myapplication.Activity.SearchActivity"/>
+        <activity android:name=".Activity.SearchActivity"/>
     </application>
     <supports-screens
         android:largeScreens="true"

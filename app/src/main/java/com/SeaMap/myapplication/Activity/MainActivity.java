@@ -126,12 +126,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setContentView(R.layout.activity_main);
 
         frameLayout = findViewById(R.id.content_frame);
-        read = new ReadFile(this);
+        read = new ReadFile(getApplicationContext());
         // su kien bat dau lo trinh
         _distance = findViewById(R.id._distance);
 
         //setting map;
-        map = new SeaMap(this);
+        map = new SeaMap(getApplicationContext());
         frameLayout.addView(map, 0 );
                 ///
         if(googleApiClient == null) {

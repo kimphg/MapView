@@ -121,7 +121,7 @@ public class PolygonsView extends View {
             }
         }
 
-        if(mScale > 6){
+        if(mScale > 5 && mScale < 18){
             for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
                 for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
                     String area = lon + "-" + lat;
