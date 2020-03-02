@@ -1,4 +1,4 @@
-package com.Seamap.app.Activity;
+package com.SeaMap.myapplication.Activity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,15 +30,15 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
-import com.Seamap.app.R;
-import com.Seamap.app.classes.Places;
-import com.Seamap.app.classes.ReadFile;
-import com.Seamap.app.classes.StableArrayAdapter;
-import com.Seamap.app.object.Text;
-import com.Seamap.app.services.GPS_Services;
-import com.Seamap.app.view.DensityView;
-import com.Seamap.app.view.DistancePTPView;
-import com.Seamap.app.view.SeaMap;
+import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.classes.Places;
+import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.classes.StableArrayAdapter;
+import com.SeaMap.myapplication.object.Text;
+import com.SeaMap.myapplication.services.GPS_Services;
+import com.SeaMap.myapplication.view.DensityView;
+import com.SeaMap.myapplication.view.DistancePTPView;
+import com.SeaMap.myapplication.view.SeaMap;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;

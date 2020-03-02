@@ -1,7 +1,7 @@
-package com.Seamap.app.function;
+package com.SeaMap.myapplication.function;
 
 
-import com.Seamap.app.classes.Coordinate;
+import com.SeaMap.myapplication.classes.Coordinate;
 
 import java.util.List;
 

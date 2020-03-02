@@ -1,4 +1,4 @@
-package com.Seamap.app.classes;
+package com.SeaMap.myapplication.classes;
 
 import android.content.Context;
 import android.widget.ArrayAdapter;

@@ -1,4 +1,4 @@
-package com.Seamap.app.services;
+package com.SeaMap.myapplication.services;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -25,10 +25,10 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
-import com.Seamap.app.Activity.MainActivity;
-import com.Seamap.app.R;
-import com.Seamap.app.classes.Coordinate;
-import  com.Seamap.app.function.Distance;
+import com.SeaMap.myapplication.Activity.MainActivity;
+import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.classes.Coordinate;
+import  com.SeaMap.myapplication.function.Distance;
 public class GPS_Services extends Service {
     private LocationManager mLocationManager;
     public static  final int TIME_MIN = 1000 * 60 * 2;//2 minute will get location

@@ -1,9 +1,9 @@
-package com.Seamap.app;
+package com.SeaMap.myapplication;
 
 import android.app.Activity;
 import android.os.Bundle;
 
-import com.Seamap.app.view.MapView;
+import com.SeaMap.myapplication.view.MapView;
 
 public class testGPs extends Activity {
     protected void onCreate(Bundle saveInstanceState){

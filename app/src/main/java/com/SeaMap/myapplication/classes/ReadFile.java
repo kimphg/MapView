@@ -1,13 +1,13 @@
-package com.Seamap.app.classes;
+package com.SeaMap.myapplication.classes;
 
 import android.content.Context;
 
-import com.Seamap.app.object.Buoy;
-import com.Seamap.app.object.Density;
-import com.Seamap.app.object.Line;
-import com.Seamap.app.object.Polyline;
-import com.Seamap.app.object.Region;
-import com.Seamap.app.object.Text;
+import com.SeaMap.myapplication.object.Buoy;
+import com.SeaMap.myapplication.object.Density;
+import com.SeaMap.myapplication.object.Line;
+import com.SeaMap.myapplication.object.Polyline;
+import com.SeaMap.myapplication.object.Region;
+import com.SeaMap.myapplication.object.Text;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

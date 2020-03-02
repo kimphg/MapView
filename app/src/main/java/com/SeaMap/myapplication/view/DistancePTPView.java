@@ -1,4 +1,4 @@
-package com.Seamap.app.view;
+package com.SeaMap.myapplication.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,7 +10,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.view.View;
 
-import com.Seamap.app.R;
+import com.SeaMap.myapplication.R;
 
 import java.util.ArrayList;
 

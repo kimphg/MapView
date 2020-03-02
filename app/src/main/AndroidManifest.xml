@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.Seamap.app">
+    package="com.SeaMap.myapplication">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -15,11 +15,11 @@
         android:theme="@style/AppTheme">
 
         <service
-            android:name="com.Seamap.app.services.GPS_Services"
+            android:name="com.SeaMap.myapplication.services.GPS_Services"
             android:enabled="true"
             android:exported="true"></service>
 
-        <activity android:name="com.Seamap.app.Activity.MainActivity">
+        <activity android:name="com.SeaMap.myapplication.Activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.MAIN" />
@@ -27,7 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.Seamap.app.Activity.SearchActivity"/>
+        <activity android:name="com.SeaMap.myapplication.Activity.SearchActivity"/>
     </application>
     <supports-screens
         android:largeScreens="true"

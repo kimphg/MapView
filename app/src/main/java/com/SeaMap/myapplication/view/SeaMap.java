@@ -1,4 +1,4 @@
-package com.Seamap.app.view;
+package com.SeaMap.myapplication.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -13,9 +13,9 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-import com.Seamap.app.R;
-import com.Seamap.app.classes.ReadFile;
-import com.Seamap.app.object.Text;
+import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.object.Text;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;

@@ -1,4 +1,4 @@
-package com.Seamap.app.view;
+package com.SeaMap.myapplication.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -11,8 +11,8 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
-import com.Seamap.app.classes.ReadFile;
-import com.Seamap.app.object.Density;
+import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.object.Density;
 
 import java.util.Vector;
 

@@ -1,4 +1,4 @@
-package com.Seamap.app.classes;
+package com.SeaMap.myapplication.classes;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -7,8 +7,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.Seamap.app.R;
-import com.Seamap.app.object.*;
+import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.object.*;
 
 import java.util.ArrayList;
 import java.util.List;

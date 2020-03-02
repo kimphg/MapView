@@ -30,14 +30,14 @@
         android:layout_gravity="center|top"
         android:background="#003F51B5"
         />
-    <com.Seamap.app.view.DynamicListView
+    <com.SeaMap.myapplication.view.DynamicListView
         android:id="@+id/route_listview"
         android:layout_below="@+id/route_TX"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         >
 
-    </com.Seamap.app.view.DynamicListView>
+    </com.SeaMap.myapplication.view.DynamicListView>
 
     <TextView
         android:layout_marginTop="10dp"

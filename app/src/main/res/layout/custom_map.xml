@@ -3,7 +3,7 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.Seamap.app.view.SeaMap
+    <com.SeaMap.myapplication.view.SeaMap
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/map"

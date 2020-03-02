@@ -1,4 +1,4 @@
-package com.Seamap.app.view;
+package com.SeaMap.myapplication.view;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -23,7 +23,7 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 
-import com.Seamap.app.classes.StableArrayAdapter;
+import com.SeaMap.myapplication.classes.StableArrayAdapter;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package com.Seamap.app.function;
+package com.SeaMap.myapplication.function;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -14,14 +14,14 @@ import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
 
-import com.Seamap.app.R;
-import com.Seamap.app.classes.MapCoordinate;
-import com.Seamap.app.classes.Places;
-import com.Seamap.app.classes.Route;
-import com.Seamap.app.classes.StableArrayAdapter;
-import com.Seamap.app.object.Text;
-import com.Seamap.app.view.DynamicListView;
-import com.Seamap.app.view.MapView;
+import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.classes.MapCoordinate;
+import com.SeaMap.myapplication.classes.Places;
+import com.SeaMap.myapplication.classes.Route;
+import com.SeaMap.myapplication.classes.StableArrayAdapter;
+import com.SeaMap.myapplication.object.Text;
+import com.SeaMap.myapplication.view.DynamicListView;
+import com.SeaMap.myapplication.view.MapView;
 
 import java.util.ArrayList;
 import java.util.List;

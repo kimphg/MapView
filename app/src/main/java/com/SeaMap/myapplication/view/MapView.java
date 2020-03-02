@@ -1,8 +1,8 @@
-package com.Seamap.app.view;
+package com.SeaMap.myapplication.view;
 
-import com.Seamap.app.R;
-import com.Seamap.app.classes.Route;
-import com.Seamap.app.object.Line;
+import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.classes.Route;
+import com.SeaMap.myapplication.object.Line;
 
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
@@ -29,8 +29,8 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.Button;
 
-import com.Seamap.app.classes.ReadFile;
-import com.Seamap.app.object.Text;
+import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.object.Text;
 
 import java.lang.String;
 

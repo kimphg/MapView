@@ -1,4 +1,4 @@
-package com.Seamap.app.Activity;
+package com.SeaMap.myapplication.Activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -11,10 +11,10 @@ import android.widget.SearchView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.Seamap.app.R;
-import com.Seamap.app.classes.Places;
-import com.Seamap.app.classes.ReadFile;
-import com.Seamap.app.object.Text;
+import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.classes.Places;
+import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.object.Text;
 
 import java.io.Serializable;
 import java.util.List;

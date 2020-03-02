@@ -1,11 +1,11 @@
-package com.Seamap.app.Activity;
+package com.SeaMap.myapplication.Activity;
 
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.Seamap.app.R;
-import com.Seamap.app.view.SeaMap;
+import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.view.SeaMap;
 
 public class CustomMap extends AppCompatActivity {
 

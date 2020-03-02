@@ -1,6 +1,6 @@
-package com.Seamap.app.function;
+package com.SeaMap.myapplication.function;
 
-import com.Seamap.app.object.*;
+import com.SeaMap.myapplication.object.*;
 
 import android.graphics.Canvas;
 

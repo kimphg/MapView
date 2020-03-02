@@ -1,4 +1,4 @@
-package com.Seamap.app.object;
+package com.SeaMap.myapplication.object;
 
 import java.io.Serializable;
 

@@ -1,6 +1,6 @@
-package com.Seamap.app.classes;
+package com.SeaMap.myapplication.classes;
 
-import com.Seamap.app.object.Text;
+import com.SeaMap.myapplication.object.Text;
 
 import java.util.ArrayList;
 import java.util.Date;

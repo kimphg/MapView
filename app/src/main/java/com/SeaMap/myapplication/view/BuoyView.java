@@ -1,4 +1,4 @@
-package com.Seamap.app.view;
+package com.SeaMap.myapplication.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -9,9 +9,9 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.view.View;
 
-import com.Seamap.app.R;
-import com.Seamap.app.classes.ReadFile;
-import com.Seamap.app.object.Buoy;
+import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.object.Buoy;
 
 import java.util.Vector;
 

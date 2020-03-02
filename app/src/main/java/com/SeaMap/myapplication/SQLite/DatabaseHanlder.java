@@ -1,4 +1,4 @@
-package com.Seamap.app.SQLite;
+package com.SeaMap.myapplication.SQLite;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
