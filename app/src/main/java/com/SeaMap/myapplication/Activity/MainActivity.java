@@ -22,6 +22,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.Layout;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -40,6 +41,7 @@ import com.SeaMap.myapplication.object.Text;
 import com.SeaMap.myapplication.services.GPS_Services;
 import com.SeaMap.myapplication.view.DensityView;
 import com.SeaMap.myapplication.view.DistancePTPView;
+import com.SeaMap.myapplication.view.PolygonsView;
 import com.SeaMap.myapplication.view.SeaMap;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -61,48 +63,63 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, SearchView.OnQueryTextListener {
-    //dung dinh danh moi request
+    //Todo: dung dinh danh moi request
     public static final int REQUEST_INPUT = 1001;
     public static final int DISTANCE = 1002;
     public static final int ROUTE = 1003;
 
+    //Todo: khi click
+    public static int CHOOSE_BTN_LAYERS = 0;
+    public static int CHOOSE_DISTANE_OR_ROUTE = 0;
+    //
+    private int onViewMain = 0;
+    private int REQUEST_SEARCH = 0;
+
+    //Khi an 1 keo dai khung hien thi route
+    //Khi an 0 thu nho khung hien thi route
+    //up: 1| down: 0
+    private int up_down_route = 0;
+
+    //lay vi tri hien tai
+    private float longitude =0, latitude =0;
+    private String lonlat[];
+
+    //Todo: cac view hien thi
     public static DistancePTPView distancePTPView;
     //public BuoyView buoyView;
     public DensityView densityView;
     public SeaMap map;
-    ReadFile read;
+    private NavigationView navigationView;
+
+    private SearchView searchView;
+
+    //Todo: Doc du lieu dau vao
+    private ReadFile read;
 
     private Text textSearch;
-    DrawerLayout mDrawerLayout;
-    NavigationView navigationView;
+    private Places places;
+    private TextView _distance;
+
+    //Todo: Cac nut an va nhan su kien
     private ImageButton imageButtonGPS, imageButtonOther, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, imgButtonAddDirections, imageBtnLayer;
     private BroadcastReceiver broadcast;
     private GoogleApiClient googleApiClient;
-    private float longitude =0, latitude =0;
-    String lonlat[];
-    SearchView searchView, search;
-    Places places;
-    Button startRoute;
-    TextView _distance;
 
-    public static int CHOOSE_BTN_LAYERS = 0;
-    public static int CHOOSE_DISTANE_OR_ROUTE = 0;
-    private int onViewMain = 0;
-    private int REQUEST_SEARCH = 0;
+    //Todo : layout main va layout route
+    private FrameLayout frameLayout;
+    private RelativeLayout route_layout;
+    private DrawerLayout mDrawerLayout;
 
-    FrameLayout frameLayout;
-    RelativeLayout route_layout;
-
-    //khai bao cho route
+    //Todo: khai bao cho route
     private StableArrayAdapter arrayAdapter;
     private List<Text> route;
     private List<String> namePlaces;
     //listview search trong phan info_route;
-    ListView listPlaceSeacrh, routesListView;
+    private ListView listPlaceSeacrh, routesListView;
 
-    //up: 1| down: 0
-    int up_down_route = 1;
     private Places adapter;
+    //todo: thong so khac
+    private float dYs,dYe;
 
     @Override
     protected void onResume() {
@@ -248,15 +265,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             @Override
             public void onClick(View v) {
                 switch (up_down_route){
+                    //0: phong to
                     case 0:{
-                        //route_layout.setLayoutParams();
-
+                        int height = PolygonsView.scrCtY * 5 / 4;
+                        route_layout.getLayoutParams().height = height;
+                        route_layout.requestLayout();
                         up_down_route = 1;
                         break;
                     }
+                    //1: thu nho
                     case 1:{
-                        //
-
+                        int height = PolygonsView.scrCtY / 4;
+                        route_layout.getLayoutParams().height = height;
+                        route_layout.requestLayout();
                         up_down_route = 0;
                         break;
                     }
@@ -351,7 +372,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         route_layout.setVisibility(View.VISIBLE);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         imgButtonAddDirections.setVisibility(View.VISIBLE);
-
                         break;
                     }
                     case R.id.nav_tinhkhoangcach: {
@@ -361,6 +381,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         frameLayout.addView(distancePTPView);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         imgButtonAddDirections.setVisibility(View.VISIBLE);
+
+
                         break;
                     }
                     default:{
@@ -392,7 +414,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         frameLayout.removeView(distancePTPView);
                         distancePTPView = null;
                         route_layout.setVisibility(View.INVISIBLE);
-
+                        route_layout.getLayoutParams().height = 900;
+                        route_layout.requestLayout();
                         namePlaces.clear();
                         arrayAdapter.notifyDataSetChanged();
                         break;

@@ -32,13 +32,13 @@ public class PolygonsView extends View {
     protected static float mlon = 105.43f;//longtitude of the center of the screen
     protected static float mScale = 3f;// 1km = mScale*pixcels
 
-    protected static int scrCtY,scrCtX;
+    public static int scrCtY,scrCtX;
     protected float location_lon = 105.43f, location_lat = 18.32f;
     protected boolean MYLOCATION = false;
 
     private Paint cusPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint();
     private ScaleGestureDetector scaleGestureDetector;
-    PointF dragStart,dragStop;
+    protected PointF dragStart,dragStop;
 
     public PolygonsView(Context context) {
         super(context);

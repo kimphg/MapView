@@ -36,20 +36,22 @@
                     android:layout_alignParentRight="true"
                     android:layout_marginRight="20dp"
                     android:stateListAnimator="@animator/animatorbtnimg"
+
                     />
                 <ImageButton
                     android:id="@+id/ic_btn_directions"
-                    android:layout_marginTop="60dp"
+                    android:layout_marginTop="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/icon_directions"
                     android:layout_alignParentRight="true"
                     android:layout_marginRight="20dp"
                     android:stateListAnimator="@animator/animatorbtnimg"
+                    android:layout_below="@+id/ic_btn_location"
                     />
 
                 <include layout="@layout/info_route"
-                    android:layout_height="250dp"
+                    android:layout_height="900px"
                     android:layout_width="match_parent"
                     android:layout_below="@+id/ic_btn_directions"
                     android:layout_marginTop="10dp"
