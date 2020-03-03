@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 
@@ -41,6 +42,7 @@ public class ReadFile {
         readBaseRegions();
         readBasePlgRivers();
 
+        getListPlaceOnText();
     }
 
     private void readDataSeaMap(){
@@ -338,6 +340,20 @@ public class ReadFile {
             BasePlgRiver.put(key, vtriver);
         }
         System.out.println("");
+    }
+
+    public void getListPlaceOnText(){
+        for (Map.Entry place : tTexts.entrySet()) {
+            String key =(String) place.getKey();
+            Vector<Text> namePlace = (Vector<Text>) place.getValue();
+
+            for(int i =0; i<namePlace.size(); i++){
+                int type = namePlace.get(i).getType();
+                if(type != 0 && type != 1){
+                    ListPlace.add(namePlace.get(i));
+                }
+            }
+        }
     }
 
 }

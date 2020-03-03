@@ -20,6 +20,7 @@ import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,6 +28,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -73,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private Text textSearch;
     DrawerLayout mDrawerLayout;
     NavigationView navigationView;
-    private ImageButton imageButtonGPS, imageButtonOther, imageBtnSearch, imageButtonDirection, imgButtonAddDirections, imageBtnLayer;
+    private ImageButton imageButtonGPS, imageButtonOther, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, imgButtonAddDirections, imageBtnLayer;
     private BroadcastReceiver broadcast;
     private GoogleApiClient googleApiClient;
     private float longitude =0, latitude =0;
@@ -89,16 +91,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private int REQUEST_SEARCH = 0;
 
     FrameLayout frameLayout;
-    CoordinatorLayout coordinatorLayout;
+    RelativeLayout route_layout;
+
     //khai bao cho route
     private StableArrayAdapter arrayAdapter;
     private List<Text> route;
     private List<String> namePlaces;
     //listview search trong phan info_route;
     ListView listPlaceSeacrh, routesListView;
-    private Places adapter;
 
-    private BottomSheetBehavior bottomsheet_inforoute;
+    //up: 1| down: 0
+    int up_down_route = 1;
+    private Places adapter;
 
     @Override
     protected void onResume() {
@@ -192,13 +196,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     }
-    //---------------------------------------//
 
+
+    //Todo---------------- Set layout route cac su kien-----------------------//
+    /*
+    * Gom cac su kien;
+    *  va khoi tao
+    * */
     private void onRoute(){
-        View view = getLayoutInflater().inflate(R.layout.info_route, null);
-
-        BottomSheetDialog dialog = new BottomSheetDialog(this);
-        dialog.setContentView(view);
+        //Khi khoi tao an di
+        route_layout = findViewById(R.id.route_layout);
+        route_layout.setVisibility(View.INVISIBLE);
 
         routesListView = findViewById(R.id.route_listview);
         listPlaceSeacrh = findViewById(R.id.listplace);
@@ -222,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        //list dia diem da chon
         routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -230,14 +239,37 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 arrayAdapter.notifyDataSetChanged();
             }
         });
+
+
+        // phong to thu nho route
+        imageBtnUp_Of_Route = findViewById(R.id.button_up);
+        imageBtnUp_Of_Route.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                switch (up_down_route){
+                    case 0:{
+                        //route_layout.setLayoutParams();
+
+                        up_down_route = 1;
+                        break;
+                    }
+                    case 1:{
+                        //
+
+                        up_down_route = 0;
+                        break;
+                    }
+                }
+            }
+
+        });
     }
 
+    // Todo -------------- -----------------------//
     private void onDistancePTPView(){
         imgButtonAddDirections = findViewById(R.id.icon_addDirect);
         imgButtonAddDirections.setVisibility(View.INVISIBLE);
-
-        distancePTPView = new DistancePTPView(getApplicationContext());
-        frameLayout.addView(distancePTPView);
 
         imgButtonAddDirections.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -262,6 +294,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
+    //Todo : Khoi tao density va hien view khi an layer
     public void onDensityView(){
         densityView = new DensityView(getApplicationContext());
         imageBtnLayer = findViewById(R.id.ic_btn_layers);
@@ -270,7 +303,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onClick(View v) {
                 switch (CHOOSE_BTN_LAYERS){
                     case 0:{
-//                        read.readDensity();
                         frameLayout.removeView(map);
                         frameLayout.addView(densityView, 0);
                         CHOOSE_BTN_LAYERS = 1;
@@ -287,7 +319,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
     }
+    //Todo ------------------------------------------//
 
+
+
+    //Todo : Mo drawer
+    /*
+    * GOm cac su kien an item
+    * Mo drawer
+    * */
     private void navigationDrawer(){
         mDrawerLayout = findViewById(R.id.drawer_layout);
         imageButtonOther = findViewById(R.id.ibt_others);
@@ -305,13 +345,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     case R.id.nav_lotrinh: {
                         CHOOSE_DISTANE_OR_ROUTE = ROUTE;
                         onViewMain = 1;
+
+                        distancePTPView = new DistancePTPView(getApplicationContext());
+                        frameLayout.addView(distancePTPView);
+                        route_layout.setVisibility(View.VISIBLE);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         imgButtonAddDirections.setVisibility(View.VISIBLE);
+
                         break;
                     }
                     case R.id.nav_tinhkhoangcach: {
                         CHOOSE_DISTANE_OR_ROUTE = DISTANCE;
                         onViewMain = 1;
+                        distancePTPView = new DistancePTPView(getApplicationContext());
+                        frameLayout.addView(distancePTPView);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         imgButtonAddDirections.setVisibility(View.VISIBLE);
                         break;
@@ -342,13 +389,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         imageButtonOther.setBackgroundResource(R.drawable.icon_cancel);
                         imgButtonAddDirections.setVisibility(View.INVISIBLE);
                         navigationView.getCheckedItem().setChecked(false);
+                        frameLayout.removeView(distancePTPView);
+                        distancePTPView = null;
+                        route_layout.setVisibility(View.INVISIBLE);
+
+                        namePlaces.clear();
+                        arrayAdapter.notifyDataSetChanged();
                         break;
                     }
                 }
             }
         });
     }
-    /////////////---------------Drawer-----------------/////////////
+    // Todo///////////---------------Drawer-----------------/////////////
 
     private boolean Run_check_permission() {
 

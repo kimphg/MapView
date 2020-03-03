@@ -194,7 +194,7 @@ public class PolygonsView extends View {
         @Override
         public boolean onScale(ScaleGestureDetector sgd){
             mScale *= sgd.getScaleFactor();
-            mScale = Math.max(2f, Math.min(mScale, 20));
+            mScale = Math.max(2f, Math.min(mScale, 25));
             invalidate();
             return true;
         }
