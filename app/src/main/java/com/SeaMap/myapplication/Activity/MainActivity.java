@@ -129,6 +129,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private BroadcastReceiver broadcastReceiver;
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(getApplicationContext(), GpsService.class);
+        startService(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (broadcastReceiver != null) {
+            unregisterReceiver(broadcastReceiver);
+        }
+        Intent intent = new Intent(getApplicationContext(), GpsService.class);
+        stopService(intent);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
@@ -172,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         onRoute();
         onDensityView();
         onScreecBtn_Direction_Search();
-        enableButtons();
+        //enableButtons();
     }
 
     //Todo: init and add onclick for button on screen
@@ -184,8 +201,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 //                if (googleApiClient == null)
 //                    turnOnGPS();
 //                else {
-//                    Intent intent = new Intent(getApplicationContext(), GpsService.class);
-//                    startService(intent);
+                    Intent intent = new Intent(getApplicationContext(), GpsService.class);
+                    startService(intent);
 //                }
                 map.setLonLatMyLocation(
                         Float.parseFloat(Double.toString(curLocation.getLatitude())),
@@ -219,7 +236,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onClick(View v) {
                 Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
                 startActivityForResult(searchIntent, REQUEST_INPUT);
-//                searchSet.start();
 
             }
         });
