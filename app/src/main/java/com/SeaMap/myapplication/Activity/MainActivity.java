@@ -21,7 +21,6 @@ import android.graphics.PointF;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Layout;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -218,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     //Todo---------------- Set layout route cac su kien-----------------------//
     /*
-    * Gom cac su kien click item
+    * Gom cac su kien;
     *  va khoi tao
     * */
     private void onRoute(){
@@ -237,8 +236,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         searchView.setOnQueryTextListener(this);
         //##### su kien an vao item cua listview: 1.route  2.search //
         adapterListPlace();
-
-        //su kien khi an vao item cua list view search
         //1.search
         listPlaceSeacrh.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -251,7 +248,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
 
         //list dia diem da chon
-        //Su kien khi an vao dynamic ListView
         routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -289,8 +285,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
 
         });
-
-//        View marker = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.marker, null);
     }
 
     // Todo -------------- -----------------------//
@@ -307,19 +301,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         break;
                     }
                     case ROUTE: {
-                        PointF p = SeaMap.ConvScrPointToWGS(PolygonsView.scrCtX, SeaMap.scrCtY);
-                        float [] coor = {p.x, p.y};
-                        String name_new_place = p.y + "'B , "+ p.x + "'Đ.";
-
-                        Text new_place = new Text();
-                        new_place.setCoordinate(coor);
-                        new_place.setName( name_new_place);
-
-                        route.add(new_place);
-                        namePlaces.add(name_new_place);
-                        arrayAdapter.notifyDataSetChanged();
-
-                        distancePTPView.setListCoor(route);
+                        PointF p = SeaMap.ConvScrPointToWGS(SeaMap.scrCtXView, SeaMap.scrCtYView);
+                        ArrayList<PointF> arr = distancePTPView.getListCoor();
+                        arr.add(p);
+                        distancePTPView.setListCoor(arr);
                         distancePTPView.invalidate();
                         break;
                     }
@@ -594,7 +579,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private void adapterListPlace(){
         route = new ArrayList<Text>();
         namePlaces = new ArrayList<String>();
-        arrayAdapter = new StableArrayAdapter(this,namePlaces);
+        arrayAdapter = new StableArrayAdapter(this,R.layout.places_view,R.id.tx_namePlace,namePlaces);
         routesListView.setAdapter(arrayAdapter);
     }
 
