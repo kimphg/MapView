@@ -5,7 +5,7 @@
     android:orientation="horizontal">
 
     <ImageView
-        android:layout_marginLeft="20dp"
+        android:layout_marginLeft="30dp"
         android:id="@+id/removeImage"
         android:layout_width="wrap_content"
         android:layout_height="30dp"
@@ -14,13 +14,23 @@
         android:layout_alignParentBottom="true"/>
 
     <TextView
-        android:id="@+id/tx_namePlace"
+        android:id="@+id/count_plc"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:paddingLeft="10dp"
+        android:text="20."
+        android:layout_toRightOf="@id/removeImage"
+        />
+    <TextView
+        android:id="@+id/txt_namePlace"
         android:layout_width="wrap_content"
         android:layout_height="30dp"
         android:textSize="20dp"
         android:paddingLeft="10dp"
         android:text="hoang huy"
-        android:textStyle="italic"
-        android:layout_toRightOf="@id/removeImage"/>
+        android:textStyle="bold"
+        android:layout_toRightOf="@id/count_plc"/>
 
 </LinearLayout>

@@ -84,7 +84,7 @@ public class f_setEventViewRoute implements SearchView.OnQueryTextListener{
         //##### su kien an vao item cua listview: 1.route  2.search //
         route = new Route();
         mCheeseList = new ArrayList<String>();
-        adapter = new StableArrayAdapter(mContext, R.layout.places_view,R.id.tx_namePlace, mCheeseList);
+//        adapter = new StableArrayAdapter(mContext, R.layout.places_view,R.id.tx_namePlace, mCheeseList);
         routesListView.setAdapter(adapter);
         //1.search
         listPlaceSeacrh.setOnItemClickListener(new AdapterView.OnItemClickListener() {

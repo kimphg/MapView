@@ -28,7 +28,6 @@ public class SeaMap  extends PolygonsView {
     private static boolean DIRECTIONS = false;
     private static boolean BACKSEARCH = false;
 
-    public static int scrCtYView , scrCtXView;
     float searchPlace_lon, searchPlace_lat;
 
     List<Text> ListPlace = new ArrayList<>();
@@ -39,8 +38,6 @@ public class SeaMap  extends PolygonsView {
 
     public SeaMap(Context context) {
         super(context);
-        scrCtXView = scrCtX;
-        scrCtYView = scrCtY;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)

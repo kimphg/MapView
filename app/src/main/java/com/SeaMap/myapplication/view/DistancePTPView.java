@@ -2,20 +2,27 @@ package com.SeaMap.myapplication.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.object.Text;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import butterknife.OnItemClick;
 
 public class DistancePTPView extends View {
-    private ArrayList<PointF> listCoor = new ArrayList<PointF>();
+
+    private List<Text> listTextRoute = new ArrayList<Text>();
     private Paint linePaint = new Paint();
 
     private int mDistance;
@@ -29,35 +36,52 @@ public class DistancePTPView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        int size = listCoor.size();
+        int size = listTextRoute.size();
         for(int i = 0; i< size; i++){
-            Point p = SeaMap.ConvWGSToScrPoint(listCoor.get(i).x, listCoor.get(i).y);
-            Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.pin);
+            float [] coor = listTextRoute.get(i).getCoordinate();
+            Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
+            Bitmap bitmap = createBitmapFromView(i + 1);
             Paint locationPaint = new Paint();
-            canvas.drawBitmap(mbitmap, p.x, p.y, locationPaint);
+            canvas.drawBitmap(bitmap,p.x, p.y,locationPaint);
+
         }
 
         linePaint.setColor(Color.RED);
-
-        if(size > 1){
-            for(int i =0; i < size -1; i++){
-                Point p1 = SeaMap.ConvWGSToScrPoint(listCoor.get(i).x, listCoor.get(i).y);
-                Point p2 = SeaMap.ConvWGSToScrPoint(listCoor.get(i + 1).x, listCoor.get(i + 1).y);
-
-                canvas.drawLine(p1.x, p1.y, p2.x, p2.y, linePaint);
-            }
-        }
     }
 
-    public ArrayList<PointF> getListCoor() {
-        return listCoor;
+    public List<Text> getListCoor() {
+        return listTextRoute;
     }
 
-    public void setListCoor(ArrayList<PointF> listCoor) {
-        this.listCoor = listCoor;
+    public void setListCoor(List<Text> listTextRoute) {
+        this.listTextRoute = listTextRoute;
     }
 
     public int getmDistance() {
         return mDistance;
     }
+
+
+    public Bitmap createBitmapFromView(int number_of_place) {
+        View v = ((LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.marker, null);
+
+        TextView text = v.findViewById(R.id.number_of_plc);
+        text.setText(number_of_place +"");
+
+        v.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT));
+        v.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        v.layout(0, 0, v.getMeasuredWidth(), v.getMeasuredHeight());
+        Bitmap bitmap = Bitmap.createBitmap(v.getMeasuredWidth(),
+                v.getMeasuredHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bitmap);
+        v.layout(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
+        v.draw(c);
+
+
+        return bitmap;
+    }
+
 }
