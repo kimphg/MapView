@@ -15,7 +15,7 @@
         android:theme="@style/AppTheme">
 
         <service
-            android:name="com.SeaMap.myapplication.services.GPS_Services"
+            android:name="com.SeaMap.myapplication.services.GpsService"
             android:enabled="true"
             android:exported="true"></service>
 
