@@ -273,6 +273,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 route.add(place);
                 namePlaces.add(place.getName());
                 arrayAdapter.notifyDataSetChanged();
+
+                float []coor = place.getCoordinate();
+                map.setLonLatSearchPlace(coor[1], coor[0]);
                 //thiet lap lai va ve
                 distancePTPView.setListCoor(route);
                 distancePTPView.invalidate();
