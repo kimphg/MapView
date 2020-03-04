@@ -236,7 +236,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onClick(View v) {
                 Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
                 startActivityForResult(searchIntent, REQUEST_INPUT);
-
             }
         });
         ///-----------------------------------//
@@ -274,6 +273,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 route.add(place);
                 namePlaces.add(place.getName());
                 arrayAdapter.notifyDataSetChanged();
+                //thiet lap lai va ve
+                distancePTPView.setListCoor(route);
+                distancePTPView.invalidate();
             }
         });
 
@@ -284,6 +286,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 route.remove(i);
                 namePlaces.remove(i);
                 arrayAdapter.notifyDataSetChanged();
+                // thiet lap lai va ve
+                distancePTPView.setListCoor(route);
+                distancePTPView.invalidate();
             }
         });
 
@@ -455,7 +460,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         route_layout.setVisibility(View.INVISIBLE);
                         route_layout.getLayoutParams().height = 900;
                         route_layout.requestLayout();
+
                         namePlaces.clear();
+                        route.clear();
                         arrayAdapter.notifyDataSetChanged();
                         break;
                     }
