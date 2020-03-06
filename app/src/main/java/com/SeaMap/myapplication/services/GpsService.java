@@ -35,6 +35,8 @@ public class GpsService extends Service {
     public static  final float DISTANCE_MIN = 100F;//100m will get location
     private LocationListener mLocationListener;
 
+
+
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
