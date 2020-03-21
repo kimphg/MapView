@@ -42,6 +42,8 @@ public class GpsService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
         mLocationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
@@ -75,7 +77,7 @@ public class GpsService extends Service {
     @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
         //CHECK PERMISSION IS MISSING
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,TIME_MIN,DISTANCE_MIN,mLocationListener);
 
@@ -113,6 +115,8 @@ public class GpsService extends Service {
         }
         else return -1;
     }
+
+
 
 //    @RequiresApi(api = Build.VERSION_CODES.O)
 //    @Override

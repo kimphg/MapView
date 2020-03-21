@@ -3,7 +3,7 @@ package com.SeaMap.myapplication.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -12,8 +12,10 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
@@ -22,12 +24,9 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.Layout;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -58,9 +57,8 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public static final int REQUEST_INPUT = 1001;
     public static final int DISTANCE = 1002;
     public static final int ROUTE = 1003;
+    public static final int REQUEST_CODE = 1004;
 
     //Todo: khi click
     public static int CHOOSE_BTN_LAYERS = 0;
@@ -157,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     Location newLocation = intent.getParcelableExtra("newLocation");
                     if (newLocation != null) {
                         curLocation = newLocation;
-                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG);
+                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
                     }
                 }
             };
@@ -181,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         frameLayout.addView(map, 0);
         ///
         if (!checkPermission()) {
-            enableButtons();
+            requestPermission();
         }
 
         //        checkPermission()
@@ -200,10 +199,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //enable buttons' functions
         getCurLocationButton = findViewById(R.id.get_curlocation_btn);
         getCurLocationButton.setOnClickListener(view -> {
-            if (!isGpsServiceRunning(GpsService.class)) {
-                Intent intent = new Intent(getApplicationContext(), GpsService.class);
-                startService(intent);
-            }
 
             if (curLocation != null) {
                 map.setLonLatMyLocation(
@@ -211,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         Float.parseFloat(Double.toString(curLocation.getLongitude()))
                 );
             } else {
-                Toast.makeText(MainActivity.this, "Xin hãy kiên nhẫn, thiết bị đang lấy dữ liệu ...", Toast.LENGTH_LONG);
+                Toast.makeText(MainActivity.this, "Xin hãy kiên nhẫn, thiết bị đang lấy dữ liệu ...", Toast.LENGTH_LONG).show();
             }
 
         });
@@ -481,10 +476,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     // Todo///////////---------------Drawer-----------------/////////////
 
     /////////////////----------------Gps-------------------//////////////
-    private boolean isGpsServiceRunning(Class<?> serviceClass) {
+    private boolean isServiceRunning() {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        assert manager != null;
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
+            if (GpsService.class.getName().equals(service.service.getClassName())) {
                 return true;
             }
         }
@@ -492,22 +488,27 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private boolean checkPermission() {
-        if (Build.VERSION.SDK_INT >= 23
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}
-                    , 100
-            );
-            return true;
-
+        if (Build.VERSION.SDK_INT >= 23) {
+            return ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED;
+        }else{
+            Snackbar.make( map, "Vui lòng cập nhật phiên bản mới của hệ điều hành", Snackbar.LENGTH_LONG).show();
+            return false;
         }
-        return false;
     }
 
-    //Todo: turn onGPS location
+    public void requestPermission(){
+        ActivityCompat.requestPermissions( this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+    }
+
+    private void showMessageBox(String message, DialogInterface.OnClickListener clickListener ){
+        new AlertDialog.Builder( this)
+                .setMessage( message )
+                .setPositiveButton("OK", clickListener)
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
+    }
 
     public void turnOnGPS() {
         googleApiClient = new GoogleApiClient.Builder(this)
@@ -571,16 +572,37 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if( requestCode == REQUEST_CODE ){
+            if( grantResults.length > 0){
+                boolean accepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
-        if (requestCode == 100) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                if (googleApiClient == null) {
-                    turnOnGPS();
+                if( accepted ){
+                    Snackbar.make( map, "Cho phép sử dụng vị trí", Snackbar.LENGTH_LONG).show();
+                    Intent intent = new Intent(getApplicationContext(), GpsService.class);
+                    startService(intent);
+                    enableButtons();
                 }
-                enableButtons();
-            } else {
-                checkPermission();
+                else{
+                    Snackbar.make( map, "Không có quyền sử dụng vị trí", Snackbar.LENGTH_LONG).show();
+
+                    if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                        if( shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)){
+                            showMessageBox("Bạn cần cho phép ứng dụng sử dụng vị trí",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            requestPermissions( new String[]{ Manifest.permission.ACCESS_FINE_LOCATION},
+                                                    REQUEST_CODE);
+                                        }
+                                    });
+                            return;
+                        }
+                        else{
+                            showMessageBox("Bạn cần cho phép ứng dụng sử dụng vị trí.\nHãy cấp quyền cho ứng dụng này trong Cài đặt", null);
+                        }
+                    }
+
+                }
             }
         }
     }
