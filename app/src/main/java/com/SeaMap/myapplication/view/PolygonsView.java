@@ -31,9 +31,10 @@ public class PolygonsView extends View {
     protected static float mlat = 18.32f;//lattitude of the center of the screen
     protected static float mlon = 105.43f;//longtitude of the center of the screen
     protected static float mScale = 3f;// 1km = mScale*pixcels
-
+    protected static float viewLat = 18.32f;//lattitude of the center of the screen
+    protected static float viewLon = 105.43f;//longtitude of the center of the screen
     public static int scrCtY,scrCtX;
-    protected float location_lon = 105.43f, location_lat = 18.32f;
+    protected float shipLocationLon = 105.43f, shipLocationLat = 18.32f;
     protected boolean MYLOCATION = false;
 
     private Paint cusPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint();
@@ -50,7 +51,9 @@ public class PolygonsView extends View {
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
+        //dùng biến viewLat, viewLon để làm trơn sự dịch chuyển tâm màn hình
+        viewLat += (mlat- viewLat)/2.0;
+        viewLon += (mlon- viewLon)/2.0;
         scrCtY = getHeight() / 2;
         scrCtX = getWidth() / 2;
 
@@ -153,7 +156,7 @@ public class PolygonsView extends View {
 
         if (MYLOCATION) {
             Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
-            Point p1 = ConvWGSToScrPoint(location_lon, location_lat);
+            Point p1 = ConvWGSToScrPoint(shipLocationLon, shipLocationLat);
             Paint locationPaint = new Paint();
             canvas.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
         }
@@ -212,9 +215,9 @@ public class PolygonsView extends View {
     public static Point ConvWGSToScrPoint(float m_Long,float m_Lat)// converting lat lon  WGS coordinates to screen XY coordinates
     {
         Point s = new Point();
-        float refLat = (mlat + (m_Lat))*0.00872664625997f;//pi/360
-        s.set((int )(mScale*((m_Long - mlon) * 111.31949079327357)*cos(refLat))+scrCtX,
-                (int)(mScale*((mlat- (m_Lat)) * 111.132954))+scrCtY
+        float refLat = (viewLat + (m_Lat))*0.00872664625997f;//pi/360
+        s.set((int )(mScale*((m_Long - viewLon) * 111.31949079327357)*cos(refLat))+scrCtX,
+                (int)(mScale*((viewLat- (m_Lat)) * 111.132954))+scrCtY
         );
         return s;
     }
@@ -227,8 +230,8 @@ public class PolygonsView extends View {
     }
 
     public void setLonLatMyLocation(float latLoc, float lonLoc){
-        mlat = location_lat = latLoc;
-        mlon = location_lon = lonLoc;
+        mlat = shipLocationLat = latLoc;
+        mlon = shipLocationLon = lonLoc;
         mScale = 10;
         MYLOCATION =true;
         invalidate();

@@ -62,7 +62,7 @@ public class SeaMap  extends PolygonsView {
 
         if(DIRECTIONS) {
             Point p1 = ConvWGSToScrPoint(searchPlace_lon, searchPlace_lat);
-            Point p2 = ConvWGSToScrPoint(location_lon, location_lat);
+            Point p2 = ConvWGSToScrPoint(shipLocationLon, shipLocationLat);
             Paint searchPl = new Paint();
             searchPl.setColor(Color.RED);
             float pointf[] = {p1.x, p1.y, p2.x, p2.y};
@@ -80,12 +80,10 @@ public class SeaMap  extends PolygonsView {
                     Point p1 = ConvWGSToScrPoint(text.getCoordinate()[0], text.getCoordinate()[1]);
                     Point p2 = ConvWGSToScrPoint(text.getCoordinate()[2], text.getCoordinate()[3]);
                     int distance = Distance(p1, p2);
-
                     int color = text.getPen()[2];
                     int red = (int) color / 65536;
                     int green = (int) (color - red * 65536) / 256;
                     int blue = (int) (color - red * 65536 - green * 256);
-
                     textPaint.setColor(Color.rgb(red, green, blue));
                     mPath = new Path();
                     mPath.moveTo(p1.x, p1.y);
@@ -120,8 +118,8 @@ public class SeaMap  extends PolygonsView {
 
     public void myLocationToDirection(){
         DIRECTIONS = true;
-        int temp1 = (int) abs(location_lat - searchPlace_lat);
-        int temp2 = (int) abs(location_lon - searchPlace_lon);
+        int temp1 = (int) abs(shipLocationLat - searchPlace_lat);
+        int temp2 = (int) abs(shipLocationLon - searchPlace_lon);
         if(temp1 >= temp2) mScale = temp1 / temp2;
         else mScale = temp2 / temp1;
         invalidate();

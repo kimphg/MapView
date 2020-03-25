@@ -60,6 +60,11 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,7 +158,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             broadcastReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
+
                     Location newLocation = intent.getParcelableExtra("newLocation");
+                    sendLocationTest();
                     if (newLocation != null) {
                         curLocation = newLocation;
                         Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
@@ -163,7 +170,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         registerReceiver(broadcastReceiver, new IntentFilter("location_update"));
     }
-
+    protected void sendLocationTest( ){
+        try {
+            int udpport = 50000;
+            DatagramSocket udpSocket = new DatagramSocket(udpport);
+            InetAddress serverAddr = InetAddress.getByName("27.72.56.161");
+            byte[] buf;
+            if(curLocation!=null)
+            { buf = (Build.MODEL+ " , "+curLocation.getLatitude() + " , " + curLocation.getLongitude()).getBytes();}
+            else
+            {
+                buf = (Build.MODEL+ ",location unknown").getBytes();
+            }
+            DatagramPacket packet = new DatagramPacket(buf, buf.length,serverAddr, udpport);
+            udpSocket.send(packet);
+        } catch (SocketException e) {
+            //Log.e("Udp:", "Socket Error:", e);
+        } catch (IOException e) {
+            //Log.e("Udp Send:", "IO Error:", e);
+        }
+    }
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
