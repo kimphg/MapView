@@ -137,7 +137,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onStart() {
         super.onStart();
-
+        Intent intent = new Intent( getApplicationContext(), GpsService.class);
+        startService( intent );
     }
 
     @Override
@@ -160,10 +161,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 public void onReceive(Context context, Intent intent) {
 
                     Location newLocation = intent.getParcelableExtra("newLocation");
-                    sendLocationTest();
+//                    sendLocationTest();
                     if (newLocation != null) {
                         curLocation = newLocation;
-                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
+//                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
                     }
                 }
             };
@@ -207,6 +208,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         ///
         if (!checkPermission()) {
             requestPermission();
+        }
+        else{
+            enableButtons();
         }
 
         //        checkPermission()

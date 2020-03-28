@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
@@ -31,16 +32,14 @@ import com.SeaMap.myapplication.classes.Coordinate;
 import  com.SeaMap.myapplication.function.Distance;
 public class GpsService extends Service {
     private LocationManager mLocationManager;
-    public static  final int TIME_MIN = 1000 * 60 * 2;//2 minute will get location
-    public static  final float DISTANCE_MIN = 100F;//100m will get location
+    public static  final int TIME_MIN = 1000 * 60;
+    public static  final float DISTANCE_MIN = 200F;//100m will get location
     private LocationListener mLocationListener;
 
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
         super.onCreate();
-
-        mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
         mLocationListener = new LocationListener() {
             @Override
@@ -70,23 +69,24 @@ public class GpsService extends Service {
             }
         };
 
+        mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,TIME_MIN,DISTANCE_MIN,mLocationListener);
+
+//        Toast.makeText( this, "Service created", Toast.LENGTH_LONG).show();
     }
 
     @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        //CHECK PERMISSION IS MISSING
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,TIME_MIN,DISTANCE_MIN,mLocationListener);
-
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
         if (mLocationManager!=null)
             mLocationManager.removeUpdates(mLocationListener);
-        super.onDestroy();
+//        Toast.makeText(this, "Service stopped", Toast.LENGTH_LONG).show();
     }
 
     public static double distance( double lon1, double lat1, double lon2, double lat2 ){
