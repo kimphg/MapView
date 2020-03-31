@@ -53,20 +53,26 @@ public class SeaMap  extends PolygonsView {
         cusPaint.setColor(Color.rgb(255, 239, 213));
         cusPaint.setStyle(Paint.Style.FILL);
 
-        if(SEARCHPLACE){
-            Point p1 = ConvWGSToScrPoint(searchPlace_lon, searchPlace_lat);
-            Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
-            Paint searchPl = new Paint();
-            canvas.drawBitmap(mbitmap, p1.x, p1.y, searchPl);
-        }
+
 
         if(DIRECTIONS) {
             Point p1 = ConvWGSToScrPoint(searchPlace_lon, searchPlace_lat);
             Point p2 = ConvWGSToScrPoint(shipLocationLon, shipLocationLat);
             Paint searchPl = new Paint();
             searchPl.setColor(Color.RED);
+            searchPl.setStrokeWidth(3);
             float pointf[] = {p1.x, p1.y, p2.x, p2.y};
             canvas.drawLines(pointf, searchPl);
+            SEARCHPLACE = true;
+        }
+
+        if(SEARCHPLACE){
+            Point p1 = ConvWGSToScrPoint(searchPlace_lon, searchPlace_lat);
+            Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
+            int height = mbitmap.getHeight();
+            int wight = mbitmap.getWidth();
+            Paint searchPl = new Paint();
+            canvas.drawBitmap(mbitmap, p1.x - height/2, p1.y - wight/2, searchPl);
         }
         for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x  ; lon++) {
             for (int lat = (int) pointT3.y; lat <= (int) pointT1.y; lat++) {
@@ -116,8 +122,12 @@ public class SeaMap  extends PolygonsView {
         return ListPlace;
     }
 
-    public void myLocationToDirection(){
+    public void myLocationToDirection(int type, float latDirectionLoc, float lonDirectionLoc){
         DIRECTIONS = true;
+        if(type == 1){
+            searchPlace_lat = latDirectionLoc;
+            searchPlace_lon = lonDirectionLoc;
+        }
         int temp1 = (int) abs(shipLocationLat - searchPlace_lat);
         int temp2 = (int) abs(shipLocationLon - searchPlace_lon);
         if(temp1 >= temp2) mScale = temp1 / temp2;
@@ -125,11 +135,12 @@ public class SeaMap  extends PolygonsView {
         invalidate();
     }
 
-    public void setLonLatSearchPlace(float latLoc, float lonLoc){
-        mlat = searchPlace_lat = latLoc;
-        mlon = searchPlace_lon = lonLoc;
+    public void setLonLatSearchPlace(float latSearchLoc, float lonSearchLoc){
+        mlat = searchPlace_lat = latSearchLoc;
+        mlon = searchPlace_lon = lonSearchLoc;
         mScale = 10;
         SEARCHPLACE = true;
+        DIRECTIONS = false;
         invalidate();
     }
 }

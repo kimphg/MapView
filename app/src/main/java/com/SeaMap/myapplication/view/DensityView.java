@@ -32,6 +32,8 @@ public class DensityView extends PolygonsView {
 
         Paint pointDensity = new Paint();
         pointDensity.setColor(Color.RED);
+        if(mScale < 15) pointDensity.setStrokeWidth(1f);
+        else pointDensity.setStrokeWidth(1.3f);
         for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
             for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
                 String area = lon + "-" + lat;
@@ -40,7 +42,9 @@ public class DensityView extends PolygonsView {
                 int size = vtDensity.size() ;
                 float []pointf = new float[size * 2];
                 for(int i =0; i < size * 2; i+= 2){
-                    Point p1 = ConvWGSToScrPoint(vtDensity.get(i / 2).getLongitude(), vtDensity.get(i/2).getLatitude());
+                    Density density = vtDensity.get(i / 2);
+                    if(mScale < 10 && density.getCountMove() < 4) continue;
+                    Point p1 = ConvWGSToScrPoint(density.getLongitude(), density.getLatitude());
                     pointf[i] = p1.x;
                     pointf[i + 1] = p1.y;
                 }

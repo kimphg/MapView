@@ -41,11 +41,11 @@ public class DistancePTPView extends View {
             float [] coor = listTextRoute.get(i).getCoordinate();
             Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
             Bitmap bitmap = createBitmapFromView(i + 1);
+            int height = bitmap.getHeight();
+            int wight = bitmap.getWidth();
             Paint locationPaint = new Paint();
-            canvas.drawBitmap(bitmap,p.x, p.y,locationPaint);
-
+            canvas.drawBitmap(bitmap,p.x - height / 4, p.y - wight,locationPaint);
         }
-
         linePaint.setColor(Color.RED);
     }
 

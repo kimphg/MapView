@@ -26,7 +26,7 @@ public class ReadFile {
     public static HashMap<String,Vector<Region>> BaseRegions = new HashMap<String, Vector<Region>>();
     public static HashMap<String,Vector<Region>> BasePlgRiver = new HashMap<String, Vector<Region>>();
 
-    public static HashMap<String,Vector<Buoy>> vtBuoys =new HashMap<>();
+    public static HashMap<String,Vector<Buoy>> listBuoys =new HashMap<>();
     public static HashMap<String, Vector<Density>> listDensity = new HashMap<>();
 
     public static List<Text> ListPlace = new ArrayList<>();
@@ -41,8 +41,10 @@ public class ReadFile {
         readDataSeaMap();
         readBaseRegions();
         readBasePlgRivers();
+        readBoat();
 
         getListPlaceOnText();
+
     }
 
     private void readDataSeaMap(){
@@ -142,10 +144,10 @@ public class ReadFile {
 
     private void readBoat(){
         ObjectInputStream ois = null;
-        int size = 0;
         try {
             InputStream is = mCtx.getAssets().open("buoys.bin");
             ois = new ObjectInputStream(is);
+
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -153,34 +155,15 @@ public class ReadFile {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
         try {
-            size = ois.readInt();
+            listBuoys = (HashMap<String, Vector<Buoy>>) ois.readObject();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
         }
-        for (int j = 0; j < size; j++) {
-                Buoy obj = null;
-                try {
-                    obj = (Buoy) ois.readObject();
-                } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IOException e) {
-                }
-
-                String area = (int)obj.getCoordinates()[0] + "-" + (int)obj.getCoordinates()[1];
-                if(vtBuoys.containsKey(area)) {
-                    Vector<Buoy> vtFL = vtBuoys.get(area);
-                    vtFL.add(obj);
-                    vtBuoys.put(area, vtFL);
-                }
-                else {
-                    Vector<Buoy> vtFL = new Vector<>();
-                    vtFL.add(obj);
-                    vtBuoys.put(area, vtFL);
-                }
-
-            }
-        System.out.println("");
+        System.out.println(listBuoys);
     }
 
 
@@ -290,15 +273,15 @@ public class ReadFile {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            Vector<Region> vtriver = null;
+            Vector<Region> vtRegion = null;
             try {
-                vtriver = (Vector<Region>) ois.readObject();
+                vtRegion = (Vector<Region>) ois.readObject();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            BaseRegions.put(key, vtriver);
+            BaseRegions.put(key, vtRegion);
         }
         System.out.println("");
     }

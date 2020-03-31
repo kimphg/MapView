@@ -157,8 +157,10 @@ public class PolygonsView extends View {
         if (MYLOCATION) {
             Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
             Point p1 = ConvWGSToScrPoint(shipLocationLon, shipLocationLat);
+            int height = mbitmap.getHeight();
+            int wight = mbitmap.getWidth();
             Paint locationPaint = new Paint();
-            canvas.drawBitmap(mbitmap, p1.x, p1.y, locationPaint);
+            canvas.drawBitmap(mbitmap, p1.x - height/2, p1.y - wight/2, locationPaint);
         }
     }
 

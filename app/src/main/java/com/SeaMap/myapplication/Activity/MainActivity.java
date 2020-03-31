@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     //Todo: khi click
     public static int CHOOSE_BTN_LAYERS = 0;
     public static int CHOOSE_DISTANE_OR_ROUTE = 0;
+    //0: search 1:direction
+    public static int CHOOSE_SEARCH_OR_DIRECTION = 0;
     //
     private int onViewMain = 0;
     private int REQUEST_SEARCH = 0;
@@ -124,8 +126,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ListView listPlaceSeacrh, routesListView;
 
     private Places adapter;
-    //todo: thong so khac
-    private float dYs, dYe;
+
 
     //Khai bao cho GPS
     //functional variables
@@ -133,6 +134,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double curVelocity;
     //system variables
     private BroadcastReceiver broadcastReceiver;
+
+    //todo: thong so khac
+    private float temp_Search_lon = 0, temp_Search_lat = 0;
 
     @Override
     protected void onStart() {
@@ -248,9 +252,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 switch (REQUEST_SEARCH) {
                     case 1:
                         //float
-                        map.myLocationToDirection();
+                        //Khong can vi tri vi da biet vi tri search trc do
+                        map.myLocationToDirection(0, 0,0);
                         break;
                     case 0:
+                        CHOOSE_SEARCH_OR_DIRECTION = 1;
                         Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
                         startActivityForResult(searchIntent, REQUEST_INPUT);
                         break;
@@ -262,6 +268,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         imageBtnSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                CHOOSE_SEARCH_OR_DIRECTION = 0;
                 Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
                 startActivityForResult(searchIntent, REQUEST_INPUT);
             }
@@ -654,9 +661,36 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 float mlon = (textSearch.getCoordinate()[0] + textSearch.getCoordinate()[2]) / 2;
                 float mlat = (textSearch.getCoordinate()[1] + textSearch.getCoordinate()[3]) / 2;
                 REQUEST_SEARCH = 1;
-                map.setLonLatSearchPlace(mlat, mlon);
+                temp_Search_lat = mlat;
+                temp_Search_lon = mlon;
+
+                switch (CHOOSE_SEARCH_OR_DIRECTION){
+                    case 0: {
+                        map.setLonLatSearchPlace(mlat, mlon);
+                        CHOOSE_SEARCH_OR_DIRECTION = 1;
+                        break;
+                    }
+                    case 1: {
+                        map.myLocationToDirection(1, mlat, mlon);
+                        break;
+                    }
+                }
+
             } else {
                 // DetailActivity không thành công, không có data trả về.
+                if(temp_Search_lon !=0 && temp_Search_lat !=0) {
+                    switch (CHOOSE_SEARCH_OR_DIRECTION) {
+                        case 0: {
+                            map.setLonLatSearchPlace(temp_Search_lat, temp_Search_lon);
+                            CHOOSE_SEARCH_OR_DIRECTION = 1;
+                            break;
+                        }
+                        case 1: {
+                            map.myLocationToDirection(1, temp_Search_lat, temp_Search_lon);
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
