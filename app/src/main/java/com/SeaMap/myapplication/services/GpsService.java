@@ -2,93 +2,103 @@ package com.SeaMap.myapplication.services;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.GpsSatellite;
-import android.location.GpsStatus;
+import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.Settings;
-import android.widget.Toast;
+import android.os.Looper;
 
-import androidx.annotation.RequiresApi;
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
+import androidx.core.app.ActivityCompat;
 
-import com.SeaMap.myapplication.Activity.MainActivity;
-import com.SeaMap.myapplication.R;
-import com.SeaMap.myapplication.classes.Coordinate;
-import  com.SeaMap.myapplication.function.Distance;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+//import com.google.android.gms.tasks.OnSuccessListener;
+
+//import java.util.concurrent.Executor;
+
 public class GpsService extends Service {
-    private LocationManager mLocationManager;
+    //private LocationManager mLocationManager;
     public static  final int TIME_MIN = 1000 * 60;
     public static  final float DISTANCE_MIN = 200F;//100m will get location
-    private LocationListener mLocationListener;
-
+    public static final int REQUEST_CODE = 1004;
+    boolean locationAccessOK;
+    private LocationCallback locationCallback ;
+   // private LocationListener mLocationListener;
+   LocationRequest locationRequest;
+    private FusedLocationProviderClient fusedLocationClient;
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
         super.onCreate();
+        //location by phuong
 
-        mLocationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                Intent intent = new Intent("location_update");
 
-                intent.putExtra("newLocation", location);
-
-                sendBroadcast( intent );
-            }
-
-            @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String s) {
-
-            }
-            //IF GPS PROVIDER  DONT ACCEPT , DIRECT USER TO SETTING.
-            @Override
-            public void onProviderDisabled(String s) {
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity( intent );
-            }
-        };
-
-        mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,TIME_MIN,DISTANCE_MIN,mLocationListener);
-
-//        Toast.makeText( this, "Service created", Toast.LENGTH_LONG).show();
     }
 
     @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        //return super.onStartCommand(intent, flags, startId);
+        locationAccessOK = CheckLocationAcess();
+        if(locationAccessOK)
+        {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+            createLocationRequest();
+        }
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    Intent intent = new Intent("location_update");
+                    intent.putExtra("newLocation", location);
+                    sendBroadcast( intent );
+                }
+            }
+        };
+        if(locationAccessOK)
+        {
+            startLocationUpdates();
+            getLastLocation();
+        }
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mLocationManager!=null)
-            mLocationManager.removeUpdates(mLocationListener);
+        fusedLocationClient.removeLocationUpdates(locationCallback);//location by phuong
+
 //        Toast.makeText(this, "Service stopped", Toast.LENGTH_LONG).show();
     }
+    protected void createLocationRequest() {
+        locationRequest = LocationRequest.create();
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+    boolean CheckLocationAcess()//location by phuong
+    {
+        boolean permissionAccessCoarseLocationApproved =
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED;
 
+        boolean permissionAccessBackgroundLocationApproved =ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+        return permissionAccessBackgroundLocationApproved||permissionAccessCoarseLocationApproved;
+    }
+    private void startLocationUpdates() {//location by Phuong
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
+    }
     public static double distance( double lon1, double lat1, double lon2, double lat2 ){
 //        double dlat = 6371 * Math.toRadians(Math.abs( l1.getLatitude() - lat ));
 //        double dlon = 6371 * Math.cos( Math.toRadians( Math.abs(
@@ -114,7 +124,24 @@ public class GpsService extends Service {
         else return -1;
     }
 
-
+    void getLastLocation()
+    {
+//        fusedLocationClient.getLastLocation();
+//
+//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+//                    @Override
+//                    public void onSuccess(Location location) {
+//                        // Got last known location. In some rare situations this can be null.
+//                        if (location != null) {
+//                            // Logic to handle location object
+//                            Intent intent = new Intent("location_update");
+//                            intent.putExtra("newLocation", location);
+//                            sendBroadcast( intent );
+//                        }
+//
+//                    }
+//                });
+    }
 
 //    @RequiresApi(api = Build.VERSION_CODES.O)
 //    @Override

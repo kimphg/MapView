@@ -213,8 +213,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             enableButtons();
         }
 
-        //        checkPermission()
-        //        enableButtons();
 
         onDistancePTPView();
         navigationDrawer();
@@ -519,8 +517,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private boolean checkPermission() {
         if (Build.VERSION.SDK_INT >= 23) {
-            return ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED;
+            return (ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED)&&
+                    (ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED);
         }else{
             Snackbar.make( map, "Vui lòng cập nhật phiên bản mới của hệ điều hành", Snackbar.LENGTH_LONG).show();
             return false;
@@ -529,6 +529,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     public void requestPermission(){
         ActivityCompat.requestPermissions( this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+        ActivityCompat.requestPermissions( this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, REQUEST_CODE);
     }
 
     private void showMessageBox(String message, DialogInterface.OnClickListener clickListener ){
