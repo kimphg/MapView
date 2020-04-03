@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Intent intent = new Intent(getApplicationContext(), GpsService.class);
         stopService(intent);
     }
-
+    List<Location> nearbyShips = new ArrayList<Location>();
     @Override
     protected void onResume() {
         super.onResume();
@@ -165,36 +165,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 public void onReceive(Context context, Intent intent) {
 
                     Location newLocation = intent.getParcelableExtra("newLocation");
-//                    sendLocationTest();
+
                     if (newLocation != null) {
                         curLocation = newLocation;
 //                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
                     }
+
+                    for(int i = 0;i<10;i++)
+                    {
+                        Location ship = intent.getParcelableExtra("nearbyShips"+Integer.toString(i));
+                        if(ship!=null)nearbyShips.add(ship);
+                    }
+
                 }
             };
         }
         registerReceiver(broadcastReceiver, new IntentFilter("location_update"));
     }
-    protected void sendLocationTest( ){
-        try {
-            int udpport = 50000;
-            DatagramSocket udpSocket = new DatagramSocket(udpport);
-            InetAddress serverAddr = InetAddress.getByName("27.72.56.161");
-            byte[] buf;
-            if(curLocation!=null)
-            { buf = (Build.MODEL+ " , "+curLocation.getLatitude() + " , " + curLocation.getLongitude()).getBytes();}
-            else
-            {
-                buf = (Build.MODEL+ ",location unknown").getBytes();
-            }
-            DatagramPacket packet = new DatagramPacket(buf, buf.length,serverAddr, udpport);
-            udpSocket.send(packet);
-        } catch (SocketException e) {
-            //Log.e("Udp:", "Socket Error:", e);
-        } catch (IOException e) {
-            //Log.e("Udp Send:", "IO Error:", e);
-        }
-    }
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -237,6 +225,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         Float.parseFloat(Double.toString(curLocation.getLatitude())),
                         Float.parseFloat(Double.toString(curLocation.getLongitude()))
                 );
+                if((nearbyShips!=null)&&(!nearbyShips.isEmpty()))
+                {
+                    map.setNearbyShips(nearbyShips);
+                    nearbyShips.clear();
+                }
             } else {
                 Toast.makeText(MainActivity.this, "Xin hãy kiên nhẫn, thiết bị đang lấy dữ liệu ...", Toast.LENGTH_LONG).show();
             }

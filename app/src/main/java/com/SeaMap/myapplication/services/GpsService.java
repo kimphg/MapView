@@ -8,19 +8,26 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.Parcelable;
 
 import androidx.core.app.ActivityCompat;
 
+import com.SeaMap.myapplication.classes.PacketSender;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 //import com.google.android.gms.tasks.OnSuccessListener;
 
 //import java.util.concurrent.Executor;
 
 public class GpsService extends Service {
+    PacketSender mPacketSender;
     //private LocationManager mLocationManager;
     public static  final int TIME_MIN = 1000 * 60;
     public static  final float DISTANCE_MIN = 200F;//100m will get location
@@ -42,31 +49,37 @@ public class GpsService extends Service {
     @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //return super.onStartCommand(intent, flags, startId);
-        locationAccessOK = CheckLocationAcess();
-        if(locationAccessOK)
-        {
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-            createLocationRequest();
-        }
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) {
                     return;
                 }
+
                 for (Location location : locationResult.getLocations()) {
                     Intent intent = new Intent("location_update");
                     intent.putExtra("newLocation", location);
                     sendBroadcast( intent );
+                    sendOwnLocation(location);
                 }
             }
         };
+        mPacketSender = new PacketSender();
+        mPacketSender.start();
+        locationAccessOK = CheckLocationAcess();
         if(locationAccessOK)
         {
-            startLocationUpdates();
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+            locationRequest = LocationRequest.create();
+            locationRequest.setInterval(30000);
+            locationRequest.setFastestInterval(10000);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            fusedLocationClient.requestLocationUpdates(locationRequest,
+                    locationCallback,
+                    Looper.getMainLooper());
             getLastLocation();
         }
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -77,11 +90,54 @@ public class GpsService extends Service {
 
 //        Toast.makeText(this, "Service stopped", Toast.LENGTH_LONG).show();
     }
-    protected void createLocationRequest() {
-        locationRequest = LocationRequest.create();
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(5000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+
+    protected void sendOwnLocation(Location location ){
+
+        mPacketSender.setDataPacket(makePacket(location));
+        byte[] answer = mPacketSender.getAnswer();
+        if((answer!=null)&&(answer.length>0))
+        {
+            //doc goi tin phan hoi tu may chu
+            int sizeOne = Long.BYTES + Float.BYTES + Float.BYTES ;
+            int index = 0;
+            List<Location> nearbyShips = new ArrayList<Location>();
+            while (index<=(answer.length-sizeOne))
+            {
+                ByteBuffer buffer = ByteBuffer.wrap(answer,index,Long.BYTES);
+                long time = buffer.getLong();
+                buffer = ByteBuffer.wrap(answer,index+Long.BYTES,Float.BYTES);
+                float lon = buffer.getFloat();
+                buffer = ByteBuffer.wrap(answer,index+Long.BYTES+Float.BYTES,Float.BYTES);
+                float lat = buffer.getFloat();
+                Location ship = new Location("GPS");
+                ship.setLongitude(lon);
+                ship.setLatitude(lat);
+                nearbyShips.add(ship);
+                index=index+sizeOne;
+            }
+            int i = 0;
+            for(Location ship:nearbyShips)
+            {
+                Intent intent = new Intent("location_update");
+                intent.putExtra("nearbyShips"+Integer.toString(i), ship);
+                i++;
+                sendBroadcast( intent );
+                sendOwnLocation(location);
+            }
+        }
+    }
+    private byte [] makePacket(Location location ) {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES+Float.BYTES+Float.BYTES);
+        byteBuffer.putLong(System.currentTimeMillis());
+        byteBuffer.putFloat((float)(location.getLongitude()));
+        byteBuffer.putFloat((float)(location.getLatitude()));
+        return byteBuffer.array();
+    }
+    boolean CheckNetworkPermission()
+    {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
+                == PackageManager.PERMISSION_GRANTED;
     }
     boolean CheckLocationAcess()//location by phuong
     {
@@ -94,11 +150,7 @@ public class GpsService extends Service {
                 == PackageManager.PERMISSION_GRANTED;
         return permissionAccessBackgroundLocationApproved||permissionAccessCoarseLocationApproved;
     }
-    private void startLocationUpdates() {//location by Phuong
-        fusedLocationClient.requestLocationUpdates(locationRequest,
-                locationCallback,
-                Looper.getMainLooper());
-    }
+
     public static double distance( double lon1, double lat1, double lon2, double lat2 ){
 //        double dlat = 6371 * Math.toRadians(Math.abs( l1.getLatitude() - lat ));
 //        double dlon = 6371 * Math.cos( Math.toRadians( Math.abs(

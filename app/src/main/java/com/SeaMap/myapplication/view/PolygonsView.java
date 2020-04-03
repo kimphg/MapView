@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.location.Location;
 import android.os.Build;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -22,6 +23,7 @@ import com.SeaMap.myapplication.classes.ReadFile;
 import com.SeaMap.myapplication.object.Polyline;
 import com.SeaMap.myapplication.object.Region;
 
+import java.util.List;
 import java.util.Vector;
 
 import static java.lang.Math.cos;
@@ -160,7 +162,17 @@ public class PolygonsView extends View {
             int height = mbitmap.getHeight();
             int wight = mbitmap.getWidth();
             Paint locationPaint = new Paint();
-            canvas.drawBitmap(mbitmap, p1.x - height/2, p1.y - wight/2, locationPaint);
+            canvas.drawBitmap(mbitmap, p1.x - height/2, p1.y - wight, locationPaint);
+            //draw nearby ships
+            if(nearbyShips!=null)
+                if(nearbyShips.size()>0) {
+                    locationPaint.setStyle(Paint.Style.FILL);
+                    locationPaint.setColor(Color.BLACK);
+                    for (Location ship : nearbyShips) {
+                        Point pship = ConvWGSToScrPoint((float) ship.getLongitude(), (float) ship.getLatitude());
+                        canvas.drawCircle(pship.x, pship.y, 5, locationPaint);
+                    }
+                }
         }
     }
 
@@ -230,7 +242,11 @@ public class PolygonsView extends View {
         float olon = (x-scrCtX)/mScale/(111.31949079327357f*(float)cos(refLat))+ mlon;
         return new PointF(olon,olat);
     }
-
+    List<Location> nearbyShips;
+    public void setNearbyShips(List<Location> nearbyShips_input)
+    {
+        nearbyShips = nearbyShips_input;
+    }
     public void setLonLatMyLocation(float latLoc, float lonLoc){
         mlat = shipLocationLat = latLoc;
         mlon = shipLocationLon = lonLoc;
