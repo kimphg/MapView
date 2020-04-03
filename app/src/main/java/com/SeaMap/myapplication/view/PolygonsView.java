@@ -26,6 +26,7 @@ import com.SeaMap.myapplication.object.Region;
 import java.util.List;
 import java.util.Vector;
 
+import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 
 public class PolygonsView extends View {
@@ -39,7 +40,7 @@ public class PolygonsView extends View {
     protected float shipLocationLon = 105.43f, shipLocationLat = 18.32f;
     protected boolean MYLOCATION = false;
 
-    private Paint cusPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint();
+    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint();
     private ScaleGestureDetector scaleGestureDetector;
     protected PointF dragStart,dragStop;
 
@@ -56,19 +57,21 @@ public class PolygonsView extends View {
         //dùng biến viewLat, viewLon để làm trơn sự dịch chuyển tâm màn hình
         viewLat += (mlat- viewLat)/2.0;
         viewLon += (mlon- viewLon)/2.0;
+        if(abs(mlat- viewLat)+abs(mlon-viewLon) >0.001)invalidate();
+
         scrCtY = getHeight() / 2;
         scrCtX = getWidth() / 2;
 
         PointF pointT1 = ConvScrPointToWGS(scrCtX * 2,0);
         PointF pointT3 = ConvScrPointToWGS(0, scrCtY * 2);
 
-        cusPaint.setAntiAlias(true);
-        cusPaint.setStyle(Paint.Style.FILL);
-        cusPaint.setColor(Color.rgb(249, 164, 23));
-
+        landPaint.setAntiAlias(true);
+        landPaint.setStyle(Paint.Style.FILL);
+        landPaint.setColor(Color.rgb(201, 185, 123));
+        
         riverPaint.setAntiAlias(true);
         riverPaint.setStyle(Paint.Style.FILL);
-        riverPaint.setColor(Color.rgb(102, 178, 255));
+        riverPaint.setColor(Color.rgb(115, 178, 235));
 
         //DRAW POLYGON
         for(int lon = (int) pointT3.x - 2; lon<= (int) pointT1.x + 2; lon++) {
@@ -94,7 +97,7 @@ public class PolygonsView extends View {
                             pathRegion.lineTo(point1.x, point1.y);
                         }
                     }
-                    canvas.drawPath(pathRegion, cusPaint);
+                    canvas.drawPath(pathRegion, landPaint);
                 }
             }
         }
