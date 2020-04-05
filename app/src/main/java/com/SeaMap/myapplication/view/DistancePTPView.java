@@ -80,7 +80,6 @@ public class DistancePTPView extends View {
         v.layout(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
         v.draw(c);
 
-
         return bitmap;
     }
 

@@ -280,6 +280,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private void onRoute() {
         //Khi khoi tao an di
         route_layout = findViewById(R.id.route_layout);
+
         route_layout.setVisibility(View.INVISIBLE);
 
         routesListView = findViewById(R.id.route_listview);

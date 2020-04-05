@@ -128,10 +128,11 @@ public class SeaMap  extends PolygonsView {
             searchPlace_lat = latDirectionLoc;
             searchPlace_lon = lonDirectionLoc;
         }
-        int temp1 = (int) abs(shipLocationLat - searchPlace_lat);
-        int temp2 = (int) abs(shipLocationLon - searchPlace_lon);
-        if(temp1 >= temp2) mScale = temp1 / temp2;
-        else mScale = temp2 / temp1;
+/*        int deltaLat = (int) abs(shipLocationLat - searchPlace_lat);
+        int deltaLon = (int) abs(shipLocationLon - searchPlace_lon);*/
+        mlat = (searchPlace_lat + shipLocationLat) / 2;
+        mlon = (searchPlace_lon + shipLocationLon) / 2;
+        mScale = scrCtY / (abs(shipLocationLat - searchPlace_lat) * 111.132954f) ;
         invalidate();
     }
 

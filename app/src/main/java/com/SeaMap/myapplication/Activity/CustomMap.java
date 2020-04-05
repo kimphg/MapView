@@ -20,6 +20,5 @@ public class CustomMap extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.custom_map);
-        mMap = findViewById(R.id.map);
     }
 }

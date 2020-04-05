@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:height="7px"
-        android:width="7px"
+    <item android:height="21px"
+        android:width="21px"
         >
         <shape
             android:shape="oval">
             <solid android:color="#000000"/>
         </shape>
     </item>
-    <item android:height="5px"
-        android:width="5px"
+    <item android:height="17px"
+        android:width="17px"
         android:gravity="center"
         >
         <shape
@@ -18,8 +18,8 @@
             <solid android:color="#AC1548"/>
         </shape>
     </item>
-    <item android:height="1px"
-        android:width="1px"
+    <item android:height="5px"
+        android:width="5px"
         android:gravity="center"
         >
         <shape xmlns:android="http://schemas.android.com/apk/res/android"

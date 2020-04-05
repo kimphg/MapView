@@ -9,8 +9,11 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Build;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -20,6 +23,7 @@ import androidx.annotation.RequiresApi;
 import com.SeaMap.myapplication.Activity.MainActivity;
 import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.object.Buoy;
 import com.SeaMap.myapplication.object.Polyline;
 import com.SeaMap.myapplication.object.Region;
 
@@ -43,11 +47,16 @@ public class PolygonsView extends View {
     private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint();
     private ScaleGestureDetector scaleGestureDetector;
     protected PointF dragStart,dragStop;
+    protected Context mCtx;
+    protected Bitmap bitmapBouy;
+    protected Paint buoyPaint;
 
     public PolygonsView(Context context) {
         super(context);
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleLister());
         setOnLongClickListener(infoAcoordinate);
+        mCtx = context;
+        bitmapBouy = getBitmap(R.drawable.buoy_object);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -57,7 +66,7 @@ public class PolygonsView extends View {
         //dùng biến viewLat, viewLon để làm trơn sự dịch chuyển tâm màn hình
         viewLat += (mlat- viewLat)/2.0;
         viewLon += (mlon- viewLon)/2.0;
-        if(abs(mlat- viewLat)+abs(mlon-viewLon) >0.001)invalidate();
+        if(abs(mlat- viewLat)+abs(mlon-viewLon) >0.001) invalidate();
 
         scrCtY = getHeight() / 2;
         scrCtX = getWidth() / 2;
@@ -129,6 +138,8 @@ public class PolygonsView extends View {
             }
         }
 
+
+
         if(mScale > 5 && mScale < 18){
             for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
                 for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
@@ -155,8 +166,21 @@ public class PolygonsView extends View {
                         depthLinePaint.setColor(Color.rgb(red, green, blue));
                         canvas.drawLines(pointis, depthLinePaint);
                     }
+
+                    //draw buoy
+                    Vector<Buoy> bouyVectors = ReadFile.listBuoys.get(area);
+                    if (bouyVectors == null) continue;
+                    for (int k = 0; k < bouyVectors.size(); k++) {
+                        Buoy buoy = bouyVectors.get(k);
+                        float [] coor = buoy.getCoordinates();
+                        Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
+                        buoyPaint = new Paint();
+                        canvas.drawBitmap(bitmapBouy,p.x , p.y ,buoyPaint);
+                    }
+
                 }
             }
+            Log.d("Huy", "Huy");
         }
 
         if (MYLOCATION) {
@@ -178,6 +202,8 @@ public class PolygonsView extends View {
                 }
         }
     }
+
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -228,6 +254,17 @@ public class PolygonsView extends View {
             return false;
         }
     };
+
+    //Ham dung cannvas de ve buoy tu drawable/buoy_object
+    private Bitmap getBitmap(int drawableRes) {
+        Drawable drawable = getResources().getDrawable(drawableRes);
+        Canvas canvas = new Canvas();
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        canvas.setBitmap(bitmap);
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
 
     public static Point ConvWGSToScrPoint(float m_Long,float m_Lat)// converting lat lon  WGS coordinates to screen XY coordinates
     {
