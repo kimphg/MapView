@@ -177,10 +177,8 @@ public class PolygonsView extends View {
                         buoyPaint = new Paint();
                         canvas.drawBitmap(bitmapBouy,p.x , p.y ,buoyPaint);
                     }
-
                 }
             }
-            Log.d("Huy", "Huy");
         }
 
         if (MYLOCATION) {
