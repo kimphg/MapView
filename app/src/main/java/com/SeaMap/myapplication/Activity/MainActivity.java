@@ -24,6 +24,7 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -138,6 +139,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     //todo: thong so khac
     private float temp_Search_lon = 0, temp_Search_lat = 0;
+    private int heightScr, widthScr;
 
     @Override
     protected void onStart() {
@@ -207,13 +209,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             enableButtons();
         }
 
-
+        //Lay thong so man hinh
+        getDisplayMetrics();
+        //
         onDistancePTPView();
+        //
         navigationDrawer();
         onRoute();
         onDensityView();
         onScreecBtn_Direction_Search();
-        //enableButtons();
+
     }
 
     //Todo: init and add onclick for button on screen
@@ -282,6 +287,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private void onRoute() {
         //Khi khoi tao an di
         route_layout = findViewById(R.id.route_layout);
+        route_layout.getLayoutParams().height = heightScr * 2 / 5;
+        route_layout.requestLayout();
 
         route_layout.setVisibility(View.INVISIBLE);
 
@@ -492,7 +499,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         frameLayout.removeView(distancePTPView);
                         distancePTPView = null;
                         route_layout.setVisibility(View.INVISIBLE);
-                        route_layout.getLayoutParams().height = 900;
+                        route_layout.getLayoutParams().height = heightScr * 2 / 5;
                         route_layout.requestLayout();
 
                         namePlaces.clear();
@@ -729,5 +736,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public boolean onQueryTextChange(String newText) {
         //arrayAdapter.filter(text);
         return false;
+    }
+
+    //Ham lay kich thuoc man hinh
+    private void getDisplayMetrics(){
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        heightScr = displayMetrics.heightPixels;
+        widthScr = displayMetrics.widthPixels;
     }
 }

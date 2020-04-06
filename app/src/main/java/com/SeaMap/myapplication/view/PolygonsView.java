@@ -50,6 +50,7 @@ public class PolygonsView extends View {
     protected Context mCtx;
     protected Bitmap bitmapBouy;
     protected Paint buoyPaint;
+    private int heightBuoy, widthBuoy;
 
     public PolygonsView(Context context) {
         super(context);
@@ -175,7 +176,8 @@ public class PolygonsView extends View {
                             float[] coor = buoy.getCoordinates();
                             Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
                             buoyPaint = new Paint();
-                            canvas.drawBitmap(bitmapBouy, p.x, p.y, buoyPaint);
+                            //canvas.drawBitmap(bitmapBouy, p.x + widthBuoy, p.y + heightBuoy , buoyPaint);
+                            canvas.drawCircle(p.x, p.y, 5, buoyPaint);
                         }
                     }
                 }
@@ -262,6 +264,8 @@ public class PolygonsView extends View {
         canvas.setBitmap(bitmap);
         drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
         drawable.draw(canvas);
+        heightBuoy = getHeight();
+        widthBuoy = getWidth();
         return bitmap;
     }
 

@@ -82,6 +82,7 @@ public class SeaMap  extends PolygonsView {
                 if (tT == null) continue;
                 for (int k = 0; k < tT.size(); k++) {
                     Text text = tT.get(k);
+                    if(text.getName().length() == 0) continue;
                     if (mScale < 5 && text.getType() != 3) continue;
                     Point p1 = ConvWGSToScrPoint(text.getCoordinate()[0], text.getCoordinate()[1]);
                     Point p2 = ConvWGSToScrPoint(text.getCoordinate()[2], text.getCoordinate()[3]);
@@ -95,8 +96,8 @@ public class SeaMap  extends PolygonsView {
                     mPath.moveTo(p1.x, p1.y);
                     mPath.lineTo(p2.x, p2.y);
                     int textSize = (int) distance * 2 / text.getName().length();
-                    if(textSize>scrCtX )continue;
-                    if(textSize<scrCtX * 0.05)continue;
+                    if(textSize > scrCtX )continue;
+                    if(textSize < scrCtX * 0.05)continue;
 
                     if (mScale <= 4f && text.getType() == 3) {
                         textPaint.setTextSize((int) distance * 2 / text.getName().length());
