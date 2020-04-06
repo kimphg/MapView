@@ -139,7 +139,7 @@ public class SeaMap  extends PolygonsView {
     public void setLonLatSearchPlace(float latSearchLoc, float lonSearchLoc){
         mlat = searchPlace_lat = latSearchLoc;
         mlon = searchPlace_lon = lonSearchLoc;
-        mScale = 10;
+        mScale = 15;
         SEARCHPLACE = true;
         DIRECTIONS = false;
         invalidate();

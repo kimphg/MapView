@@ -140,7 +140,7 @@ public class PolygonsView extends View {
 
 
 
-        if(mScale > 5 && mScale < 18){
+        if( mScale >5){
             for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
                 for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
                     String area = lon + "-" + lat;
@@ -166,16 +166,17 @@ public class PolygonsView extends View {
                         depthLinePaint.setColor(Color.rgb(red, green, blue));
                         canvas.drawLines(pointis, depthLinePaint);
                     }
-
-                    //draw buoy
-                    Vector<Buoy> bouyVectors = ReadFile.listBuoys.get(area);
-                    if (bouyVectors == null) continue;
-                    for (int k = 0; k < bouyVectors.size(); k++) {
-                        Buoy buoy = bouyVectors.get(k);
-                        float [] coor = buoy.getCoordinates();
-                        Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
-                        buoyPaint = new Paint();
-                        canvas.drawBitmap(bitmapBouy,p.x , p.y ,buoyPaint);
+                    if( mScale > 10) {
+                        //draw buoy
+                        Vector<Buoy> bouyVectors = ReadFile.listBuoys.get(area);
+                        if (bouyVectors == null) continue;
+                        for (int k = 0; k < bouyVectors.size(); k++) {
+                            Buoy buoy = bouyVectors.get(k);
+                            float[] coor = buoy.getCoordinates();
+                            Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
+                            buoyPaint = new Paint();
+                            canvas.drawBitmap(bitmapBouy, p.x, p.y, buoyPaint);
+                        }
                     }
                 }
             }
@@ -185,9 +186,9 @@ public class PolygonsView extends View {
             Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
             Point p1 = ConvWGSToScrPoint(shipLocationLon, shipLocationLat);
             int height = mbitmap.getHeight();
-            int wight = mbitmap.getWidth();
+            int width = mbitmap.getWidth();
             Paint locationPaint = new Paint();
-            canvas.drawBitmap(mbitmap, p1.x - height/2, p1.y - wight, locationPaint);
+            canvas.drawBitmap(mbitmap, p1.x - height/2, p1.y - width, locationPaint);
             //draw nearby ships
             if(nearbyShips!=null)
                 if(nearbyShips.size()>0) {
@@ -238,7 +239,7 @@ public class PolygonsView extends View {
         @Override
         public boolean onScale(ScaleGestureDetector sgd){
             mScale *= sgd.getScaleFactor();
-            mScale = Math.max(2f, Math.min(mScale, 25));
+            mScale = Math.max(0.5f, Math.min(mScale, 50));
             invalidate();
             return true;
         }
