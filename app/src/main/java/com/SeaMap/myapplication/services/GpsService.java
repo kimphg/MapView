@@ -93,23 +93,22 @@ public class GpsService extends Service {
 
 
     protected void sendOwnLocation(Location location ){
-
+        //gui toa do den may chu
         mPacketSender.setDataPacket(makePacket(location));
+        //doc goi tin phan hoi tu may chu
         byte[] answer = mPacketSender.getAnswer();
         if((answer!=null)&&(answer.length>0))
         {
-            //doc goi tin phan hoi tu may chu
-            int sizeOne = Long.BYTES + Float.BYTES + Float.BYTES ;
+            int sizeOne = Short.BYTES + Float.BYTES + Float.BYTES ;
             int index = 0;
             List<Location> nearbyShips = new ArrayList<Location>();
             while (index<=(answer.length-sizeOne))
             {
-                ByteBuffer buffer = ByteBuffer.wrap(answer,index,Long.BYTES);
-                long time = buffer.getLong();
-                buffer = ByteBuffer.wrap(answer,index+Long.BYTES,Float.BYTES);
-                float lon = buffer.getFloat();
-                buffer = ByteBuffer.wrap(answer,index+Long.BYTES+Float.BYTES,Float.BYTES);
-                float lat = buffer.getFloat();
+                ByteBuffer buffer;
+                buffer = ByteBuffer.wrap(answer,index,10);
+                short time = buffer.getShort(0);
+                float lon = buffer.getFloat(2);
+                float lat = buffer.getFloat(6);
                 Location ship = new Location("GPS");
                 ship.setLongitude(lon);
                 ship.setLatitude(lat);
@@ -123,7 +122,7 @@ public class GpsService extends Service {
                 intent.putExtra("nearbyShips"+Integer.toString(i), ship);
                 i++;
                 sendBroadcast( intent );
-                sendOwnLocation(location);
+                //sendOwnLocation(location);
             }
         }
     }

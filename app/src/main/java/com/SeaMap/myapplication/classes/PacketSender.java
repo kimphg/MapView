@@ -41,8 +41,11 @@ public class PacketSender extends Thread {
     }
 
     public byte[] getAnswer() {
-        if(incomePacketPending)
-        return incomeBuffer;
+        if(incomePacketPending) {
+
+            incomePacketPending = false;
+            return incomeBuffer;
+        }
         else return null;
     }
 
@@ -51,8 +54,8 @@ public class PacketSender extends Thread {
         while(true) {
 
             try {
-
                 udpSocket.receive(incomePacket);
+                if(incomePacket.getLength()>=10)
                 incomePacketPending = true;
             } catch (SocketTimeoutException e) {
                 // send outcome packet

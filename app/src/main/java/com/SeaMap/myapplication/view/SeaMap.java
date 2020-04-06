@@ -94,6 +94,9 @@ public class SeaMap  extends PolygonsView {
                     mPath = new Path();
                     mPath.moveTo(p1.x, p1.y);
                     mPath.lineTo(p2.x, p2.y);
+                    int textSize = (int) distance * 2 / text.getName().length();
+                    if(textSize>scrCtX )continue;
+                    if(textSize<scrCtX * 0.05)continue;
 
                     if (mScale <= 4f && text.getType() == 3) {
                         textPaint.setTextSize((int) distance * 2 / text.getName().length());

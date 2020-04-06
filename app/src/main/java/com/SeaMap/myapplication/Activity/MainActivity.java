@@ -26,6 +26,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -187,6 +188,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
         frameLayout = findViewById(R.id.content_frame);
@@ -610,8 +612,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 if( accepted ){
                     Snackbar.make( map, "Cho phép sử dụng vị trí", Snackbar.LENGTH_LONG).show();
-                    Intent intent = new Intent(getApplicationContext(), GpsService.class);
-                    startService(intent);
+                    //Intent intent = new Intent(getApplicationContext(), GpsService.class);
+                    //startService(intent);
                     enableButtons();
                 }
                 else{
