@@ -8,6 +8,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.nio.Buffer;
 
 public class PacketSender extends Thread {
     byte[] buf;
@@ -42,9 +43,10 @@ public class PacketSender extends Thread {
 
     public byte[] getAnswer() {
         if(incomePacketPending) {
-
+            byte[] output = new byte[incomePacket.getLength()];
+            System.arraycopy(incomeBuffer,0,output,0,incomePacket.getLength());
             incomePacketPending = false;
-            return incomeBuffer;
+            return  output;
         }
         else return null;
     }

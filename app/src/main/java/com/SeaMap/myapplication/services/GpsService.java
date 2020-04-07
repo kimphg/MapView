@@ -106,9 +106,10 @@ public class GpsService extends Service {
             {
                 ByteBuffer buffer;
                 buffer = ByteBuffer.wrap(answer,index,10);
-                short time = buffer.getShort(0);
-                float lon = buffer.getFloat(2);
-                float lat = buffer.getFloat(6);
+
+                float lon = buffer.getFloat(0);
+                float lat = buffer.getFloat(4);
+                short time = buffer.getShort(8);
                 Location ship = new Location("GPS");
                 ship.setLongitude(lon);
                 ship.setLatitude(lat);

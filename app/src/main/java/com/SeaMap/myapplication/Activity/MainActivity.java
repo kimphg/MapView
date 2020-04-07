@@ -7,7 +7,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-
+import android.util.DisplayMetrics;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -24,7 +24,6 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -140,7 +139,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     //todo: thong so khac
     private float temp_Search_lon = 0, temp_Search_lat = 0;
     private int heightScr, widthScr;
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -171,13 +169,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                     if (newLocation != null) {
                         curLocation = newLocation;
+                        map.setLonLatMyLocation(
+                                Float.parseFloat(Double.toString(curLocation.getLatitude())),
+                                Float.parseFloat(Double.toString(curLocation.getLongitude())),false
+                        );
 //                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
                     }
-
+                    if((nearbyShips!=null)&&(!nearbyShips.isEmpty()))
+                    {
+                        map.setNearbyShips(nearbyShips);
+                        nearbyShips.clear();
+                    }
                     for(int i = 0;i<10;i++)
                     {
                         Location ship = intent.getParcelableExtra("nearbyShips"+Integer.toString(i));
-                        if(ship!=null)nearbyShips.add(ship);
+                        if(ship!=null)
+                            nearbyShips.add(ship);
                     }
 
                 }
@@ -213,12 +220,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         getDisplayMetrics();
         //
         onDistancePTPView();
-        //
         navigationDrawer();
         onRoute();
         onDensityView();
         onScreecBtn_Direction_Search();
-
+        //enableButtons();
     }
 
     //Todo: init and add onclick for button on screen
@@ -230,13 +236,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if (curLocation != null) {
                 map.setLonLatMyLocation(
                         Float.parseFloat(Double.toString(curLocation.getLatitude())),
-                        Float.parseFloat(Double.toString(curLocation.getLongitude()))
+                        Float.parseFloat(Double.toString(curLocation.getLongitude())),true
                 );
-                if((nearbyShips!=null)&&(!nearbyShips.isEmpty()))
-                {
-                    map.setNearbyShips(nearbyShips);
-                    nearbyShips.clear();
-                }
+
             } else {
                 Toast.makeText(MainActivity.this, "Xin hãy kiên nhẫn, thiết bị đang lấy dữ liệu ...", Toast.LENGTH_LONG).show();
             }
@@ -289,7 +291,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         route_layout = findViewById(R.id.route_layout);
         route_layout.getLayoutParams().height = heightScr * 2 / 5;
         route_layout.requestLayout();
-
         route_layout.setVisibility(View.INVISIBLE);
 
         routesListView = findViewById(R.id.route_listview);

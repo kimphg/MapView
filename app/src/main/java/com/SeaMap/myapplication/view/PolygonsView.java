@@ -51,7 +51,6 @@ public class PolygonsView extends View {
     protected Bitmap bitmapBouy;
     protected Paint buoyPaint;
     private int heightBuoy, widthBuoy;
-
     public PolygonsView(Context context) {
         super(context);
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleLister());
@@ -176,6 +175,7 @@ public class PolygonsView extends View {
                             float[] coor = buoy.getCoordinates();
                             Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
                             buoyPaint = new Paint();
+                            buoyPaint.setColor(Color.YELLOW);
                             //canvas.drawBitmap(bitmapBouy, p.x + widthBuoy, p.y + heightBuoy , buoyPaint);
                             canvas.drawCircle(p.x, p.y, 5, buoyPaint);
                         }
@@ -185,23 +185,28 @@ public class PolygonsView extends View {
         }
 
         if (MYLOCATION) {
-            Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
+            //Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
             Point p1 = ConvWGSToScrPoint(shipLocationLon, shipLocationLat);
-            int height = mbitmap.getHeight();
-            int width = mbitmap.getWidth();
             Paint locationPaint = new Paint();
-            canvas.drawBitmap(mbitmap, p1.x - height/2, p1.y - width, locationPaint);
+            locationPaint.setStyle(Paint.Style.FILL);
+            locationPaint.setColor(Color.argb(120, 0, 120, 100));
+            canvas.drawCircle(p1.x, p1.y, 10, locationPaint);
+            //int height = mbitmap.getHeight();
+            //int width = mbitmap.getWidth();
+
+            //canvas.drawBitmap(mbitmap, p1.x - height/2, p1.y - width, locationPaint);
             //draw nearby ships
             if(nearbyShips!=null)
                 if(nearbyShips.size()>0) {
-                    locationPaint.setStyle(Paint.Style.FILL);
-                    locationPaint.setColor(Color.BLACK);
+                    locationPaint.setColor(Color.argb(150, 0, 0, 100));
                     for (Location ship : nearbyShips) {
                         Point pship = ConvWGSToScrPoint((float) ship.getLongitude(), (float) ship.getLatitude());
-                        canvas.drawCircle(pship.x, pship.y, 5, locationPaint);
+                        canvas.drawCircle(pship.x, pship.y, 7, locationPaint);
                     }
                 }
         }
+
+
     }
 
 
@@ -290,11 +295,17 @@ public class PolygonsView extends View {
     {
         nearbyShips = nearbyShips_input;
     }
-    public void setLonLatMyLocation(float latLoc, float lonLoc){
-        mlat = shipLocationLat = latLoc;
-        mlon = shipLocationLon = lonLoc;
+    public void setLonLatMyLocation(float latLoc, float lonLoc,boolean gotoLoc){
+        shipLocationLat = latLoc;
+        shipLocationLon = lonLoc;
+        if(gotoLoc)
+        {
+            mlat = shipLocationLat;
+            mlon = shipLocationLon;
+        }
         mScale = 10;
         MYLOCATION =true;
+
         invalidate();
     }
 }
