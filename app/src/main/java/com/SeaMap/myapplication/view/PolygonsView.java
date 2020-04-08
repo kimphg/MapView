@@ -175,7 +175,7 @@ public class PolygonsView extends View {
                             float[] coor = buoy.getCoordinates();
                             Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
                             buoyPaint = new Paint();
-                            buoyPaint.setColor(Color.YELLOW);
+                            buoyPaint.setColor(Color.MAGENTA);
                             //canvas.drawBitmap(bitmapBouy, p.x + widthBuoy, p.y + heightBuoy , buoyPaint);
                             canvas.drawCircle(p.x, p.y, 5, buoyPaint);
                         }
@@ -246,7 +246,7 @@ public class PolygonsView extends View {
         @Override
         public boolean onScale(ScaleGestureDetector sgd){
             mScale *= sgd.getScaleFactor();
-            mScale = Math.max(0.5f, Math.min(mScale, 50));
+            mScale = Math.max(0.5f, Math.min(mScale, 150));
             invalidate();
             return true;
         }
@@ -302,8 +302,9 @@ public class PolygonsView extends View {
         {
             mlat = shipLocationLat;
             mlon = shipLocationLon;
+            mScale = 10;
         }
-        mScale = 10;
+
         MYLOCATION =true;
 
         invalidate();
