@@ -142,10 +142,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onStart() {
         super.onStart();
+        StartLocationService();
+    }
+    protected void StartLocationService()
+    {
         Intent intent = new Intent( getApplicationContext(), GpsService.class);
         startService( intent );
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -211,6 +214,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         ///
         if (!checkPermission()) {
             requestPermission();
+            enableButtons();
         }
         else{
             enableButtons();
@@ -620,8 +624,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 if( accepted ){
                     Snackbar.make( map, "Cho phép sử dụng vị trí", Snackbar.LENGTH_LONG).show();
-                    //Intent intent = new Intent(getApplicationContext(), GpsService.class);
-                    //startService(intent);
+                    StartLocationService();
                     enableButtons();
                 }
                 else{

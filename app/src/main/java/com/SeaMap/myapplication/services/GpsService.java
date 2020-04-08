@@ -32,7 +32,7 @@ public class GpsService extends Service {
     public static  final int TIME_MIN = 1000 * 60;
     public static  final float DISTANCE_MIN = 200F;//100m will get location
     public static final int REQUEST_CODE = 1004;
-    boolean locationAccessOK;
+    boolean locationAccessOK = false;
     private LocationCallback locationCallback ;
    // private LocationListener mLocationListener;
    LocationRequest locationRequest;
@@ -68,6 +68,18 @@ public class GpsService extends Service {
         mPacketSender.start();
         locationAccessOK = CheckLocationAcess();
         if(locationAccessOK)
+        {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+            locationRequest = LocationRequest.create();
+            locationRequest.setInterval(30000);
+            locationRequest.setFastestInterval(10000);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            fusedLocationClient.requestLocationUpdates(locationRequest,
+                    locationCallback,
+                    Looper.getMainLooper());
+            getLastLocation();
+        }
+        else
         {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
             locationRequest = LocationRequest.create();
