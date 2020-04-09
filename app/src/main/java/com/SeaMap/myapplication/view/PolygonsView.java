@@ -1,19 +1,14 @@
 package com.SeaMap.myapplication.view;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Build;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -21,7 +16,6 @@ import android.view.View;
 import androidx.annotation.RequiresApi;
 
 import com.SeaMap.myapplication.Activity.MainActivity;
-import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.ReadFile;
 import com.SeaMap.myapplication.object.Buoy;
 import com.SeaMap.myapplication.object.Polyline;
@@ -49,15 +43,37 @@ public class PolygonsView extends View {
     private ScaleGestureDetector scaleGestureDetector;
     protected PointF dragStart,dragStop;
     protected Context mCtx;
-    protected Bitmap bitmapBouy;
-    protected Paint buoyPaint;
-    private int heightBuoy, widthBuoy;
+//    protected Bitmap bitmapBouy;
+    protected Paint buoyPaint = new Paint();
+//    private int heightBuoy, widthBuoy;
     public PolygonsView(Context context) {
         super(context);
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleLister());
         setOnLongClickListener(infoAcoordinate);
         mCtx = context;
-        bitmapBouy = getBitmap(R.drawable.buoy_object);
+        //bitmapBouy = getBitmap(R.drawable.buoy_object);
+
+    }
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh)
+    {
+        super.onSizeChanged(w, h, oldw, oldh);
+        scrCtY = h / 2;
+        scrCtX = w / 2;
+        initPaints();
+        invalidate();
+    }
+
+    private void initPaints() {
+        landPaint.setAntiAlias(true);
+        landPaint.setStyle(Paint.Style.FILL);
+        landPaint.setColor(Color.rgb(201, 185, 123));
+
+        riverPaint.setAntiAlias(true);
+        riverPaint.setStyle(Paint.Style.FILL);
+        riverPaint.setColor(Color.rgb(115, 178, 235));
+
+        buoyPaint.setColor(Color.MAGENTA);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -69,43 +85,28 @@ public class PolygonsView extends View {
         viewLon += (mlon- viewLon)/2.0;
         if(abs(mlat- viewLat)+abs(mlon-viewLon) >0.001) invalidate();
 
-        scrCtY = getHeight() / 2;
-        scrCtX = getWidth() / 2;
-
         PointF pointT1 = ConvScrPointToWGS(scrCtX * 2,0);
         PointF pointT3 = ConvScrPointToWGS(0, scrCtY * 2);
-
-        landPaint.setAntiAlias(true);
-        landPaint.setStyle(Paint.Style.FILL);
-        landPaint.setColor(Color.rgb(201, 185, 123));
-        
-        riverPaint.setAntiAlias(true);
-        riverPaint.setStyle(Paint.Style.FILL);
-        riverPaint.setColor(Color.rgb(115, 178, 235));
-
         //DRAW POLYGON
         for(int lon = (int) pointT3.x - 2; lon<= (int) pointT1.x + 2; lon++) {
             for (int lat = (int) pointT3.y - 2; lat <= (int) pointT1.y + 2; lat++) {
-                String area = lon + "-" + lat;
                 Vector<Region> regions;
                 if(mScale < 8) {
-                    regions = ReadFile.BaseRegions.get(area);
+                    regions = ReadFile.BaseRegions.get(lon + "-" + lat);
                 }
                 else
-                    regions = ReadFile.Poligons.get(area);
+                    regions = ReadFile.Poligons.get(lon + "-" + lat);
                 if(regions == null) continue;
                 for(int k =0;  k< regions.size() ; k++){
                     Region polygon = regions.get(k);
                     if(polygon == null) continue;
                     Path pathRegion = new Path();
-                    for (int i = 0; i < polygon.getCoordinate().length; i = i + 2) {
-                        if (i == 0) {
-                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
-                            pathRegion.moveTo(point1.x, point1.y);
-                        } else {
-                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
-                            pathRegion.lineTo(point1.x, point1.y);
-                        }
+                    float[] coordinate = polygon.getCoordinate();
+                    Point point1 = ConvWGSToScrPoint(coordinate[0], coordinate[1]);
+                    pathRegion.moveTo(point1.x, point1.y);
+                    for (int i = 0; i < coordinate.length-1; i = i + 2) {
+                        point1 = ConvWGSToScrPoint(coordinate[i], coordinate[i + 1]);
+                        pathRegion.lineTo(point1.x, point1.y);
                     }
                     canvas.drawPath(pathRegion, landPaint);
                 }
@@ -125,14 +126,12 @@ public class PolygonsView extends View {
                     Region polygon = river.get(k);
                     if(polygon == null) continue;
                     Path pathRegion = new Path();
-                    for (int i = 0; i < polygon.getCoordinate().length; i = i + 2) {
-                        if (i == 0) {
-                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
-                            pathRegion.moveTo(point1.x, point1.y);
-                        } else {
-                            Point point1 = ConvWGSToScrPoint(polygon.getCoordinate()[i], polygon.getCoordinate()[i + 1]);
-                            pathRegion.lineTo(point1.x, point1.y);
-                        }
+                    float[] coordinate = polygon.getCoordinate();
+                    Point point1 = ConvWGSToScrPoint(coordinate[0], coordinate[1]);
+                    pathRegion.moveTo(point1.x, point1.y);
+                    for (int i = 0; i < coordinate.length-1; i = i + 2) {
+                        point1 = ConvWGSToScrPoint(coordinate[i], coordinate[i + 1]);
+                        pathRegion.lineTo(point1.x, point1.y);
                     }
                     canvas.drawPath(pathRegion, riverPaint);
                 }
@@ -162,7 +161,7 @@ public class PolygonsView extends View {
                         }
                         int color = pl.getPen()[2];
                         int red = (int) color / 65536;
-                        int green = (int) (color - red * 65536) / 256;
+                        int green = (int) (color - red<<16) / 256;
                         int blue = (int) (color - red * 65536 - green * 256);
                         depthLinePaint.setColor(Color.rgb(red, green, blue));
                         canvas.drawLines(pointis, depthLinePaint);
@@ -175,8 +174,7 @@ public class PolygonsView extends View {
                             Buoy buoy = bouyVectors.get(k);
                             float[] coor = buoy.getCoordinates();
                             Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
-                            buoyPaint = new Paint();
-                            buoyPaint.setColor(Color.MAGENTA);
+
                             //canvas.drawBitmap(bitmapBouy, p.x + widthBuoy, p.y + heightBuoy , buoyPaint);
                             canvas.drawCircle(p.x, p.y, 5, buoyPaint);
                         }
@@ -274,18 +272,18 @@ public class PolygonsView extends View {
         }
     };
 
-    //Ham dung cannvas de ve buoy tu drawable/buoy_object
-    private Bitmap getBitmap(int drawableRes) {
-        Drawable drawable = getResources().getDrawable(drawableRes);
-        Canvas canvas = new Canvas();
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        canvas.setBitmap(bitmap);
-        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-        drawable.draw(canvas);
-        heightBuoy = getHeight();
-        widthBuoy = getWidth();
-        return bitmap;
-    }
+//    //Ham dung cannvas de ve buoy tu drawable/buoy_object
+//    private Bitmap getBitmap(int drawableRes) {
+//        Drawable drawable = getResources().getDrawable(drawableRes);
+//        Canvas canvas = new Canvas();
+//        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+//        canvas.setBitmap(bitmap);
+//        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+//        drawable.draw(canvas);
+//        heightBuoy = getHeight();
+//        widthBuoy = getWidth();
+//        return bitmap;
+//    }
 
     public static Point ConvWGSToScrPoint(float m_Long,float m_Lat)// converting lat lon  WGS coordinates to screen XY coordinates
     {
