@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android"
     >
+<item>
 
-    <item
-        >
-        <bitmap android:src="@drawable/loading" android:gravity="fill|center"/>
-    </item>
+    <bitmap
+        android:gravity="center|bottom|clip_vertical"
+        android:src="@drawable/loading" />
+
+</item>
+
 
 </layer-list>
