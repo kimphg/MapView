@@ -232,10 +232,10 @@ public class PolygonsView extends View {
         else if(event.getAction()==MotionEvent.ACTION_MOVE)
         {
             dragStop = new PointF(event.getX(),event.getY());
+            PointF newLatLon = ConvScrPointToWGS((int)(dragStart.x-dragStop.x)+scrCtX,(int)(dragStart.y-dragStop.y)+scrCtY);
             dragStart = dragStop;
             if(lockDragging)return true;//bỏ qua nếu đang khóa drag
             if(PointDistancePixels(dragStop,dragStart)>scrCtX*0.5)return true;//không cho drag màn hình quá nhanh
-            PointF newLatLon = ConvScrPointToWGS((int)(dragStart.x-dragStop.x)+scrCtX,(int)(dragStart.y-dragStop.y)+scrCtY);
             mlat=newLatLon.y;
             mlon=newLatLon.x;
 
