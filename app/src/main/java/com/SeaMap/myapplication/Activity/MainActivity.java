@@ -142,7 +142,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onStart() {
         super.onStart();
-        StartLocationService();
     }
     protected void StartLocationService()
     {
@@ -218,6 +217,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         else{
             enableButtons();
+            StartLocationService();
         }
 
         //Lay thong so man hinh

@@ -32,6 +32,7 @@ import java.util.Vector;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
+import static java.lang.Math.sqrt;
 
 public class PolygonsView extends View {
 
@@ -43,7 +44,7 @@ public class PolygonsView extends View {
     public static int scrCtY,scrCtX;
     protected float shipLocationLon = 105.43f, shipLocationLat = 18.32f;
     protected boolean MYLOCATION = false;
-
+    private boolean lockDragging = false;// khóa không cho drag khi đang zoom
     private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint();
     private ScaleGestureDetector scaleGestureDetector;
     protected PointF dragStart,dragStop;
@@ -210,23 +211,34 @@ public class PolygonsView extends View {
     }
 
 
+    float PointDistancePixels(PointF p1,PointF p2)
+    {
+        float dx = abs(p1.x-p2.x);
+        float dy = abs(p1.y-p2.y);
+        return (float) sqrt(dx*dx+dy*dy);
 
+    }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         scaleGestureDetector.onTouchEvent(event);
 //        gestureDetector.onTouchEvent(event);
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             dragStart = new PointF(event.getX(),event.getY());
-
+        }
+        else if(event.getAction() == MotionEvent.ACTION_UP)
+        {
+            lockDragging = false;
         }
         else if(event.getAction()==MotionEvent.ACTION_MOVE)
         {
             dragStop = new PointF(event.getX(),event.getY());
-
+            dragStart = dragStop;
+            if(lockDragging)return true;//bỏ qua nếu đang khóa drag
+            if(PointDistancePixels(dragStop,dragStart)>scrCtX*0.5)return true;//không cho drag màn hình quá nhanh
             PointF newLatLon = ConvScrPointToWGS((int)(dragStart.x-dragStop.x)+scrCtX,(int)(dragStart.y-dragStop.y)+scrCtY);
             mlat=newLatLon.y;
             mlon=newLatLon.x;
-            dragStart = dragStop;
+
             //MainActivity.polygonsView.refreshDrawableState();
             invalidate();
             switch (MainActivity.CHOOSE_DISTANE_OR_ROUTE){
@@ -247,6 +259,7 @@ public class PolygonsView extends View {
         public boolean onScale(ScaleGestureDetector sgd){
             mScale *= sgd.getScaleFactor();
             mScale = Math.max(0.5f, Math.min(mScale, 150));
+            lockDragging = true;
             invalidate();
             return true;
         }
@@ -302,7 +315,7 @@ public class PolygonsView extends View {
         {
             mlat = shipLocationLat;
             mlon = shipLocationLon;
-            mScale = 10;
+            if(mScale<10)mScale = 10;
         }
 
         MYLOCATION =true;

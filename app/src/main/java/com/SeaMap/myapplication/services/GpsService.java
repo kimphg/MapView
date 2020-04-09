@@ -13,6 +13,7 @@ import android.os.Parcelable;
 import androidx.core.app.ActivityCompat;
 
 import com.SeaMap.myapplication.classes.PacketSender;
+import com.SeaMap.myapplication.view.PolygonsView;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -45,7 +46,7 @@ public class GpsService extends Service {
 
 
     }
-
+    Location oldLocation = new Location("GPS");//use old location to estimate speed and movement
     @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -57,10 +58,12 @@ public class GpsService extends Service {
                 }
 
                 for (Location location : locationResult.getLocations()) {
+
                     Intent intent = new Intent("location_update");
                     intent.putExtra("newLocation", location);
                     sendBroadcast( intent );
                     sendOwnLocation(location);
+                    oldLocation = location;
                 }
             }
         };
@@ -103,10 +106,8 @@ public class GpsService extends Service {
 //        Toast.makeText(this, "Service stopped", Toast.LENGTH_LONG).show();
     }
 
-
-    protected void sendOwnLocation(Location location ){
-        //gui toa do den may chu
-        mPacketSender.setDataPacket(makePacket(location));
+    protected void getDataFromServer()
+    {
         //doc goi tin phan hoi tu may chu
         byte[] answer = mPacketSender.getAnswer();
         if((answer!=null)&&(answer.length>0))
@@ -139,6 +140,13 @@ public class GpsService extends Service {
             }
         }
     }
+    protected void sendOwnLocation(Location location ){
+        //gui toa do den may chu
+
+        mPacketSender.setDataPacket(makePacket(location));
+        getDataFromServer();
+
+    }
     private byte [] makePacket(Location location ) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES+Float.BYTES+Float.BYTES);
         byteBuffer.putLong(System.currentTimeMillis());
@@ -163,7 +171,7 @@ public class GpsService extends Service {
         return permissionAccessBackgroundLocationApproved||permissionAccessCoarseLocationApproved;
     }
 
-    public static double distance( double lon1, double lat1, double lon2, double lat2 ){
+    /*public static double distance( double lon1, double lat1, double lon2, double lat2 ){
 //        double dlat = 6371 * Math.toRadians(Math.abs( l1.getLatitude() - lat ));
 //        double dlon = 6371 * Math.cos( Math.toRadians( Math.abs(
 //                l1.getLatitude()
@@ -178,7 +186,7 @@ public class GpsService extends Service {
                         Math.pow( Math.sin(deltaLon/2), 2);
 
         return 2 * 6371 * Math.atan2( Math.sqrt( haversine ), Math.sqrt(1 - haversine));
-    }
+    }*/
 
     public static int estimateTimeArrival( Location location , double distance){
         //distance is in km
