@@ -145,8 +145,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
     protected void StartLocationService()
     {
-        Intent intent = new Intent( getApplicationContext(), GpsService.class);
-        startService( intent );
+        if(!isMyServiceRunning(GpsService.class))
+        {
+            Intent intent = new Intent( getApplicationContext(), GpsService.class);
+            startService( intent );
+        }
     }
     @Override
     protected void onDestroy() {
@@ -156,6 +159,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         Intent intent = new Intent(getApplicationContext(), GpsService.class);
         stopService(intent);
+    }
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
     List<Location> nearbyShips = new ArrayList<Location>();
     @Override
@@ -236,6 +248,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //enable buttons' functions
         getCurLocationButton = findViewById(R.id.get_curlocation_btn);
         getCurLocationButton.setOnClickListener(view -> {
+            StartLocationService();
 
             if (curLocation != null) {
                 map.setLonLatMyLocation(
