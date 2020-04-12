@@ -26,29 +26,32 @@ public class DensityView extends PolygonsView {
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         PointF pointT1 = ConvScrPointToWGS(scrCtX * 2,0);
         PointF pointT3 = ConvScrPointToWGS(0, scrCtY * 2);
 
         Paint pointDensity = new Paint();
-        pointDensity.setColor(Color.RED);
-        if(mScale < 15) pointDensity.setStrokeWidth(1f);
-        else pointDensity.setStrokeWidth(1.3f);
+        pointDensity.setColor(Color.rgb(255, 30, 30));
+//        if(mScale < 15) pointDensity.setStrokeWidth(1f);
+//        else pointDensity.setStrokeWidth(1.3f);
         for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
             for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
                 String area = lon + "-" + lat;
                 Vector<Density> vtDensity = ReadFile.listDensity.get(area);
                 if (vtDensity == null) continue;
                 int size = vtDensity.size() ;
-                float []pointf = new float[size * 2];
+//                float []pointf = new float[size * 2];
                 for(int i =0; i < size * 2; i+= 2){
                     Density density = vtDensity.get(i / 2);
                     if(mScale < 10 && density.getCountMove() < 4) continue;
                     Point p1 = ConvWGSToScrPoint(density.getLongitude(), density.getLatitude());
-                    pointf[i] = p1.x;
-                    pointf[i + 1] = p1.y;
+//                    pointf[i] = p1.x;
+//                    pointf[i + 1] = p1.y;
+                    int adjust =  (int) (Math.pow(density.getCountMove(), 1 / 3)  + mScale / 4);
+                    pointDensity.setStrokeWidth(adjust);
+                    canvas.drawPoint(p1.x, p1.y, pointDensity);
                 }
-                canvas.drawPoints(pointf, pointDensity);
+
+//                canvas.drawPoints(pointf, pointDensity);
             }
         }
     }

@@ -6,14 +6,14 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.Parcelable;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
 import com.SeaMap.myapplication.classes.PacketSender;
-import com.SeaMap.myapplication.view.PolygonsView;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -30,14 +30,15 @@ import java.util.List;
 public class GpsService extends Service {
     PacketSender mPacketSender;
     //private LocationManager mLocationManager;
-    public static  final int TIME_MIN = 1000 * 60;
-    public static  final float DISTANCE_MIN = 200F;//100m will get location
-    public static final int REQUEST_CODE = 1004;
+//    public static final int TIME_MIN = 1000 * 60;
+//    public static final float DISTANCE_MIN = 200F;//100m will get location
+//    public static final int REQUEST_CODE = 1004;
     boolean locationAccessOK = false;
-    private LocationCallback locationCallback ;
-   // private LocationListener mLocationListener;
-   LocationRequest locationRequest;
+    private LocationCallback locationCallback;
+    // private LocationListener mLocationListener;
+    LocationRequest locationRequest;
     private FusedLocationProviderClient fusedLocationClient;
+
     @SuppressLint("MissingPermission")
     @Override
     public void onCreate() {
@@ -46,11 +47,15 @@ public class GpsService extends Service {
 
 
     }
+
     Location oldLocation = new Location("GPS");//use old location to estimate speed and movement
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         locationCallback = new LocationCallback() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) {
@@ -61,7 +66,7 @@ public class GpsService extends Service {
 
                     Intent intent = new Intent("location_update");
                     intent.putExtra("newLocation", location);
-                    sendBroadcast( intent );
+                    sendBroadcast(intent);
                     sendOwnLocation(location);
                     oldLocation = location;
                 }
@@ -70,8 +75,7 @@ public class GpsService extends Service {
         mPacketSender = new PacketSender();
         mPacketSender.start();
         locationAccessOK = CheckLocationAcess();
-        if(locationAccessOK)
-        {
+        if (locationAccessOK) {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
             locationRequest = LocationRequest.create();
             locationRequest.setInterval(30000);
@@ -81,9 +85,7 @@ public class GpsService extends Service {
                     locationCallback,
                     Looper.getMainLooper());
             getLastLocation();
-        }
-        else
-        {
+        } else {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
             locationRequest = LocationRequest.create();
             locationRequest.setInterval(30000);
@@ -106,19 +108,17 @@ public class GpsService extends Service {
 //        Toast.makeText(this, "Service stopped", Toast.LENGTH_LONG).show();
     }
 
-    protected void getDataFromServer()
-    {
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    protected void getDataFromServer() {
         //doc goi tin phan hoi tu may chu
         byte[] answer = mPacketSender.getAnswer();
-        if((answer!=null)&&(answer.length>0))
-        {
-            int sizeOne = Short.BYTES + Float.BYTES + Float.BYTES ;
+        if ((answer != null) && (answer.length > 0)) {
+            int sizeOne = Short.BYTES + Float.BYTES + Float.BYTES;
             int index = 0;
-            List<Location> nearbyShips = new ArrayList<Location>();
-            while (index<=(answer.length-sizeOne))
-            {
+            List<Location> nearbyShips = new ArrayList<>();
+            while (index <= (answer.length - sizeOne)) {
                 ByteBuffer buffer;
-                buffer = ByteBuffer.wrap(answer,index,10);
+                buffer = ByteBuffer.wrap(answer, index, 10);
 
                 float lon = buffer.getFloat(0);
                 float lat = buffer.getFloat(4);
@@ -127,51 +127,56 @@ public class GpsService extends Service {
                 ship.setLongitude(lon);
                 ship.setLatitude(lat);
                 nearbyShips.add(ship);
-                index=index+sizeOne;
+                index = index + sizeOne;
             }
             int i = 0;
-            for(Location ship:nearbyShips)
-            {
+            for (Location ship : nearbyShips) {
                 Intent intent = new Intent("location_update");
-                intent.putExtra("nearbyShips"+Integer.toString(i), ship);
+                intent.putExtra("nearbyShips" + i, ship);
                 i++;
-                sendBroadcast( intent );
+                sendBroadcast(intent);
                 //sendOwnLocation(location);
             }
         }
     }
-    protected void sendOwnLocation(Location location ){
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    protected void sendOwnLocation(Location location) {
         //gui toa do den may chu
 
         mPacketSender.setDataPacket(makePacket(location));
         getDataFromServer();
 
     }
-    private byte [] makePacket(Location location ) {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES+Float.BYTES+Float.BYTES);
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private byte[] makePacket(Location location) {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES + Float.BYTES + Float.BYTES);
         byteBuffer.putLong(System.currentTimeMillis());
-        byteBuffer.putFloat((float)(location.getLongitude()));
-        byteBuffer.putFloat((float)(location.getLatitude()));
+        byteBuffer.putFloat((float) (location.getLongitude()));
+        byteBuffer.putFloat((float) (location.getLatitude()));
         return byteBuffer.array();
     }
-    boolean CheckNetworkPermission()
-    {
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
-                == PackageManager.PERMISSION_GRANTED;
-    }
+
+//    boolean CheckNetworkPermission() {
+//        return ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
+//                == PackageManager.PERMISSION_GRANTED;
+//    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     boolean CheckLocationAcess()//location by phuong
     {
         boolean permissionAccessCoarseLocationApproved =
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                         == PackageManager.PERMISSION_GRANTED;
 
-        boolean permissionAccessBackgroundLocationApproved =ActivityCompat.checkSelfPermission(this,
+        boolean permissionAccessBackgroundLocationApproved = ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 == PackageManager.PERMISSION_GRANTED;
-        return permissionAccessBackgroundLocationApproved||permissionAccessCoarseLocationApproved;
+        return permissionAccessBackgroundLocationApproved || permissionAccessCoarseLocationApproved;
     }
 
-    /*public static double distance( double lon1, double lat1, double lon2, double lat2 ){
+    public static double distance( double lon1, double lat1, double lon2, double lat2 ){
 //        double dlat = 6371 * Math.toRadians(Math.abs( l1.getLatitude() - lat ));
 //        double dlon = 6371 * Math.cos( Math.toRadians( Math.abs(
 //                l1.getLatitude()
@@ -186,18 +191,16 @@ public class GpsService extends Service {
                         Math.pow( Math.sin(deltaLon/2), 2);
 
         return 2 * 6371 * Math.atan2( Math.sqrt( haversine ), Math.sqrt(1 - haversine));
-    }*/
-
-    public static int estimateTimeArrival( Location location , double distance){
-        //distance is in km
-        if( location != null && location.getSpeed() != 0 ){
-            return ( int )(distance * 1000 / location.getSpeed());
-        }
-        else return -1;
     }
 
-    void getLastLocation()
-    {
+//    public static int estimateTimeArrival(Location location, double distance) {
+//        //distance is in km
+//        if (location != null && location.getSpeed() != 0) {
+//            return (int) (distance * 1000 / location.getSpeed());
+//        } else return -1;
+//    }
+
+    void getLastLocation() {
 //        fusedLocationClient.getLastLocation();
 //
 //                .addOnSuccessListener(this, new OnSuccessListener<Location>() {

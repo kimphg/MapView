@@ -20,11 +20,11 @@ public class Distance {
     public double DistanceHaversine(Coordinate point1, Coordinate point2){
         //earth radius
         double EarthRadiusKm = 6371;
-        double dlat = ConvertToRadian(point1.x - point2.x);
-        double dlon = ConvertToRadian(point1.y - point2.y);
+        double dlat = ConvertToRadian(point1.longitude - point2.longitude);
+        double dlon = ConvertToRadian(point1.latitude - point2.latitude);
 
-        double latRadian1 = ConvertToRadian(point1.x);
-        double latRadian2 = ConvertToRadian(point2.x);
+        double latRadian1 = ConvertToRadian(point1.longitude);
+        double latRadian2 = ConvertToRadian(point2.longitude);
 
 
 

@@ -1,12 +1,13 @@
 package com.SeaMap.myapplication.Activity;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+
+import android.graphics.Color;
 import android.util.DisplayMetrics;
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -18,7 +19,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.location.Location;
@@ -46,30 +46,15 @@ import com.SeaMap.myapplication.view.DensityView;
 import com.SeaMap.myapplication.view.DistancePTPView;
 import com.SeaMap.myapplication.view.PolygonsView;
 import com.SeaMap.myapplication.view.SeaMap;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
-import com.google.android.gms.location.LocationSettingsStates;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, SearchView.OnQueryTextListener {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
     //Todo: dung dinh danh moi request
     public static final int REQUEST_INPUT = 1001;
     public static final int DISTANCE = 1002;
@@ -111,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private TextView _distance;
 
     //Todo: Cac nut an va nhan su kien
-    private ImageButton getCurLocationButton, imageButtonOther, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, imgButtonAddDirections, imageBtnLayer;
+    private ImageButton getCurLocationButton, imageButtonOther, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, addDestinationButton, imageBtnLayer;
     private GoogleApiClient googleApiClient;
 
     //Todo : layout main va layout route
@@ -135,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double curVelocity;
     //system variables
     private BroadcastReceiver broadcastReceiver;
+    private TextView infoText;
 
     //todo: thong so khac
     private float temp_Search_lon = 0, temp_Search_lat = 0;
@@ -222,6 +208,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //setting map;
         map = new SeaMap(getApplicationContext());
         frameLayout.addView(map, 0);
+
         ///
         if (!checkPermission()) {
             requestPermission();
@@ -265,21 +252,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void onScreecBtn_Direction_Search() {
         imageButtonDirection = findViewById(R.id.ic_btn_directions);
-        imageButtonDirection.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (REQUEST_SEARCH) {
-                    case 1:
-                        //float
-                        //Khong can vi tri vi da biet vi tri search trc do
-                        map.myLocationToDirection(0, 0,0);
-                        break;
-                    case 0:
-                        CHOOSE_SEARCH_OR_DIRECTION = 1;
-                        Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
-                        startActivityForResult(searchIntent, REQUEST_INPUT);
-                        break;
-                }
+        imageButtonDirection.setOnClickListener(v -> {
+            switch (REQUEST_SEARCH) {
+                case 1:
+                    //float
+                    //Khong can vi tri vi da biet vi tri search trc do
+                    map.myLocationToDirection(0, 0,0);
+                    break;
+                case 0:
+                    CHOOSE_SEARCH_OR_DIRECTION = 1;
+                    Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
+                    startActivityForResult(searchIntent, REQUEST_INPUT);
+                    break;
             }
         });
 
@@ -383,38 +367,34 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     // Todo -------------- -----------------------//
     private void onDistancePTPView() {
-        imgButtonAddDirections = findViewById(R.id.icon_addDirect);
-        imgButtonAddDirections.setVisibility(View.INVISIBLE);
+        addDestinationButton = findViewById(R.id.icon_addDirect);
+        addDestinationButton.setVisibility(View.INVISIBLE);
 
-        imgButtonAddDirections.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (CHOOSE_DISTANE_OR_ROUTE) {
-                    case DISTANCE: {
+        addDestinationButton.setOnClickListener(v -> {
+            switch (CHOOSE_DISTANE_OR_ROUTE) {
+                case DISTANCE: {
+                    break;
+                }
+                case ROUTE: {
+                    PointF p = SeaMap.ConvScrPointToWGS(SeaMap.scrCtX, SeaMap.scrCtY);
+                    String name_place = p.y + "'B , " + p.x + "'Đ";
+                    float[] coor = {p.x, p.y};
 
-                        break;
-                    }
-                    case ROUTE: {
-                        PointF p = SeaMap.ConvScrPointToWGS(SeaMap.scrCtX, SeaMap.scrCtY);
-                        String name_place = p.y + "'B , " + p.x + "'Đ";
-                        float[] coor = {p.x, p.y};
+                    Text text = new Text();
+                    text.setName(name_place);
+                    text.setCoordinate(coor);
 
-                        Text text = new Text();
-                        text.setName(name_place);
-                        text.setCoordinate(coor);
+                    route.add(text);
+                    namePlaces.add(name_place);
+                    arrayAdapter.notifyDataSetChanged();
 
-                        route.add(text);
-                        namePlaces.add(name_place);
-                        arrayAdapter.notifyDataSetChanged();
-
-                        distancePTPView.setListCoor(route);
-                        distancePTPView.invalidate();
-                        break;
-                    }
+                    distancePTPView.setListCoor(route);
+                    distancePTPView.invalidate();
+                    break;
                 }
             }
         });
-        imgButtonAddDirections.setVisibility(View.INVISIBLE);
+        addDestinationButton.setVisibility(View.INVISIBLE);
     }
 
 
@@ -474,7 +454,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         frameLayout.addView(distancePTPView);
                         route_layout.setVisibility(View.VISIBLE);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
-                        imgButtonAddDirections.setVisibility(View.VISIBLE);
+                        addDestinationButton.setVisibility(View.VISIBLE);
                         break;
                     }
                     case R.id.nav_tinhkhoangcach: {
@@ -483,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         distancePTPView = new DistancePTPView(getApplicationContext());
                         frameLayout.addView(distancePTPView);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
-                        imgButtonAddDirections.setVisibility(View.VISIBLE);
+                        addDestinationButton.setVisibility(View.VISIBLE);
 
 
                         break;
@@ -512,7 +492,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         CHOOSE_DISTANE_OR_ROUTE = 0;
                         onViewMain = 0;
                         imageButtonOther.setBackgroundResource(R.drawable.icon_cancel);
-                        imgButtonAddDirections.setVisibility(View.INVISIBLE);
+                        addDestinationButton.setVisibility(View.INVISIBLE);
                         navigationView.getCheckedItem().setChecked(false);
                         frameLayout.removeView(distancePTPView);
                         distancePTPView = null;
@@ -569,61 +549,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .show();
     }
 
-    public void turnOnGPS() {
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API).addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(MainActivity.this).build();
-        googleApiClient.connect();
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setInterval(30 * 1000);
-        locationRequest.setFastestInterval(5 * 1000);
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest);
-
-        // **************************
-        builder.setAlwaysShow(true); // this is the key ingredient
-        // **************************
-
-        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi
-                .checkLocationSettings(googleApiClient, builder.build());
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(LocationSettingsResult result) {
-                final Status status = result.getStatus();
-                final LocationSettingsStates state = result
-                        .getLocationSettingsStates();
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        // All location settings are satisfied. The client can
-                        // initialize location
-                        // requests here.
-                        break;
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        // Location settings are not satisfied. But could be
-                        // fixed by showing the user
-                        // a dialog.
-                        try {
-                            // Show the dialog by calling
-                            // startResolutionForResult(),
-                            // and check the result in onActivityResult().
-                            googleApiClient = null;
-                            status.startResolutionForResult(MainActivity.this, 1000);
-                        } catch (IntentSender.SendIntentException e) {
-                            // Ignore the error.
-                        }
-                        break;
-                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        // Location settings are not satisfied. However, we have
-                        // no way to fix the
-                        // settings so we won't show the dialog.
-
-                        break;
-                }
-            }
-        });
-    }
-
     @Override
     protected void onStop() {
         super.onStop();
@@ -636,12 +561,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 boolean accepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
                 if( accepted ){
-                    Snackbar.make( map, "Cho phép sử dụng vị trí", Snackbar.LENGTH_LONG).show();
+                    //Snackbar.make( map, "Cho phép sử dụng vị trí", Snackbar.LENGTH_LONG).show();
                     StartLocationService();
                     enableButtons();
                 }
                 else{
-                    Snackbar.make( map, "Không có quyền sử dụng vị trí", Snackbar.LENGTH_LONG).show();
+                    //Snackbar.make( map, "Không có quyền sử dụng vị trí", Snackbar.LENGTH_LONG).show();
 
                     if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                         if( shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)){
@@ -713,21 +638,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             }
         }
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
 

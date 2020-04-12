@@ -18,7 +18,7 @@
         <service
             android:name="com.SeaMap.myapplication.services.GpsService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity android:name=".Activity.SplashActivity"
             android:theme="@style/SplashTheme">

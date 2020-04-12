@@ -4,4 +4,7 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="current_location">Vị trí hiện tại:</string>
+    <string name="current_velocity">Tốc độ hiện tại:</string>
+    <string name="current_bearing">Hướng hiện tại:</string>
 </resources>
