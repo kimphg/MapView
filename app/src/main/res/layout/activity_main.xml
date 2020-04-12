@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".Activity.MainActivity"
-    android:id="@+id/coordinator_layout"
-    >
+
     <androidx.drawerlayout.widget.DrawerLayout
+        tools:context=".Activity.MainActivity"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -56,6 +49,7 @@
                     android:layout_below="@+id/ic_btn_directions"
                     android:layout_marginTop="10dp"
                     />
+
             </RelativeLayout>
 
             <ImageButton
@@ -117,8 +111,3 @@
 
 
     </androidx.drawerlayout.widget.DrawerLayout>
-
-
-
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
