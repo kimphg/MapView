@@ -132,8 +132,6 @@ public class SeaMap  extends PolygonsView {
             searchPlace_lat = latDirectionLoc;
             searchPlace_lon = lonDirectionLoc;
         }
-/*        int deltaLat = (int) abs(shipLocationLat - searchPlace_lat);
-        int deltaLon = (int) abs(shipLocationLon - searchPlace_lon);*/
         mlat = (searchPlace_lat + shipLocationLat) / 2;
         mlon = (searchPlace_lon + shipLocationLon) / 2;
         mScale = scrCtY / (abs(shipLocationLat - searchPlace_lat) * 111.132954f) ;

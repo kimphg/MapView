@@ -10,6 +10,7 @@ import android.widget.ListView;
 import android.widget.SearchView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 
 import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.Places;
@@ -19,7 +20,7 @@ import com.SeaMap.myapplication.object.Text;
 import java.io.Serializable;
 import java.util.List;
 
-public class SearchActivity extends AppCompatActivity implements SearchView.OnQueryTextListener{
+public class SearchActivity extends FragmentActivity implements SearchView.OnQueryTextListener{
 
     public static final String EXTRA_DATA = "EXTRA_DATA";
     ImageButton imgbtback;
@@ -95,5 +96,8 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
         setResult(Activity.RESULT_CANCELED);
         super.onBackPressed();
     }
+
+
+
 
 }

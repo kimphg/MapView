@@ -19,6 +19,7 @@ import java.util.Vector;
 public class ReadFile {
 
     public static HashMap<String,Vector<Line>> Lines = new HashMap<String, Vector<Line>>();
+    public static HashMap<String, Vector<Polyline>> Border_Map = new HashMap<>();
     public static HashMap<String,Vector<Polyline>> PLines = new HashMap<String, Vector<Polyline>>();
     public static HashMap<String,Vector<Text>> tTexts = new HashMap <String, Vector<Text>>();
     public static HashMap<String,Vector<Region>> Poligons = new HashMap<String, Vector<Region>>();
@@ -42,7 +43,7 @@ public class ReadFile {
         readBaseRegions();
         readBasePlgRivers();
         readBoat();
-
+        readBorderMap();
         getListPlaceOnText();
 
     }
@@ -337,6 +338,45 @@ public class ReadFile {
                 }
             }
         }
+    }
+
+    private void readBorderMap(){
+        ObjectInputStream ois = null;
+        int sizeList = 0;
+        String key = "";
+        try {
+            InputStream is = mCtx.getAssets().open("border_map.bin");
+            ois = new ObjectInputStream(is);
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try {
+            sizeList = ois.readInt();
+        } catch (IOException e) {
+        }
+        for (int j = 0; j < sizeList; j++) {
+            try {
+                key = (String) ois.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Vector<Polyline> border_area = null;
+            try {
+                border_area = (Vector<Polyline>) ois.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Border_Map.put(key, border_area);
+        }
+        System.out.println("");
     }
 
 }

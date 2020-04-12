@@ -35,11 +35,11 @@ public class PolygonsView extends View {
     protected static float mScale = 3f;// 1km = mScale*pixcels
     protected static float viewLat = 18.32f;//lattitude of the center of the screen
     protected static float viewLon = 105.43f;//longtitude of the center of the screen
+    protected static boolean MYLOCATION = false; // vi tri hien tai
     public static int scrCtY,scrCtX;
     protected float shipLocationLon = 105.43f, shipLocationLat = 18.32f;
-    protected boolean MYLOCATION = false;
     private boolean lockDragging = false;// khóa không cho drag khi đang zoom
-    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint();
+    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint();
     private ScaleGestureDetector scaleGestureDetector;
     protected PointF dragStart,dragStop;
     protected Context mCtx;
@@ -52,7 +52,7 @@ public class PolygonsView extends View {
         setOnLongClickListener(infoAcoordinate);
         mCtx = context;
         //bitmapBouy = getBitmap(R.drawable.buoy_object);
-
+        borderlinePaint.setStrokeWidth(2);
     }
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh)
@@ -112,10 +112,12 @@ public class PolygonsView extends View {
                 }
             }
         }
-        //DRAW RIVER
+
         for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
             for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
                 String area = lon + "-" + lat;
+
+                ////DRAW RIVER
                 Vector<Region> river;
                 if(mScale < 8) {
                     river = ReadFile.BasePlgRiver.get(area);
@@ -135,10 +137,28 @@ public class PolygonsView extends View {
                     }
                     canvas.drawPath(pathRegion, riverPaint);
                 }
+
+                //DrawBorder
+                Vector<Polyline> border = ReadFile.Border_Map.get(area);
+                if (border== null) continue;
+                for (int k = 0; k < border.size(); k++) {
+                    Polyline pl = border.get(k);
+                    int size = pl.getCoordinate().length;
+                    float pointis[] = new float[size * 2];
+                    for (int i = 0; i < size - 2; i += 2) {
+                        Point p1 = ConvWGSToScrPoint(pl.getCoordinate()[i], pl.getCoordinate()[i + 1]);
+                        Point p2 = ConvWGSToScrPoint(pl.getCoordinate()[i + 2], pl.getCoordinate()[i + 3]);
+                        pointis[2 * i] = (float) p1.x;
+                        pointis[2 * i + 1] = (float) p1.y;
+                        pointis[i * 2 + 2] = (float) p2.x;
+                        pointis[i * 2 + 3] = (float) p2.y;
+                    }
+                    canvas.drawLines(pointis, borderlinePaint);
+                }
             }
         }
 
-
+        //Draw
 
         if( mScale >5){
             for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
