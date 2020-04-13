@@ -34,6 +34,11 @@ public class Polyline implements Serializable {
         type = 0;
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+    }
+
     public int getType() {
         return type;
     }

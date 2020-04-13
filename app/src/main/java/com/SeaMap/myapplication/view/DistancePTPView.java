@@ -17,6 +17,7 @@ import com.SeaMap.myapplication.object.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.OnItemClick;
 
@@ -24,11 +25,13 @@ public class DistancePTPView extends View {
 
     private List<Text> listTextRoute = new ArrayList<Text>();
     private Paint linePaint = new Paint();
+    private PolygonsView currentMap;
 
     private int mDistance;
 
-    public DistancePTPView(Context context) {
+    public DistancePTPView(Context context, PolygonsView map) {
         super(context);
+        this.currentMap = map;
         mDistance = 0;
     }
 
@@ -39,7 +42,7 @@ public class DistancePTPView extends View {
         int size = listTextRoute.size();
         for(int i = 0; i< size; i++){
             float [] coor = listTextRoute.get(i).getCoordinate();
-            Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
+            Point p = currentMap.ConvWGSToScrPoint(coor[0], coor[1]);
             Bitmap bitmap = createBitmapFromView(i + 1);
             int height = bitmap.getHeight();
             int wight = bitmap.getWidth();
