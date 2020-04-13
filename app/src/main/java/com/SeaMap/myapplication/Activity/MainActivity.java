@@ -37,6 +37,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.classes.Coordinate;
 import com.SeaMap.myapplication.classes.Places;
 import com.SeaMap.myapplication.classes.ReadFile;
 import com.SeaMap.myapplication.classes.StableArrayAdapter;
@@ -120,7 +121,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private double curVelocity;
     //system variables
     private BroadcastReceiver broadcastReceiver;
-    private TextView infoText;
+    private TextView curLocationText;
+    private TextView curVelocityText;
+    private TextView curBearingText;
 
     //todo: thong so khac
     private float temp_Search_lon = 0, temp_Search_lat = 0;
@@ -168,6 +171,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     Location newLocation = intent.getParcelableExtra("newLocation");
 
                     if (newLocation != null) {
+                        String[] dms = new String[2];
+                        dms = Coordinate.decimalToDMS( newLocation );
+                        String dmsCoord = dms[0] + " / " + dms[1];
+                        curLocationText.setText( dmsCoord );
+                        curVelocityText.setText( String.valueOf( (int)newLocation.getSpeed() *3600 / 1000));
+                        if( curLocation != null ){
+                            curBearingText.setText(String.valueOf((int)curLocation.bearingTo(newLocation)));
+                        }
                         curLocation = newLocation;
                         map.setLonLatMyLocation(
                                 Float.parseFloat(Double.toString(curLocation.getLatitude())),
@@ -209,6 +220,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         map = new SeaMap(getApplicationContext());
         frameLayout.addView(map, 0);
 
+        curLocationText = findViewById( R.id.curLocationText );
+        curVelocityText = findViewById( R.id.curVelocityText );
+        curBearingText = findViewById( R.id.curBearingText );
         ///
         if (!checkPermission()) {
             requestPermission();

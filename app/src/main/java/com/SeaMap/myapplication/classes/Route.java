@@ -5,9 +5,10 @@ import android.location.Location;
 import com.SeaMap.myapplication.services.GpsService;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class Route{
-    public ArrayList<Coordinate> route;
+public class Route {
+    public List<Coordinate> route;
     private float totalDistance;
     private static final float SPEED_THRESHOLD = 1;/*m/s*/
 
@@ -15,7 +16,7 @@ public class Route{
         this.totalDistance = 0;
     }
 
-    public ArrayList<Coordinate> getRoute() {
+    public List<Coordinate> getRoute() {
         return route;
     }
 
@@ -27,8 +28,8 @@ public class Route{
         return totalDistance;
     }
 
-    public void addNewDestination( Coordinate newDestination ){
-        Coordinate last = route.get( route.size() - 1 );
+    public void addNewDestination(Coordinate newDestination) {
+        Coordinate last = route.get(route.size() - 1);
         this.totalDistance += GpsService.distance(
                 last.longitude,
                 last.latitude,
@@ -36,11 +37,25 @@ public class Route{
                 newDestination.latitude
         );
 
-        this.route.add( newDestination );
+        this.route.add(newDestination);
+    }
+
+    public void arrivedToDestination() {
+        if (!this.route.isEmpty()) {
+            if( route.size() >= 2 ){
+                this.totalDistance -= GpsService.distance(
+                        route.get(0).longitude,
+                        route.get(0).latitude,
+                        route.get(1).longitude,
+                        route.get(1).latitude
+                );
+            }
+            this.route.remove(0);
+        }
     }
 
     //distance under 50m is considered arrived at the destination
-    public boolean isArrived( Location curLocation, Coordinate destination ){
+    public boolean isArrived(Location curLocation, Coordinate destination) {
         return GpsService.distance(
                 curLocation.getLongitude(),
                 curLocation.getLatitude(),
@@ -49,27 +64,31 @@ public class Route{
         ) / 1000 < 50;
     }
 
-    public int getNextDestinationEta( Location curLocation ){
-        if ( route.isEmpty() ){
+    public double getNextDestinationDistance(Location curLocation) {
+        Coordinate head = route.get(0);
+        return GpsService.distance(
+                curLocation.getLongitude(),
+                curLocation.getLatitude(),
+                head.longitude,
+                head.latitude
+        );
+    }
+
+    public double getRemainingDistance( Location curLocation ){
+        return getNextDestinationDistance(curLocation) + this.totalDistance;
+    }
+
+    public int getNextDestinationEta(Location curLocation) {
+        if (route.isEmpty()) {
             return 0;
-        }
-        else {
-            Coordinate head = route.get( 0 );
-            if( curLocation.getSpeed() < SPEED_THRESHOLD){
-                return -1;
-            }
-            else{
-                return (int)(GpsService.distance(
-                        curLocation.getLongitude(),
-                        curLocation.getLatitude(),
-                        head.longitude,
-                        head.latitude
-                ) * 1000 / curLocation.getSpeed());
-            }
+        } else if (curLocation.getSpeed() < SPEED_THRESHOLD) {
+            return -1;
+        } else {
+            return (int) (getNextDestinationDistance(curLocation) * 1000 / curLocation.getSpeed());
         }
     }
 
-    public void getTotalEta(Location curLocation){
+    public void getTotalEta(Location curLocation) {
     }
     //    private Date timeStart, timeEnd;
 //    private int distanceEstimated = 0;

@@ -74,7 +74,7 @@ public class GpsService extends Service {
         };
         mPacketSender = new PacketSender();
         mPacketSender.start();
-        locationAccessOK = CheckLocationAcess();
+        locationAccessOK = CheckLocationAccess();
         if (locationAccessOK) {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
             locationRequest = LocationRequest.create();
@@ -164,7 +164,7 @@ public class GpsService extends Service {
 //    }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
-    boolean CheckLocationAcess()//location by phuong
+    boolean CheckLocationAccess()//location by phuong
     {
         boolean permissionAccessCoarseLocationApproved =
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
