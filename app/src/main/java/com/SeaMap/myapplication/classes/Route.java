@@ -5,6 +5,7 @@ import android.location.Location;
 import com.SeaMap.myapplication.services.GpsService;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Route {
@@ -13,6 +14,7 @@ public class Route {
     private static final float SPEED_THRESHOLD = 1;/*m/s*/
 
     public Route() {
+        this.route = new LinkedList<>();
         this.totalDistance = 0;
     }
 
@@ -29,13 +31,16 @@ public class Route {
     }
 
     public void addNewDestination(Coordinate newDestination) {
-        Coordinate last = route.get(route.size() - 1);
-        this.totalDistance += GpsService.distance(
-                last.longitude,
-                last.latitude,
-                newDestination.longitude,
-                newDestination.latitude
-        );
+        if( !route.isEmpty() ){
+            Coordinate last = route.get(route.size() - 1);
+            this.totalDistance += GpsService.distance(
+                    last.longitude,
+                    last.latitude,
+                    newDestination.longitude,
+                    newDestination.latitude
+            );
+        }
+
 
         this.route.add(newDestination);
     }
@@ -55,13 +60,13 @@ public class Route {
     }
 
     //distance under 50m is considered arrived at the destination
-    public boolean isArrived(Location curLocation, Coordinate destination) {
+    public boolean isArrived(Location curLocation) {
         return GpsService.distance(
                 curLocation.getLongitude(),
                 curLocation.getLatitude(),
-                destination.longitude,
-                destination.latitude
-        ) / 1000 < 50;
+                route.get(0).longitude,
+                route.get(0).latitude
+        ) * 1000 < 50;
     }
 
     public double getNextDestinationDistance(Location curLocation) {
@@ -80,7 +85,7 @@ public class Route {
 
     public int getNextDestinationEta(Location curLocation) {
         if (route.isEmpty()) {
-            return 0;
+            return -2;
         } else if (curLocation.getSpeed() < SPEED_THRESHOLD) {
             return -1;
         } else {
