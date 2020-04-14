@@ -1,6 +1,7 @@
 package com.SeaMap.myapplication.Activity;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -8,6 +9,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.graphics.Color;
+import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -40,6 +42,7 @@ import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.Coordinate;
 import com.SeaMap.myapplication.classes.Places;
 import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.classes.Route;
 import com.SeaMap.myapplication.classes.StableArrayAdapter;
 import com.SeaMap.myapplication.object.Text;
 import com.SeaMap.myapplication.services.GpsService;
@@ -94,7 +97,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     private Text textSearch;
     private Places places;
-    private TextView _distance;
 
     //Todo: Cac nut an va nhan su kien
     private ImageButton getCurLocationButton, imageButtonOther, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, addDestinationButton, imageBtnLayer;
@@ -118,28 +120,35 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     //Khai bao cho GPS
     //functional variables
     private Location curLocation;
-    private double curVelocity;
     //system variables
     private BroadcastReceiver broadcastReceiver;
     private TextView curLocationText;
     private TextView curVelocityText;
     private TextView curBearingText;
 
+    private Route curRoute;
+    int etaToNextDestination = -1;
+    boolean arrived;
+    boolean isCalculating = false;
+    TextView toNextDestinationDistanceText;
+    TextView etaToNextDestinationText;
+
     //todo: thong so khac
     private float temp_Search_lon = 0, temp_Search_lat = 0;
     private int heightScr, widthScr;
+
     @Override
     protected void onStart() {
         super.onStart();
     }
-    protected void StartLocationService()
-    {
-        if(!isMyServiceRunning(GpsService.class))
-        {
-            Intent intent = new Intent( getApplicationContext(), GpsService.class);
-            startService( intent );
+
+    protected void StartLocationService() {
+        if (!isMyServiceRunning(GpsService.class)) {
+            Intent intent = new Intent(getApplicationContext(), GpsService.class);
+            startService(intent);
         }
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -149,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         Intent intent = new Intent(getApplicationContext(), GpsService.class);
         stopService(intent);
     }
+
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -158,7 +168,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
         return false;
     }
+
     List<Location> nearbyShips = new ArrayList<Location>();
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -171,30 +183,28 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     Location newLocation = intent.getParcelableExtra("newLocation");
 
                     if (newLocation != null) {
-                        String[] dms = new String[2];
-                        dms = Coordinate.decimalToDMS( newLocation );
+                        String[] dms;
+                        dms = Coordinate.decimalToDMS(newLocation.getLongitude(), newLocation.getLatitude());
                         String dmsCoord = dms[0] + " / " + dms[1];
-                        curLocationText.setText( dmsCoord );
-                        curVelocityText.setText( String.valueOf( (int)newLocation.getSpeed() *3600 / 1000));
-                        if( curLocation != null ){
-                            curBearingText.setText(String.valueOf((int)curLocation.bearingTo(newLocation)));
+                        curLocationText.setText(dmsCoord);
+                        curVelocityText.setText(String.valueOf((int) newLocation.getSpeed() * 3600 / 1000));
+                        if (curLocation != null) {
+                            curBearingText.setText(String.valueOf((int) curLocation.bearingTo(newLocation)));
                         }
                         curLocation = newLocation;
                         map.setLonLatMyLocation(
                                 Float.parseFloat(Double.toString(curLocation.getLatitude())),
-                                Float.parseFloat(Double.toString(curLocation.getLongitude())),false
+                                Float.parseFloat(Double.toString(curLocation.getLongitude())), false
                         );
 //                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
                     }
-                    if((nearbyShips!=null)&&(!nearbyShips.isEmpty()))
-                    {
+                    if ((nearbyShips != null) && (!nearbyShips.isEmpty())) {
                         map.setNearbyShips(nearbyShips);
                         nearbyShips.clear();
                     }
-                    for(int i = 0;i<10;i++)
-                    {
-                        Location ship = intent.getParcelableExtra("nearbyShips"+Integer.toString(i));
-                        if(ship!=null)
+                    for (int i = 0; i < 10; i++) {
+                        Location ship = intent.getParcelableExtra("nearbyShips" + Integer.toString(i));
+                        if (ship != null)
                             nearbyShips.add(ship);
                     }
 
@@ -204,6 +214,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         registerReceiver(broadcastReceiver, new IntentFilter("location_update"));
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -214,21 +225,22 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         frameLayout = findViewById(R.id.content_frame);
         read = new ReadFile(getApplicationContext());
         // su kien bat dau lo trinh
-        _distance = findViewById(R.id._distance);
 
         //setting map;
         map = new SeaMap(getApplicationContext());
         frameLayout.addView(map, 0);
 
-        curLocationText = findViewById( R.id.curLocationText );
-        curVelocityText = findViewById( R.id.curVelocityText );
-        curBearingText = findViewById( R.id.curBearingText );
+        curLocationText = findViewById(R.id.curLocationText);
+        curVelocityText = findViewById(R.id.curVelocityText);
+        curBearingText = findViewById(R.id.curBearingText);
+
+        toNextDestinationDistanceText = findViewById(R.id._distance);
+        etaToNextDestinationText = findViewById(R.id._timeRun);
         ///
         if (!checkPermission()) {
             requestPermission();
             enableButtons();
-        }
-        else{
+        } else {
             enableButtons();
             StartLocationService();
         }
@@ -254,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             if (curLocation != null) {
                 map.setLonLatMyLocation(
                         Float.parseFloat(Double.toString(curLocation.getLatitude())),
-                        Float.parseFloat(Double.toString(curLocation.getLongitude())),true
+                        Float.parseFloat(Double.toString(curLocation.getLongitude())), true
                 );
 
             } else {
@@ -271,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 case 1:
                     //float
                     //Khong can vi tri vi da biet vi tri search trc do
-                    map.myLocationToDirection(0, 0,0);
+                    map.myLocationToDirection(0, 0, 0);
                     break;
                 case 0:
                     CHOOSE_SEARCH_OR_DIRECTION = 1;
@@ -330,6 +342,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
                 float[] coor = place.getCoordinate();
                 map.setLonLatSearchPlace(coor[1], coor[0]);
+
+                Coordinate selected = new Coordinate(coor[0], coor[1]);
+                curRoute.addNewDestination(selected);
+                if (!isCalculating) {
+                    isCalculating = true;
+                    runEtaTimer();
+                }
                 //thiet lap lai va ve
                 distancePTPView.setListCoor(route);
                 distancePTPView.invalidate();
@@ -342,6 +361,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 route.remove(i);
                 namePlaces.remove(i);
+
+                curRoute.route.remove(i);
+
                 arrayAdapter.notifyDataSetChanged();
                 // thiet lap lai va ve
                 distancePTPView.setListCoor(route);
@@ -391,7 +413,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 }
                 case ROUTE: {
                     PointF p = SeaMap.ConvScrPointToWGS(SeaMap.scrCtX, SeaMap.scrCtY);
-                    String name_place = p.y + "'B , " + p.x + "'Đ";
+                    Coordinate selected = new Coordinate(p.x, p.y);
+                    this.curRoute.addNewDestination(selected);
+                    if (!isCalculating) {
+                        isCalculating = true;
+                        runEtaTimer();
+                    }
+                    String[] selectedStr = Coordinate.decimalToDMS(selected.longitude, selected.latitude);
+
+                    String name_place = selectedStr[0] + " / " + selectedStr[1];
                     float[] coor = {p.x, p.y};
 
                     Text text = new Text();
@@ -464,6 +494,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         CHOOSE_DISTANE_OR_ROUTE = ROUTE;
                         onViewMain = 1;
 
+                        curRoute = new Route();
+
                         distancePTPView = new DistancePTPView(getApplicationContext());
                         frameLayout.addView(distancePTPView);
                         route_layout.setVisibility(View.VISIBLE);
@@ -526,6 +558,66 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     // Todo///////////---------------Drawer-----------------/////////////
 
     /////////////////----------------Gps-------------------//////////////
+
+    private void runEtaTimer() {
+        final Handler calculateHandler = new Handler();
+        final Handler countdownHandler = new Handler();
+
+        calculateHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (curLocation != null && curRoute.route != null) {
+                    if (curRoute.isArrived(curLocation)) {
+                        arrived = true;
+                        toNextDestinationDistanceText
+                                .setText("Khoảng cách đến điểm tiếp theo:");
+                        etaToNextDestinationText
+                                .setText("Thời gian đến điểm tiếp theo:\tĐã đến nơi");
+                    } else {
+                        if (arrived) {
+                            curRoute.arrivedToDestination();
+                            arrived = false;
+                        }
+                        toNextDestinationDistanceText
+                                .setText("Khoảng cách đến điểm tiếp theo:\t" +
+                                        (int) curRoute.getNextDestinationDistance(curLocation) +
+                                        " km");
+                        etaToNextDestination = curRoute.getNextDestinationEta(curLocation);
+                        if (etaToNextDestination == -1) {
+                            etaToNextDestinationText
+                                    .setText("Thời gian đến điểm tiếp theo:\tKhông di chuyển !");
+                        } else if (etaToNextDestination == -2) {
+                            etaToNextDestinationText
+                                    .setText("Đã hoàn thành hải trình !");
+                        }
+                    }
+
+                }
+
+                calculateHandler.postDelayed(this, 10000);
+            }
+        });
+
+        countdownHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (etaToNextDestination > 0) {
+                    int hour = etaToNextDestination / 3600;
+                    int minute = (etaToNextDestination % 3600) / 60;
+                    int sec = etaToNextDestination % 60;
+
+                    etaToNextDestinationText
+                            .setText("Thời gian đến điểm tiếp theo:\t" +
+                                    hour + " giờ " + minute + " phút " + sec + " giây");
+
+                    etaToNextDestination--;
+                }
+
+                countdownHandler.postDelayed( this, 1000);
+            }
+        });
+    }
+
     private boolean isServiceRunning() {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         assert manager != null;
@@ -537,26 +629,28 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return false;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     private boolean checkPermission() {
         if (Build.VERSION.SDK_INT >= 23) {
-            return (ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED)&&
-                    (ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            return (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) &&
+                    (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED);
-        }else{
-            Snackbar.make( map, "Vui lòng cập nhật phiên bản mới của hệ điều hành", Snackbar.LENGTH_LONG).show();
+        } else {
+            Snackbar.make(map, "Vui lòng cập nhật phiên bản mới của hệ điều hành", Snackbar.LENGTH_LONG).show();
             return false;
         }
     }
 
-    public void requestPermission(){
-        ActivityCompat.requestPermissions( this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
-        ActivityCompat.requestPermissions( this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, REQUEST_CODE);
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public void requestPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, REQUEST_CODE);
     }
 
-    private void showMessageBox(String message, DialogInterface.OnClickListener clickListener ){
-        new AlertDialog.Builder( this)
-                .setMessage( message )
+    private void showMessageBox(String message, DialogInterface.OnClickListener clickListener) {
+        new AlertDialog.Builder(this)
+                .setMessage(message)
                 .setPositiveButton("OK", clickListener)
                 .setNegativeButton("Cancel", null)
                 .create()
@@ -570,31 +664,29 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if( requestCode == REQUEST_CODE ){
-            if( grantResults.length > 0){
+        if (requestCode == REQUEST_CODE) {
+            if (grantResults.length > 0) {
                 boolean accepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
-                if( accepted ){
+                if (accepted) {
                     //Snackbar.make( map, "Cho phép sử dụng vị trí", Snackbar.LENGTH_LONG).show();
                     StartLocationService();
                     enableButtons();
-                }
-                else{
+                } else {
                     //Snackbar.make( map, "Không có quyền sử dụng vị trí", Snackbar.LENGTH_LONG).show();
 
-                    if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-                        if( shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)){
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
                             showMessageBox("Bạn cần cho phép ứng dụng sử dụng vị trí",
                                     new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            requestPermissions( new String[]{ Manifest.permission.ACCESS_FINE_LOCATION},
+                                            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                                                     REQUEST_CODE);
                                         }
                                     });
                             return;
-                        }
-                        else{
+                        } else {
                             showMessageBox("Bạn cần cho phép ứng dụng sử dụng vị trí.\nHãy cấp quyền cho ứng dụng này trong Cài đặt", null);
                         }
                     }
@@ -623,7 +715,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 temp_Search_lat = mlat;
                 temp_Search_lon = mlon;
 
-                switch (CHOOSE_SEARCH_OR_DIRECTION){
+                switch (CHOOSE_SEARCH_OR_DIRECTION) {
                     case 0: {
                         map.setLonLatSearchPlace(mlat, mlon);
                         CHOOSE_SEARCH_OR_DIRECTION = 1;
@@ -637,7 +729,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
             } else {
                 // DetailActivity không thành công, không có data trả về.
-                if(temp_Search_lon !=0 && temp_Search_lat !=0) {
+                if (temp_Search_lon != 0 && temp_Search_lat != 0) {
                     switch (CHOOSE_SEARCH_OR_DIRECTION) {
                         case 0: {
                             map.setLonLatSearchPlace(temp_Search_lat, temp_Search_lon);
@@ -680,7 +772,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     //Ham lay kich thuoc man hinh
-    private void getDisplayMetrics(){
+    private void getDisplayMetrics() {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         heightScr = displayMetrics.heightPixels;

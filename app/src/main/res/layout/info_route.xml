@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/_distance"
         android:layout_below="@+id/route_listview"
-        android:text="Tổng khoảng cách: "
+        android:text="Khoảng cách đến điểm tiếp theo: "
         android:background="#570097A7"
         />
 
@@ -55,7 +55,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/_timeRun"
         android:layout_below="@+id/_distance"
-        android:text="Thơi gian ước tính: "
+        android:text="Thơi gian đến điểm tiếp theo: "
         android:background="#570097A7"
         />
 
