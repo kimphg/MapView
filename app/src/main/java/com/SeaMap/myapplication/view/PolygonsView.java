@@ -1,6 +1,8 @@
 package com.SeaMap.myapplication.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -16,6 +18,7 @@ import android.view.View;
 import androidx.annotation.RequiresApi;
 
 import com.SeaMap.myapplication.Activity.MainActivity;
+import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.ReadFile;
 import com.SeaMap.myapplication.object.Buoy;
 import com.SeaMap.myapplication.object.Polyline;
@@ -36,7 +39,10 @@ public class PolygonsView extends View {
     protected static float viewLat = 18.32f;//lattitude of the center of the screen
     protected static float viewLon = 105.43f;//longtitude of the center of the screen
     protected static boolean MYLOCATION = false; // vi tri hien tai
-    public static int scrCtY,scrCtX;
+    private static boolean SEARCHPLACE = false;
+    private static boolean DIRECTIONS = false;
+    float searchPlace_lon, searchPlace_lat;
+    public int scrCtY,scrCtX;
     protected float shipLocationLon = 105.43f, shipLocationLat = 18.32f;
     private boolean lockDragging = false;// khóa không cho drag khi đang zoom
     private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint();
@@ -193,7 +199,7 @@ public class PolygonsView extends View {
                         for (int k = 0; k < bouyVectors.size(); k++) {
                             Buoy buoy = bouyVectors.get(k);
                             float[] coor = buoy.getCoordinates();
-                            Point p = SeaMap.ConvWGSToScrPoint(coor[0], coor[1]);
+                            Point p = ConvWGSToScrPoint(coor[0], coor[1]);
 
                             //canvas.drawBitmap(bitmapBouy, p.x + widthBuoy, p.y + heightBuoy , buoyPaint);
                             canvas.drawCircle(p.x, p.y, 5, buoyPaint);
@@ -225,7 +231,25 @@ public class PolygonsView extends View {
                 }
         }
 
+        if(DIRECTIONS) {
+            Point p1 = ConvWGSToScrPoint(searchPlace_lon, searchPlace_lat);
+            Point p2 = ConvWGSToScrPoint(shipLocationLon, shipLocationLat);
+            Paint searchPl = new Paint();
+            searchPl.setColor(Color.RED);
+            searchPl.setStrokeWidth(3);
+            float pointf[] = {p1.x, p1.y, p2.x, p2.y};
+            canvas.drawLines(pointf, searchPl);
+            SEARCHPLACE = true;
+        }
 
+        if(SEARCHPLACE){
+            Point p1 = ConvWGSToScrPoint(searchPlace_lon, searchPlace_lat);
+            Bitmap mbitmap = BitmapFactory.decodeResource(getResources(), R.drawable.location_maps);
+            int height = mbitmap.getHeight();
+            int wight = mbitmap.getWidth();
+            Paint searchPl = new Paint();
+            canvas.drawBitmap(mbitmap, p1.x - height/2, p1.y - wight/2, searchPl);
+        }
     }
 
 
@@ -305,7 +329,7 @@ public class PolygonsView extends View {
 //        return bitmap;
 //    }
 
-    public static Point ConvWGSToScrPoint(float m_Long,float m_Lat)// converting lat lon  WGS coordinates to screen XY coordinates
+    public Point ConvWGSToScrPoint(float m_Long,float m_Lat)// converting lat lon  WGS coordinates to screen XY coordinates
     {
         Point s = new Point();
         float refLat = (viewLat + (m_Lat))*0.00872664625997f;//pi/360
@@ -314,7 +338,7 @@ public class PolygonsView extends View {
         );
         return s;
     }
-    public static PointF ConvScrPointToWGS(int x,int y)
+    public PointF ConvScrPointToWGS(int x,int y)
     {
         float olat  = mlat -  (float)(((y-scrCtY)/mScale)/(111.132954f));
         float refLat = (mlat +(olat))*0.00872664625997f;//3.14159265358979324/180.0/2;
@@ -340,4 +364,26 @@ public class PolygonsView extends View {
 
         invalidate();
     }
+
+    public void myLocationToDirection(int type, float latDirectionLoc, float lonDirectionLoc){
+        DIRECTIONS = true;
+        if(type == 1){
+            searchPlace_lat = latDirectionLoc;
+            searchPlace_lon = lonDirectionLoc;
+        }
+        mlat = (searchPlace_lat + shipLocationLat) / 2;
+        mlon = (searchPlace_lon + shipLocationLon) / 2;
+        mScale = scrCtY / (abs(shipLocationLat - searchPlace_lat) * 111.132954f) ;
+        invalidate();
+    }
+
+    public void setLonLatSearchPlace(float latSearchLoc, float lonSearchLoc){
+        mlat = searchPlace_lat = latSearchLoc;
+        mlon = searchPlace_lon = lonSearchLoc;
+        mScale = 15;
+        SEARCHPLACE = true;
+        DIRECTIONS = false;
+        invalidate();
+    }
+
 }

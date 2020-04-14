@@ -8,7 +8,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import android.graphics.Color;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.Manifest;
@@ -46,7 +45,7 @@ import com.SeaMap.myapplication.classes.Route;
 import com.SeaMap.myapplication.classes.StableArrayAdapter;
 import com.SeaMap.myapplication.object.Text;
 import com.SeaMap.myapplication.services.GpsService;
-import com.SeaMap.myapplication.view.DensityView;
+import com.SeaMap.myapplication.view.DensityMap;
 import com.SeaMap.myapplication.view.DistancePTPView;
 import com.SeaMap.myapplication.view.PolygonsView;
 import com.SeaMap.myapplication.view.SeaMap;
@@ -85,9 +84,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     //Todo: cac view hien thi
     public static DistancePTPView distancePTPView;
-    //public BuoyView buoyView;
-    public DensityView densityView;
-    public SeaMap map;
+    public PolygonsView map;
     private NavigationView navigationView;
 
     private SearchView searchView;
@@ -381,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 switch (up_down_route) {
                     //0: phong to
                     case 0: {
-                        int height = PolygonsView.scrCtY * 5 / 4;
+                        int height = map.scrCtY * 5 / 4;
                         route_layout.getLayoutParams().height = height;
                         route_layout.requestLayout();
                         up_down_route = 1;
@@ -389,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     }
                     //1: thu nho
                     case 1: {
-                        int height = PolygonsView.scrCtY / 4;
+                        int height = map.scrCtY / 4;
                         route_layout.getLayoutParams().height = height;
                         route_layout.requestLayout();
                         up_down_route = 0;
@@ -412,7 +409,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     break;
                 }
                 case ROUTE: {
-                    PointF p = SeaMap.ConvScrPointToWGS(SeaMap.scrCtX, SeaMap.scrCtY);
+                    PointF p = map.ConvScrPointToWGS(map.scrCtX, map.scrCtY);
                     Coordinate selected = new Coordinate(p.x, p.y);
                     this.curRoute.addNewDestination(selected);
                     if (!isCalculating) {
@@ -444,7 +441,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     //Todo : Khoi tao density va hien view khi an layer
     public void onDensityView() {
-        densityView = new DensityView(getApplicationContext());
         imageBtnLayer = findViewById(R.id.ic_btn_layers);
         imageBtnLayer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -452,12 +448,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 switch (CHOOSE_BTN_LAYERS) {
                     case 0: {
                         frameLayout.removeView(map);
-                        frameLayout.addView(densityView, 0);
+                        map = new DensityMap(getApplicationContext());
+                        frameLayout.addView(map, 0);
                         CHOOSE_BTN_LAYERS = 1;
                         break;
                     }
                     case 1: {
-                        frameLayout.removeView(densityView);
+                        frameLayout.removeView(map);
+                        map = new SeaMap(getApplicationContext());
                         frameLayout.addView(map, 0);
                         CHOOSE_BTN_LAYERS = 0;
                         break;
@@ -496,7 +494,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
                         curRoute = new Route();
 
-                        distancePTPView = new DistancePTPView(getApplicationContext());
+                        distancePTPView = new DistancePTPView(getApplicationContext(), map);
                         frameLayout.addView(distancePTPView);
                         route_layout.setVisibility(View.VISIBLE);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
@@ -506,7 +504,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     case R.id.nav_tinhkhoangcach: {
                         CHOOSE_DISTANE_OR_ROUTE = DISTANCE;
                         onViewMain = 1;
-                        distancePTPView = new DistancePTPView(getApplicationContext());
+                        distancePTPView = new DistancePTPView(getApplicationContext(), map);
                         frameLayout.addView(distancePTPView);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         addDestinationButton.setVisibility(View.VISIBLE);
