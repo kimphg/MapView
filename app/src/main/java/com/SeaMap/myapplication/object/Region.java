@@ -59,9 +59,4 @@ public class Region implements Serializable {
     public int getType() { return type; }
 
     public void setType(int type) { this.type = type; }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-    }
 }

@@ -16,9 +16,9 @@ import com.SeaMap.myapplication.object.Density;
 
 import java.util.Vector;
 
-public class DensityMap extends PolygonsView {
+public class DensityView extends PolygonsView {
 
-    public DensityMap(Context context) {
+    public DensityView(Context context) {
         super(context);
     }
 
