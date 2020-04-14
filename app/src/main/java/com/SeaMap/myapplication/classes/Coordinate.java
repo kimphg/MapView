@@ -12,19 +12,19 @@ public class Coordinate {
         this.latitude = latitude;
     }
 
-    public static String[] decimalToDMS(double lon, double lat  ){
+    public static String[] decimalToDMS(Location curLocation ){
         String[] result = new String[2];
-        double convertLat = Math.abs( lat );
+        double convertLat = Math.abs( curLocation.getLatitude() );
         int latDeg = (int) Math.floor( convertLat );
         int latMin = (int) Math.floor( (convertLat - latDeg ) * 60 );
         int latSec = (int) Math.floor( (convertLat - latDeg) * 60 - latMin);
-        String latCardinal = ( (lat > 0) ? "N" : "S");
+        String latCardinal = ( (curLocation.getLatitude() > 0) ? "N" : "S");
 
-        double convertLon = Math.abs( lon );
+        double convertLon = Math.abs( curLocation.getLongitude() );
         int lonDeg = (int) Math.floor( convertLon );
         int lonMin = (int) Math.floor( (convertLon - lonDeg ) * 60 );
         int lonSec = (int)Math.floor( (convertLon - lonDeg ) * 60 - lonMin );
-        String lonCardinal = ( (lon > 0) ? "E" : "W");
+        String lonCardinal = ( (curLocation.getLongitude() > 0) ? "E" : "W");
 
         result[0] = latDeg + "°" + latMin + "'" + latSec + "\"" + latCardinal;
         result[1] = lonDeg + "°" + lonMin + "'" + lonSec + "\"" + lonCardinal;
