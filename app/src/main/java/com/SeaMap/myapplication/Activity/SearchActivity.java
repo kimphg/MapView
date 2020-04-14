@@ -8,8 +8,6 @@ import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SearchView;
-
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
 import com.SeaMap.myapplication.R;
@@ -47,8 +45,7 @@ public class SearchActivity extends FragmentActivity implements SearchView.OnQue
         imgbtback.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(SearchActivity.this, MainActivity.class);
-                startActivity(intent);
+                onBackPressed();
             }
         });
 

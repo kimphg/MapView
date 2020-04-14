@@ -30,7 +30,9 @@
         </activity>
         <activity android:name=".Activity.MainActivity"
             android:configChanges="orientation|screenSize"/>
-        <activity android:name=".Activity.SearchActivity"/>
+        <activity android:name=".Activity.SearchActivity"
+                android:parentActivityName=".Activity.MainActivity"
+            />
     </application>
     <supports-screens
         android:largeScreens="true"
