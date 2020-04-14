@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         curLocationText.setText(dmsCoord);
                         curVelocityText.setText(String.valueOf((int) newLocation.getSpeed() * 3600 / 1000));
                         if (curLocation != null) {
-                            curBearingText.setText(String.valueOf((int) curLocation.bearingTo(newLocation)));
+                            curBearingText.setText(String.valueOf((int) newLocation.getBearing()));
                         }
                         curLocation = newLocation;
                         map.setLonLatMyLocation(
@@ -564,7 +564,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         calculateHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (curLocation != null && curRoute.route != null) {
+                if (curLocation != null && !curRoute.route.isEmpty() ) {
                     if (curRoute.isArrived(curLocation)) {
                         arrived = true;
                         toNextDestinationDistanceText
@@ -591,8 +591,17 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     }
 
                 }
+                else{
+                    toNextDestinationDistanceText
+                            .setText("Khoảng cách đến điểm tiếp theo:");
+                    etaToNextDestinationText
+                            .setText("Thời gian đến điểm tiếp theo:");
+                    isCalculating = false;
+                    calculateHandler.removeCallbacks(this);
 
-                calculateHandler.postDelayed(this, 10000);
+                }
+
+                calculateHandler.postDelayed(this, 5000);
             }
         });
 
