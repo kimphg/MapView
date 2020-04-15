@@ -46,8 +46,12 @@ public class DensityMap extends PolygonsView {
                     Point p1 = ConvWGSToScrPoint(density.getLongitude(), density.getLatitude());
 //                    pointf[i] = p1.x;
 //                    pointf[i + 1] = p1.y;
-                    int adjust =  (int) (Math.pow(density.getCountMove(), 1 / 3)  + mScale / 4);
-                    pointDensity.setStrokeWidth(adjust);
+
+                    double brightness =  (density.getCountMove()/60.0);
+                    if(brightness>1)brightness=1;
+                    if(brightness<0.2)brightness=0.2;
+                    pointDensity.setColor(Color.argb((int)(brightness*255),30, 230, 30));
+                    pointDensity.setStrokeWidth((int) (  mScale /10.0));
                     canvas.drawPoint(p1.x, p1.y, pointDensity);
                 }
 

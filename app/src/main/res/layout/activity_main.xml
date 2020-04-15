@@ -100,12 +100,13 @@
 
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="280dp"
+                android:layout_width="202dp"
                 android:layout_height="57dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginTop="70dp"
-                android:background="@color/white">
+                android:alpha="1"
+                android:background="#880097A7">
 
                 <TextView
                     android:id="@+id/locationText"
@@ -146,6 +147,7 @@
                     android:id="@+id/curLocationText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="end"
                     android:text=""
                     android:textAlignment="gravity"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -153,29 +155,28 @@
                     app:layout_constraintHorizontal_bias="0.995"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.0"
-                    android:gravity="end" />
+                    app:layout_constraintVertical_bias="0.0" />
 
                 <TextView
                     android:id="@+id/curVelocityText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAlignment="gravity"
+                    android:gravity="end"
                     android:text=""
+                    android:textAlignment="gravity"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.995"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:gravity="end" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/curBearingText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAlignment="gravity"
                     android:gravity="end"
                     android:text=""
+                    android:textAlignment="gravity"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.995"

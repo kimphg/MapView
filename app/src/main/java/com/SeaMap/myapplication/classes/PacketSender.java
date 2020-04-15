@@ -71,6 +71,7 @@ public class PacketSender extends Thread {
                 }
                 catch (IOException ex)
                 {
+                    mPacketPending  = false;
                     Log.e("Udp:", "IOException e Error:", ex);
                 }
 
