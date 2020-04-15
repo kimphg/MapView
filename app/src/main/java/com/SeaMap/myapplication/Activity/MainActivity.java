@@ -8,6 +8,8 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.content.res.Configuration;
+import android.hardware.SensorManager;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.Manifest;
@@ -25,7 +27,10 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.MenuItem;
+import android.view.OrientationEventListener;
+import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -74,9 +79,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private int REQUEST_SEARCH = 0;
 
     //Khi an 1 keo dai khung hien thi route
+    //Khi an 2 tro ve vi tri ban dau
     //Khi an 0 thu nho khung hien thi route
-    //up: 1| down: 0
-    private int up_down_route = 0;
+    //up: 1| down: 0 | 2: reset
+    private int up_down_reset_route = 0;
 
     //lay vi tri hien tai
     private float longitude = 0, latitude = 0;
@@ -132,7 +138,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     //todo: thong so khac
     private float temp_Search_lon = 0, temp_Search_lat = 0;
-    private int heightScr, widthScr;
+    private int heightScr, widthScr, heightScrUse;
+    OrientationEventListener myOrientationEventListener;
 
     @Override
     protected void onStart() {
@@ -251,6 +258,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         onDensityView();
         onScreecBtn_Direction_Search();
         //enableButtons();
+
     }
 
     //Todo: init and add onclick for button on screen
@@ -313,8 +321,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private void onRoute() {
         //Khi khoi tao an di
         route_layout = findViewById(R.id.route_layout);
-        route_layout.getLayoutParams().height = heightScr * 2 / 5;
-        route_layout.requestLayout();
+        changeLocationuttonWhenRoute();
         route_layout.setVisibility(View.INVISIBLE);
 
         routesListView = findViewById(R.id.route_listview);
@@ -375,21 +382,26 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
             @Override
             public void onClick(View v) {
-                switch (up_down_route) {
+                switch (up_down_reset_route) {
                     //0: phong to
                     case 0: {
-                        int height = map.scrCtY * 5 / 4;
-                        route_layout.getLayoutParams().height = height;
+                        route_layout.getLayoutParams().height = heightScrUse * 5 / 8;
                         route_layout.requestLayout();
-                        up_down_route = 1;
+                        up_down_reset_route = 1;
                         break;
                     }
                     //1: thu nho
                     case 1: {
-                        int height = map.scrCtY / 4;
-                        route_layout.getLayoutParams().height = height;
+                        route_layout.getLayoutParams().height = heightScrUse / 8;
                         route_layout.requestLayout();
-                        up_down_route = 0;
+                        up_down_reset_route = 2;
+                        break;
+                    }
+                    //2:reset
+                    case 2:{
+                        route_layout.getLayoutParams().height = heightScrUse * 2 / 5;
+                        route_layout.requestLayout();
+                        up_down_reset_route = 0;
                         break;
                     }
                 }
@@ -541,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         frameLayout.removeView(distancePTPView);
                         distancePTPView = null;
                         route_layout.setVisibility(View.INVISIBLE);
-                        route_layout.getLayoutParams().height = heightScr * 2 / 5;
+                        route_layout.getLayoutParams().height = heightScrUse * 2 / 5;
                         route_layout.requestLayout();
 
                         namePlaces.clear();
@@ -784,5 +796,28 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         heightScr = displayMetrics.heightPixels;
         widthScr = displayMetrics.widthPixels;
+        heightScrUse = heightScr;
+    }
+
+
+
+    public void changeLocationuttonWhenRoute(){
+        route_layout.getLayoutParams().height = heightScrUse * 2 / 5;
+        route_layout.requestLayout();
+    }
+
+    //Nhận sự kiện thay đổi góc nghiêng điện thoại
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Checks the orientation of the screen
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            heightScrUse = widthScr;
+            changeLocationuttonWhenRoute();
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+            heightScrUse = heightScr;
+            changeLocationuttonWhenRoute();
+        }
     }
 }
