@@ -36,11 +36,13 @@ public class PolygonsView extends View {
     protected static float mlat = 20.0f;//lattitude of the center of the screen
     protected static float mlon = 106.5f;//longtitude of the center of the screen
     protected static float mScale = 10f;// 1km = mScale*pixcels
-    protected static float viewLat = 18.32f;//lattitude of the center of the screen
-    protected static float viewLon = 105.43f;//longtitude of the center of the screen
+    //protected static float viewLat = 18.32f;//lattitude of the center of the screen
+    //protected static float viewLon = 105.43f;//longtitude of the center of the screen
     protected static boolean MYLOCATION = false; // vi tri hien tai
     private static boolean SEARCHPLACE = false;
     private static boolean DIRECTIONS = false;
+    private Bitmap bufferBimap;
+    private Canvas canvasBuf;
     float searchPlace_lon, searchPlace_lat;
     public int scrCtY,scrCtX;
     protected float shipLocationLon = 105.43f, shipLocationLat = 18.32f;
@@ -71,6 +73,8 @@ public class PolygonsView extends View {
     }
 
     private void initPaints() {
+        bufferBimap = Bitmap.createBitmap(this.getWidth(),this.getHeight(), Bitmap.Config.ARGB_8888);
+        canvasBuf = new Canvas(bufferBimap);
         landPaint.setAntiAlias(true);
         landPaint.setStyle(Paint.Style.FILL);
         landPaint.setColor(Color.rgb(201, 185, 123));
@@ -86,10 +90,13 @@ public class PolygonsView extends View {
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        //dùng biến viewLat, viewLon để làm trơn sự dịch chuyển tâm màn hình
-        viewLat += (mlat- viewLat)/2.0;
-        viewLon += (mlon- viewLon)/2.0;
-        if(abs(mlat- viewLat)+abs(mlon-viewLon) >0.001) invalidate();
+        canvas.drawBitmap(bufferBimap,buf_x,buf_y,null);
+
+    }
+
+    void drawToBuffer()
+    {
+        canvasBuf.drawColor(Color.WHITE);
 
         PointF pointT1 = ConvScrPointToWGS(scrCtX * 2,0);
         PointF pointT3 = ConvScrPointToWGS(0, scrCtY * 2);
@@ -114,7 +121,7 @@ public class PolygonsView extends View {
                         point1 = ConvWGSToScrPoint(coordinate[i], coordinate[i + 1]);
                         pathRegion.lineTo(point1.x, point1.y);
                     }
-                    canvas.drawPath(pathRegion, landPaint);
+                    canvasBuf.drawPath(pathRegion, landPaint);
                 }
             }
         }
@@ -141,7 +148,7 @@ public class PolygonsView extends View {
                         point1 = ConvWGSToScrPoint(coordinate[i], coordinate[i + 1]);
                         pathRegion.lineTo(point1.x, point1.y);
                     }
-                    canvas.drawPath(pathRegion, riverPaint);
+                    canvasBuf.drawPath(pathRegion, riverPaint);
                 }
 
                 //DrawBorder
@@ -159,7 +166,7 @@ public class PolygonsView extends View {
                         pointis[i * 2 + 2] = (float) p2.x;
                         pointis[i * 2 + 3] = (float) p2.y;
                     }
-                    canvas.drawLines(pointis, borderlinePaint);
+                    canvasBuf.drawLines(pointis, borderlinePaint);
                 }
             }
         }
@@ -190,7 +197,7 @@ public class PolygonsView extends View {
                         int green = (int) (color - red<<16) / 256;
                         int blue = (int) (color - red * 65536 - green * 256);
                         depthLinePaint.setColor(Color.rgb(red, green, blue));
-                        canvas.drawLines(pointis, depthLinePaint);
+                        canvasBuf.drawLines(pointis, depthLinePaint);
                     }
                     if( mScale > 10) {
                         //draw buoy
@@ -202,7 +209,7 @@ public class PolygonsView extends View {
                             Point p = ConvWGSToScrPoint(coor[0], coor[1]);
 
                             //canvas.drawBitmap(bitmapBouy, p.x + widthBuoy, p.y + heightBuoy , buoyPaint);
-                            canvas.drawCircle(p.x, p.y, 5, buoyPaint);
+                            canvasBuf.drawCircle(p.x, p.y, 5, buoyPaint);
                         }
                     }
                 }
@@ -215,7 +222,7 @@ public class PolygonsView extends View {
             Paint locationPaint = new Paint();
             locationPaint.setStyle(Paint.Style.FILL);
             locationPaint.setColor(Color.argb(120, 0, 120, 100));
-            canvas.drawCircle(p1.x, p1.y, 10, locationPaint);
+            canvasBuf.drawCircle(p1.x, p1.y, 10, locationPaint);
             //int height = mbitmap.getHeight();
             //int width = mbitmap.getWidth();
 
@@ -226,7 +233,7 @@ public class PolygonsView extends View {
                     locationPaint.setColor(Color.argb(150, 0, 0, 100));
                     for (Location ship : nearbyShips) {
                         Point pship = ConvWGSToScrPoint((float) ship.getLongitude(), (float) ship.getLatitude());
-                        canvas.drawCircle(pship.x, pship.y, 7, locationPaint);
+                        canvasBuf.drawCircle(pship.x, pship.y, 7, locationPaint);
                     }
                 }
         }
@@ -238,7 +245,7 @@ public class PolygonsView extends View {
             searchPl.setColor(Color.RED);
             searchPl.setStrokeWidth(3);
             float pointf[] = {p1.x, p1.y, p2.x, p2.y};
-            canvas.drawLines(pointf, searchPl);
+            canvasBuf.drawLines(pointf, searchPl);
             SEARCHPLACE = true;
         }
 
@@ -248,11 +255,9 @@ public class PolygonsView extends View {
             int height = mbitmap.getHeight();
             int wight = mbitmap.getWidth();
             Paint searchPl = new Paint();
-            canvas.drawBitmap(mbitmap, p1.x - wight/2, p1.y - height, searchPl);
+            canvasBuf.drawBitmap(mbitmap, p1.x - wight/2, p1.y - height, searchPl);
         }
     }
-
-
     float PointDistancePixels(PointF p1,PointF p2)
     {
         float dx = abs(p1.x-p2.x);
@@ -260,6 +265,7 @@ public class PolygonsView extends View {
         return (float) sqrt(dx*dx+dy*dy);
 
     }
+    int buf_x=0,buf_y=0;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         scaleGestureDetector.onTouchEvent(event);
@@ -269,17 +275,28 @@ public class PolygonsView extends View {
         }
         else if(event.getAction() == MotionEvent.ACTION_UP)
         {
-            lockDragging = false;
+            if(!lockDragging) {
+
+
+                buf_x=0;
+                buf_y=0;
+
+                drawToBuffer();
+                invalidate();
+            }
+            else lockDragging = false;
         }
         else if(event.getAction()==MotionEvent.ACTION_MOVE)
         {
-            dragStop = new PointF(event.getX(),event.getY());
-            PointF newLatLon = ConvScrPointToWGS((int)(dragStart.x-dragStop.x)+scrCtX,(int)(dragStart.y-dragStop.y)+scrCtY);
-            dragStart = dragStop;
             if(lockDragging)return true;//bỏ qua nếu đang khóa drag
+            dragStop = new PointF(event.getX(),event.getY());
             if(PointDistancePixels(dragStop,dragStart)>scrCtX*0.5)return true;//không cho drag màn hình quá nhanh
-            mlat=newLatLon.y;
-            mlon=newLatLon.x;
+            buf_x += dragStop.x - dragStart.x;
+            buf_y += dragStop.y - dragStart.y;
+            PointF newLatLon = ConvScrPointToWGS((int) (scrCtX - dragStop.x + dragStart.x), (int) (scrCtY - dragStop.y + dragStart.y));
+            mlat = newLatLon.y;
+            mlon = newLatLon.x;
+            dragStart = dragStop;
 
             //MainActivity.polygonsView.refreshDrawableState();
             invalidate();
@@ -332,9 +349,9 @@ public class PolygonsView extends View {
     public Point ConvWGSToScrPoint(float m_Long,float m_Lat)// converting lat lon  WGS coordinates to screen XY coordinates
     {
         Point s = new Point();
-        float refLat = (viewLat + (m_Lat))*0.00872664625997f;//pi/360
-        s.set((int )(mScale*((m_Long - viewLon) * 111.31949079327357)*cos(refLat))+scrCtX,
-                (int)(mScale*((viewLat- (m_Lat)) * 111.132954))+scrCtY
+        float refLat = (mlat + (m_Lat))*0.00872664625997f;//pi/360
+        s.set((int )(mScale*((m_Long - mlon) * 111.31949079327357)*cos(refLat))+scrCtX,
+                (int)(mScale*((mlat- (m_Lat)) * 111.132954))+scrCtY
         );
         return s;
     }
