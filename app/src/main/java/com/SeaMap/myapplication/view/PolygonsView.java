@@ -33,9 +33,9 @@ import static java.lang.Math.sqrt;
 
 public class PolygonsView extends View {
 
-    protected static float mlat = 18.32f;//lattitude of the center of the screen
-    protected static float mlon = 105.43f;//longtitude of the center of the screen
-    protected static float mScale = 3f;// 1km = mScale*pixcels
+    protected static float mlat = 20.0f;//lattitude of the center of the screen
+    protected static float mlon = 106.5f;//longtitude of the center of the screen
+    protected static float mScale = 10f;// 1km = mScale*pixcels
     protected static float viewLat = 18.32f;//lattitude of the center of the screen
     protected static float viewLon = 105.43f;//longtitude of the center of the screen
     protected static boolean MYLOCATION = false; // vi tri hien tai
@@ -248,7 +248,7 @@ public class PolygonsView extends View {
             int height = mbitmap.getHeight();
             int wight = mbitmap.getWidth();
             Paint searchPl = new Paint();
-            canvas.drawBitmap(mbitmap, p1.x - height/2, p1.y - wight/2, searchPl);
+            canvas.drawBitmap(mbitmap, p1.x - wight/2, p1.y - height, searchPl);
         }
     }
 
