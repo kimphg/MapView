@@ -150,7 +150,7 @@ public class PolygonsView extends View {
                     mPath.moveTo(p1.x, p1.y);
                     mPath.lineTo(p2.x, p2.y);
                     int textSize = (int) distance * 2 / text.getName().length();
-                    if(textSize > scrCtX )continue;
+                    if(textSize > scrCtX*2 )continue;
                     if(textSize < scrCtX * 0.05)continue;
 
                     if (mScale <= 4f && text.getType() == 3) {
@@ -334,7 +334,7 @@ public class PolygonsView extends View {
             Paint searchPl = new Paint();
             canvasBuf.drawBitmap(mbitmap, p1.x - wight/2, p1.y - height, searchPl);
         }
-        DrawDensityMap();
+        if(isShowDensityMap)DrawDensityMap();
         DrawTextMap();
 
         mOldScale = mScale;
