@@ -127,7 +127,6 @@ public class PolygonsView extends View {
         cusPaint.setStyle(Paint.Style.STROKE);
         cusPaint.setColor(Color.rgb(255, 239, 213));
         cusPaint.setStyle(Paint.Style.FILL);
-
         for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x  ; lon++) {
             for (int lat = (int) pointBotLeft.y; lat <= (int) pointTopRight.y; lat++) {
                 String area = lon + "-" + lat;
@@ -141,32 +140,44 @@ public class PolygonsView extends View {
                     Point p1 = ConvWGSToScrPoint(text.getCoordinate()[0], text.getCoordinate()[1]);
                     Point p2 = ConvWGSToScrPoint(text.getCoordinate()[2], text.getCoordinate()[3]);
                     int distance = Distance(p1, p2);
+
                     int color = text.getPen()[2];
                     int red = (int) color / 65536;
                     int green = (int) (color - red * 65536) / 256;
                     int blue = (int) (color - red * 65536 - green * 256);
                     textPaint.setColor(Color.rgb(red, green, blue));
-                    Path mPath = new Path();
-                    mPath.moveTo(p1.x, p1.y);
-                    mPath.lineTo(p2.x, p2.y);
-                    int textSize = (int) distance * 2 / text.getName().length();
-                    if(textSize > scrCtX*2 )continue;
-                    if(textSize < scrCtX * 0.05)continue;
 
-                    if (mScale <= 4f && text.getType() == 3) {
-                        textPaint.setTextSize((int) distance * 2 / text.getName().length());
-                        canvasBuf.drawText(text.getName(), p1.x, p1.y, textPaint);
-                    } else if (mScale > 2 && mScale <= 10 && text.getType() == 0) {
-                        textPaint.setTextSize((int) distance * 2 / text.getName().length());
-                        canvasBuf.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
-                    } else if (mScale > 6 && mScale <= 12 && text.getType() == 4) {
-                        textPaint.setTextSize(distance / text.getName().length());
-                        canvasBuf.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
-                    } else if (mScale > 8 && text.getType() == 1) {
-                        if (text.getName().length() != 0)
-                            textPaint.setTextSize(distance / text.getName().length());
+
+                    int fontSize = (int) (distance*0.9 / text.getName().length());
+                    if(fontSize>scrCtX||fontSize<scrCtX*0.05)continue;
+                    textPaint.setTextSize(fontSize);
+                    if(text.getType() == 3)canvasBuf.drawText(text.getName(), p1.x, p1.y, textPaint);
+                    else
+                    {
+                        Path mPath = new Path();
+                        mPath.moveTo(p1.x, p1.y);
+                        mPath.lineTo(p2.x, p2.y);
                         canvasBuf.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
                     }
+                    //type 0: ten cac thanh pho
+                    //type 1: do sau
+                    //type 2: hon dao nho
+                    //type 3: quan dao
+//
+//                    if (mScale <= 4f && text.getType() == 3) {
+//                        textPaint.setTextSize((int) distance * 2 / text.getName().length());
+//                        canvasBuf.drawText(text.getName(), p1.x, p1.y, textPaint);
+//                    } else if (mScale > 2 && mScale <= 10 && text.getType() == 0) {
+//                        textPaint.setTextSize((int) distance * 2 / text.getName().length());
+//                        canvasBuf.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
+//                    } else if (mScale > 6 && mScale <= 12 && text.getType() == 4) {
+//                        textPaint.setTextSize(distance / text.getName().length());
+//                        canvasBuf.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
+//                    } else if (mScale > 8 && text.getType() == 1) {
+//                        if (text.getName().length() != 0)
+//                            textPaint.setTextSize(distance / text.getName().length());
+//                        canvasBuf.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
+//                    }
                 }
             }
         }
@@ -248,9 +259,9 @@ public class PolygonsView extends View {
             }
         }
 
-        //Draw
+        //vẽ các đường đẳng sâu
 
-        if( mScale >5){
+        {
             for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x ; lon++) {
                 for (int lat = (int) pointBotLeft.y ; lat <= (int) pointTopRight.y ; lat++) {
                     String area = lon + "-" + lat;

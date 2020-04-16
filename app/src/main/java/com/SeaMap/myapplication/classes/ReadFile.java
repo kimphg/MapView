@@ -137,7 +137,6 @@ public class ReadFile {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             tTexts.put(key, vtText);
         }
         System.out.println("");
