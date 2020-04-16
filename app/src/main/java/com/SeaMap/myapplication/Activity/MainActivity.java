@@ -9,7 +9,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.res.Configuration;
-import android.hardware.SensorManager;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.Manifest;
@@ -27,10 +26,8 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.MenuItem;
 import android.view.OrientationEventListener;
-import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -50,7 +47,6 @@ import com.SeaMap.myapplication.classes.Route;
 import com.SeaMap.myapplication.classes.StableArrayAdapter;
 import com.SeaMap.myapplication.object.Text;
 import com.SeaMap.myapplication.services.GpsService;
-import com.SeaMap.myapplication.view.DensityMap;
 import com.SeaMap.myapplication.view.DistancePTPView;
 import com.SeaMap.myapplication.view.PolygonsView;
 import com.SeaMap.myapplication.view.SeaMap;
@@ -459,16 +455,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             public void onClick(View v) {
                 switch (CHOOSE_BTN_LAYERS) {
                     case 0: {
-                        frameLayout.removeView(map);
-                        map = new DensityMap(getApplicationContext());
-                        frameLayout.addView(map, 0);
+                        map.isShowDensityMap = true;
                         CHOOSE_BTN_LAYERS = 1;
                         break;
                     }
                     case 1: {
-                        frameLayout.removeView(map);
-                        map = new SeaMap(getApplicationContext());
-                        frameLayout.addView(map, 0);
+                        map.isShowDensityMap = false;
                         CHOOSE_BTN_LAYERS = 0;
                         break;
                     }

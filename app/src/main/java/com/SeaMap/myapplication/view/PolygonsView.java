@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.location.Location;
 import android.os.Build;
 import android.view.MotionEvent;
@@ -21,10 +22,14 @@ import com.SeaMap.myapplication.Activity.MainActivity;
 import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.ReadFile;
 import com.SeaMap.myapplication.object.Buoy;
+import com.SeaMap.myapplication.object.Density;
 import com.SeaMap.myapplication.object.Polyline;
 import com.SeaMap.myapplication.object.Region;
+import com.SeaMap.myapplication.object.Text;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import static java.lang.Math.abs;
@@ -32,10 +37,14 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 
 public class PolygonsView extends View {
-
+    private Timer drawTimer;
+    private boolean isBufferBusy = false;
+    double buf_x=0,buf_y=0;
+    public boolean isShowDensityMap = false;
     protected static float mlat = 20.0f;//lattitude of the center of the screen
     protected static float mlon = 106.5f;//longtitude of the center of the screen
     protected static float mScale = 10f;// 1km = mScale*pixcels
+    protected static float mOldScale = 10f;// 1km = mScale*pixcels
     //protected static float viewLat = 18.32f;//lattitude of the center of the screen
     //protected static float viewLon = 105.43f;//longtitude of the center of the screen
     protected static boolean MYLOCATION = false; // vi tri hien tai
@@ -45,12 +54,14 @@ public class PolygonsView extends View {
     private Canvas canvasBuf;
     float searchPlace_lon, searchPlace_lat;
     public int scrCtY,scrCtX;
+    PointF pointTopRight,pointBotLeft;
     protected float shipLocationLon = 105.43f, shipLocationLat = 18.32f;
     private boolean lockDragging = false;// khóa không cho drag khi đang zoom
-    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint();
+    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint(), cusPaint = new Paint(),textPaint = new Paint();
     private ScaleGestureDetector scaleGestureDetector;
-    protected PointF dragStart,dragStop;
+    protected PointF dragOldPoint, dragNewPoint;
     protected Context mCtx;
+    private TimerTask mTask1;
 //    protected Bitmap bitmapBouy;
     protected Paint buoyPaint = new Paint();
 //    private int heightBuoy, widthBuoy;
@@ -68,12 +79,15 @@ public class PolygonsView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         scrCtY = h / 2;
         scrCtX = w / 2;
+        pointTopRight = ConvScrPointToWGS(scrCtX * 2,0);
+        pointBotLeft = ConvScrPointToWGS(0, scrCtY * 2);
         initPaints();
         invalidate();
     }
 
     private void initPaints() {
         bufferBimap = Bitmap.createBitmap(this.getWidth(),this.getHeight(), Bitmap.Config.ARGB_8888);
+        //bufferBimap1 = Bitmap.createBitmap(this.getWidth(),this.getHeight(), Bitmap.Config.ARGB_8888);
         canvasBuf = new Canvas(bufferBimap);
         landPaint.setAntiAlias(true);
         landPaint.setStyle(Paint.Style.FILL);
@@ -84,25 +98,88 @@ public class PolygonsView extends View {
         riverPaint.setColor(Color.rgb(115, 178, 235));
 
         buoyPaint.setColor(Color.MAGENTA);
+        drawMap();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawBitmap(bufferBimap,buf_x,buf_y,null);
-
+        while(isBufferBusy)// wait if bufferBimap is updating
+        {}
+        Rect dst = new Rect(0,0,scrCtX*2,scrCtY*2);
+        dst.offset((int)buf_x,(int)buf_y);
+        if(mScale!=mOldScale) {
+            float scaleFactor = mScale / mOldScale;
+            dst.top = scrCtY + (int) ((dst.top - scrCtY) * scaleFactor);
+            dst.bottom = scrCtY + (int) ((dst.bottom - scrCtY) * scaleFactor);
+            dst.left = scrCtX + (int) ((dst.left - scrCtX) * scaleFactor);
+            dst.right = scrCtX + (int) ((dst.right - scrCtX) * scaleFactor);
+        }
+        canvas.drawBitmap(bufferBimap,null,dst,null);
     }
-
-    void drawToBuffer()
+    private int Distance(Point p1, Point p2){
+        return (int) Math.sqrt(Math.pow((p1.x -p2.x),2) + Math.pow((p1.y - p2.y),2));
+    }
+    void DrawTextMap()
     {
-        canvasBuf.drawColor(Color.WHITE);
+        cusPaint.setAntiAlias(true);
+        cusPaint.setStyle(Paint.Style.STROKE);
+        cusPaint.setColor(Color.rgb(255, 239, 213));
+        cusPaint.setStyle(Paint.Style.FILL);
 
-        PointF pointT1 = ConvScrPointToWGS(scrCtX * 2,0);
-        PointF pointT3 = ConvScrPointToWGS(0, scrCtY * 2);
+        for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x  ; lon++) {
+            for (int lat = (int) pointBotLeft.y; lat <= (int) pointTopRight.y; lat++) {
+                String area = lon + "-" + lat;
+//                //draw text
+                Vector<Text> tT = ReadFile.tTexts.get(area);
+                if (tT == null) continue;
+                for (int k = 0; k < tT.size(); k++) {
+                    Text text = tT.get(k);
+                    if(text.getName().length() == 0) continue;
+                    if (mScale < 5 && text.getType() != 3) continue;
+                    Point p1 = ConvWGSToScrPoint(text.getCoordinate()[0], text.getCoordinate()[1]);
+                    Point p2 = ConvWGSToScrPoint(text.getCoordinate()[2], text.getCoordinate()[3]);
+                    int distance = Distance(p1, p2);
+                    int color = text.getPen()[2];
+                    int red = (int) color / 65536;
+                    int green = (int) (color - red * 65536) / 256;
+                    int blue = (int) (color - red * 65536 - green * 256);
+                    textPaint.setColor(Color.rgb(red, green, blue));
+                    Path mPath = new Path();
+                    mPath.moveTo(p1.x, p1.y);
+                    mPath.lineTo(p2.x, p2.y);
+                    int textSize = (int) distance * 2 / text.getName().length();
+                    if(textSize > scrCtX )continue;
+                    if(textSize < scrCtX * 0.05)continue;
+
+                    if (mScale <= 4f && text.getType() == 3) {
+                        textPaint.setTextSize((int) distance * 2 / text.getName().length());
+                        canvasBuf.drawText(text.getName(), p1.x, p1.y, textPaint);
+                    } else if (mScale > 2 && mScale <= 10 && text.getType() == 0) {
+                        textPaint.setTextSize((int) distance * 2 / text.getName().length());
+                        canvasBuf.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
+                    } else if (mScale > 6 && mScale <= 12 && text.getType() == 4) {
+                        textPaint.setTextSize(distance / text.getName().length());
+                        canvasBuf.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
+                    } else if (mScale > 8 && text.getType() == 1) {
+                        if (text.getName().length() != 0)
+                            textPaint.setTextSize(distance / text.getName().length());
+                        canvasBuf.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
+                    }
+                }
+            }
+        }
+    }
+    void drawMap()
+    {
+        isBufferBusy=true;
+        canvasBuf.drawColor(Color.WHITE);
+        pointTopRight = ConvScrPointToWGS(scrCtX * 2,0);
+        pointBotLeft = ConvScrPointToWGS(0, scrCtY * 2);
         //DRAW POLYGON
-        for(int lon = (int) pointT3.x - 2; lon<= (int) pointT1.x + 2; lon++) {
-            for (int lat = (int) pointT3.y - 2; lat <= (int) pointT1.y + 2; lat++) {
+        for(int lon = (int) pointBotLeft.x - 2; lon<= (int) pointTopRight.x + 2; lon++) {
+            for (int lat = (int) pointBotLeft.y - 2; lat <= (int) pointTopRight.y + 2; lat++) {
                 Vector<Region> regions;
                 if(mScale < 8) {
                     regions = ReadFile.BaseRegions.get(lon + "-" + lat);
@@ -126,8 +203,8 @@ public class PolygonsView extends View {
             }
         }
 
-        for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
-            for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
+        for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x ; lon++) {
+            for (int lat = (int) pointBotLeft.y ; lat <= (int) pointTopRight.y ; lat++) {
                 String area = lon + "-" + lat;
 
                 ////DRAW RIVER
@@ -174,8 +251,8 @@ public class PolygonsView extends View {
         //Draw
 
         if( mScale >5){
-            for(int lon = (int) pointT3.x ; lon<= (int) pointT1.x ; lon++) {
-                for (int lat = (int) pointT3.y ; lat <= (int) pointT1.y ; lat++) {
+            for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x ; lon++) {
+                for (int lat = (int) pointBotLeft.y ; lat <= (int) pointTopRight.y ; lat++) {
                     String area = lon + "-" + lat;
                     //draw polyline
                     Vector<Polyline> PL = ReadFile.PLines.get(area);
@@ -257,6 +334,43 @@ public class PolygonsView extends View {
             Paint searchPl = new Paint();
             canvasBuf.drawBitmap(mbitmap, p1.x - wight/2, p1.y - height, searchPl);
         }
+        DrawDensityMap();
+        DrawTextMap();
+
+        mOldScale = mScale;
+        isBufferBusy = false;
+        invalidate();
+    }
+    void DrawDensityMap()
+    {
+
+        Paint pointDensity = new Paint();
+        pointDensity.setColor(Color.rgb(255, 30, 30));
+//        if(mScale < 15) pointDensity.setStrokeWidth(1f);
+//        else pointDensity.setStrokeWidth(1.3f);
+        for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x ; lon++) {
+            for (int lat = (int) pointBotLeft.y ; lat <= (int) pointTopRight.y ; lat++) {
+                String area = lon + "-" + lat;
+                Vector<Density> vtDensity = ReadFile.listDensity.get(area);
+                if (vtDensity == null) continue;
+                int size = vtDensity.size() ;
+//                float []pointf = new float[size * 2];
+                for(int i =0; i < size * 2; i+= 2){
+                    Density density = vtDensity.get(i / 2);
+                    if(mScale < 10 && density.getCountMove() < 4) continue;
+                    Point p1 = ConvWGSToScrPoint(density.getLongitude(), density.getLatitude());
+//                    pointf[i] = p1.x;
+//                    pointf[i + 1] = p1.y;
+
+                    double brightness =  (density.getCountMove()/60.0);
+                    if(brightness>1)brightness=1;
+                    if(brightness<0.4)brightness=0.4;
+                    pointDensity.setColor(Color.argb((int)(brightness*255),30, 230, 30));
+                    pointDensity.setStrokeWidth((int) (  mScale /10.0));
+                    canvasBuf.drawPoint(p1.x, p1.y, pointDensity);
+                }
+            }
+        }
     }
     float PointDistancePixels(PointF p1,PointF p2)
     {
@@ -265,39 +379,39 @@ public class PolygonsView extends View {
         return (float) sqrt(dx*dx+dy*dy);
 
     }
-    int buf_x=0,buf_y=0;
+
+    private void pushBuffer()
+    {
+        PointF newLatLon = ConvScrPointToWGS((int) (scrCtX - buf_x), (int) (scrCtY - buf_y));
+        mlat = newLatLon.y;
+        mlon = newLatLon.x;
+        buf_x = 0;
+        buf_y = 0;
+        drawMap();
+        invalidate();
+    }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         scaleGestureDetector.onTouchEvent(event);
 //        gestureDetector.onTouchEvent(event);
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            dragStart = new PointF(event.getX(),event.getY());
+            dragOldPoint = new PointF(event.getX(),event.getY());
         }
         else if(event.getAction() == MotionEvent.ACTION_UP)
         {
-            if(!lockDragging) {
-
-
-                buf_x=0;
-                buf_y=0;
-
-                drawToBuffer();
-                invalidate();
-            }
-            else lockDragging = false;
+            pushBuffer();
+            lockDragging = false;
         }
         else if(event.getAction()==MotionEvent.ACTION_MOVE)
         {
             if(lockDragging)return true;//bỏ qua nếu đang khóa drag
-            dragStop = new PointF(event.getX(),event.getY());
-            if(PointDistancePixels(dragStop,dragStart)>scrCtX*0.5)return true;//không cho drag màn hình quá nhanh
-            buf_x += dragStop.x - dragStart.x;
-            buf_y += dragStop.y - dragStart.y;
-            PointF newLatLon = ConvScrPointToWGS((int) (scrCtX - dragStop.x + dragStart.x), (int) (scrCtY - dragStop.y + dragStart.y));
-            mlat = newLatLon.y;
-            mlon = newLatLon.x;
-            dragStart = dragStop;
+            dragNewPoint = new PointF(event.getX(),event.getY());
+            //if(PointDistancePixels(dragNewPoint, dragOldPoint)>scrCtX*0.5)return true;//không cho drag màn hình quá nhanh
+            buf_x += dragNewPoint.x - dragOldPoint.x;
+            buf_y += dragNewPoint.y - dragOldPoint.y;
 
+            dragOldPoint = dragNewPoint;
+            //if(buf_y>scrCtY/4||buf_x>scrCtX/4)pushBuffer();
             //MainActivity.polygonsView.refreshDrawableState();
             invalidate();
             switch (MainActivity.CHOOSE_DISTANE_OR_ROUTE){
@@ -370,13 +484,14 @@ public class PolygonsView extends View {
     public void setLonLatMyLocation(float latLoc, float lonLoc,boolean gotoLoc){
         shipLocationLat = latLoc;
         shipLocationLon = lonLoc;
+
         if(gotoLoc)
         {
             mlat = shipLocationLat;
             mlon = shipLocationLon;
             if(mScale<10)mScale = 10;
         }
-
+        drawMap();
         MYLOCATION =true;
 
         invalidate();
