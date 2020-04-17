@@ -78,8 +78,8 @@ public class GpsService extends Service {
         if (locationAccessOK) {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
             locationRequest = LocationRequest.create();
-            locationRequest.setInterval(30000);
-            locationRequest.setFastestInterval(10000);
+            locationRequest.setInterval(10000);
+            locationRequest.setFastestInterval(5000);
             locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
             fusedLocationClient.requestLocationUpdates(locationRequest,
                     locationCallback,
@@ -88,8 +88,8 @@ public class GpsService extends Service {
         } else {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
             locationRequest = LocationRequest.create();
-            locationRequest.setInterval(30000);
-            locationRequest.setFastestInterval(10000);
+            locationRequest.setInterval(10000);
+            locationRequest.setFastestInterval(5000);
             locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
             fusedLocationClient.requestLocationUpdates(locationRequest,
                     locationCallback,

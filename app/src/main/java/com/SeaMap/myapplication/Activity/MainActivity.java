@@ -193,8 +193,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         }
                         curLocation = newLocation;
                         map.setLonLatMyLocation(
-                                Float.parseFloat(Double.toString(curLocation.getLatitude())),
-                                Float.parseFloat(Double.toString(curLocation.getLongitude())), false
+                                curLocation.getLatitude(),
+                                curLocation.getLongitude(), false
                         );
 //                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
                     }
@@ -258,6 +258,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     //Todo: init and add onclick for button on screen
+    boolean fixScreenToLocation = false;
     private void enableButtons() {
         //enable buttons' functions
         getCurLocationButton = findViewById(R.id.get_curlocation_btn);
@@ -265,10 +266,19 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             StartLocationService();
 
             if (curLocation != null) {
-                map.setLonLatMyLocation(
-                        Float.parseFloat(Double.toString(curLocation.getLatitude())),
-                        Float.parseFloat(Double.toString(curLocation.getLongitude())), true
-                );
+                map.fixScreenTolocation=!map.fixScreenTolocation;
+                if(map.fixScreenTolocation) {
+                    Toast.makeText(MainActivity.this, "Bật khóa tâm màn hình.", Toast.LENGTH_LONG).show();
+//                    getCurLocationButton.setAlpha(0.8f);
+                    map.setLonLatMyLocation(
+                            Float.parseFloat(Double.toString(curLocation.getLatitude())),
+                            Float.parseFloat(Double.toString(curLocation.getLongitude())), true
+                    );
+                }
+                else {
+                    Toast.makeText(MainActivity.this, "Tắt khóa tâm màn hình.", Toast.LENGTH_LONG).show();
+//                    getCurLocationButton.setAlpha(0.4f);
+                }
 
             } else {
                 Toast.makeText(MainActivity.this, "Xin hãy kiên nhẫn, thiết bị đang lấy dữ liệu ...", Toast.LENGTH_LONG).show();
