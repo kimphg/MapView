@@ -9,6 +9,8 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.Manifest;
@@ -145,7 +147,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void StartLocationService() {
         if (!isMyServiceRunning(GpsService.class)) {
             Intent intent = new Intent(getApplicationContext(), GpsService.class);
+
             startService(intent);
+
         }
     }
 
@@ -170,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     List<Location> nearbyShips = new ArrayList<Location>();
-
+    double speedKmh = 0;
     @Override
     protected void onResume() {
         super.onResume();
@@ -185,9 +189,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     if (newLocation != null) {
                         String[] dms;
                         dms = Coordinate.decimalToDMS(newLocation.getLongitude(), newLocation.getLatitude());
-                        String dmsCoord = dms[0] + " / " + dms[1];
+                        String dmsCoord = dms[0] + "/" + dms[1];
                         curLocationText.setText(dmsCoord);
-                        curVelocityText.setText(String.valueOf((int) newLocation.getSpeed() * 3600 / 1000));
+                        speedKmh+= (newLocation.getSpeed() * 3600.0 / 1000.0-speedKmh)/3.0;
+                        curVelocityText.setText(String.valueOf((int) speedKmh));
                         if (curLocation != null) {
                             curBearingText.setText(String.valueOf((int) newLocation.getBearing()));
                         }
@@ -266,19 +271,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             StartLocationService();
 
             if (curLocation != null) {
-                map.fixScreenTolocation=!map.fixScreenTolocation;
-                if(map.fixScreenTolocation) {
-                    Toast.makeText(MainActivity.this, "Bật khóa tâm màn hình.", Toast.LENGTH_LONG).show();
-//                    getCurLocationButton.setAlpha(0.8f);
-                    map.setLonLatMyLocation(
-                            Float.parseFloat(Double.toString(curLocation.getLatitude())),
-                            Float.parseFloat(Double.toString(curLocation.getLongitude())), true
-                    );
-                }
-                else {
-                    Toast.makeText(MainActivity.this, "Tắt khóa tâm màn hình.", Toast.LENGTH_LONG).show();
-//                    getCurLocationButton.setAlpha(0.4f);
-                }
+                map.setLonLatMyLocation(
+                        Float.parseFloat(Double.toString(curLocation.getLatitude())),
+                        Float.parseFloat(Double.toString(curLocation.getLongitude())), true
+                );
 
             } else {
                 Toast.makeText(MainActivity.this, "Xin hãy kiên nhẫn, thiết bị đang lấy dữ liệu ...", Toast.LENGTH_LONG).show();
@@ -352,7 +348,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
                 float[] coor = place.getCoordinate();
                 map.setLonLatSearchPlace(coor[1], coor[0]);
-
                 Coordinate selected = new Coordinate(coor[0], coor[1]);
                 curRoute.addNewDestination(selected);
                 if (!isCalculating) {

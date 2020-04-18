@@ -3,9 +3,12 @@ package com.SeaMap.myapplication.services;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Looper;
@@ -47,7 +50,15 @@ public class GpsService extends Service {
 
 
     }
+    private boolean isNetworkConnectionAvailable() {
+        ConnectivityManager cm =
+                (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
 
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        return isConnected;
+    }
     Location oldLocation = new Location("GPS");//use old location to estimate speed and movement
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
@@ -72,8 +83,10 @@ public class GpsService extends Service {
                 }
             }
         };
-        mPacketSender = new PacketSender();
-        mPacketSender.start();
+        if(isNetworkConnectionAvailable()) {
+            mPacketSender = new PacketSender();
+            mPacketSender.start();
+        }
         locationAccessOK = CheckLocationAccess();
         if (locationAccessOK) {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -111,6 +124,7 @@ public class GpsService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.N)
     protected void getDataFromServer() {
         //doc goi tin phan hoi tu may chu
+        if(mPacketSender==null)return;
         byte[] answer = mPacketSender.getAnswer();
         if ((answer != null) && (answer.length > 0)) {
             int sizeOne = Short.BYTES + Float.BYTES + Float.BYTES;
@@ -143,7 +157,7 @@ public class GpsService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.N)
     protected void sendOwnLocation(Location location) {
         //gui toa do den may chu
-
+        if(mPacketSender==null)return;
         mPacketSender.setDataPacket(makePacket(location));
         getDataFromServer();
 

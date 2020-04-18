@@ -41,7 +41,7 @@ public class DistancePTPView extends View {
         int size = listTextRoute.size();
         for(int i = 0; i< size; i++){
             float [] coor = listTextRoute.get(i).getCoordinate();
-            Point p = seaMap.ConvWGSToScrPoint(coor[0], coor[1]);
+            PointF p = seaMap.ConvWGSToScrPoint(coor[0], coor[1]);
             Bitmap bitmap = createBitmapFromView(i + 1);
             int height = bitmap.getHeight();
             int wight = bitmap.getWidth();

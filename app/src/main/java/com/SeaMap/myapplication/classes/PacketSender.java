@@ -1,5 +1,8 @@
 package com.SeaMap.myapplication.classes;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import java.io.IOException;
@@ -9,6 +12,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.Buffer;
+
+import static androidx.core.content.ContextCompat.getSystemService;
 
 public class PacketSender extends Thread {
     byte[] buf;
@@ -26,7 +31,7 @@ public class PacketSender extends Thread {
             incomePacket = new DatagramPacket(incomeBuffer, incomeBuffer.length);
              udpSocket = new DatagramSocket();
              udpPort = udpSocket.getPort();
-            udpSocket.setSoTimeout(500);
+            udpSocket.setSoTimeout(1000);
             serverAdd = InetAddress.getByName("27.72.56.161");
         }
         catch (SocketException e) {
@@ -57,10 +62,9 @@ public class PacketSender extends Thread {
 
             try {
                 udpSocket.receive(incomePacket);
-                if(incomePacket.getLength()>=10)
-                incomePacketPending = true;
+                if(incomePacket.getLength()>=10) incomePacketPending = true;
             } catch (SocketTimeoutException e) {
-                // send outcome packet
+                Log.e("UdpListen:", "Timeout:", e);
                 try {
                     if(mPacketPending) {
                         DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAdd, remotePort);
@@ -83,29 +87,7 @@ public class PacketSender extends Thread {
             }
             // check received data...
         }
-
-
-/*
-
-        try {
-            //int udpPort = 50000;
-
-            //udpSocket.bind(new InetSocketAddress(2291));
-
-            //receive data
-            byte[] buffer = new byte[2048];
-            while (true) {
-                udpSocket
-                udpSocket.receive(packet);
-                String lText = new String(buffer, 0, packet.getLength());
-                packet.setLength(buffer.length);
-            }
-        } catch (SocketException e) {
-            Log.e("Udp:", "Socket Error:", e);
-        } catch (IOException e) {
-            Log.e("Udp Send:", "IO Error:", e);
-        }*/
-
     }
+
 }
  
