@@ -24,7 +24,7 @@ public class DistancePTPView extends View {
 
     private List<Text> listTextRoute = new ArrayList<Text>();
     private Paint linePaint = new Paint();
-    PolygonsView seaMap;
+    private PolygonsView seaMap;
 
     private int mDistance;
 
@@ -46,7 +46,8 @@ public class DistancePTPView extends View {
             int height = bitmap.getHeight();
             int wight = bitmap.getWidth();
             Paint locationPaint = new Paint();
-            canvas.drawBitmap(bitmap,p.x - height / 4, p.y - wight,locationPaint);
+
+            seaMap.canvasBuf.drawBitmap(bitmap,p.x - height / 4, p.y - wight,locationPaint);
         }
         linePaint.setColor(Color.RED);
     }

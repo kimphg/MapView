@@ -59,7 +59,7 @@ public class PolygonsView extends View {
     private static boolean SEARCHPLACE = false;
     private static boolean DIRECTIONS = false;
     private Bitmap bufferBimap;
-    private Canvas canvasBuf;
+    public Canvas canvasBuf;
     float searchPlace_lon, searchPlace_lat;
     public int scrCtY,scrCtX;
     PointF pointTopRight,pointBotLeft;
@@ -202,7 +202,7 @@ public class PolygonsView extends View {
             }
         }
     }
-    void drawMap()
+    public void drawMap()
     {
         long tStart = System.currentTimeMillis();
         isBufferBusy=true;
@@ -330,6 +330,17 @@ public class PolygonsView extends View {
 
         mOldScale = mScale;
         isBufferBusy = false;
+
+        switch (MainActivity.CHOOSE_DISTANE_OR_ROUTE){
+            case 0:{
+                break;
+            }
+            default:{
+                MainActivity.distancePTPView.invalidate();
+                break;
+            }
+        }
+
         invalidate();
         long tEnd = System.currentTimeMillis();
         long tDelta = tEnd - tStart;
@@ -382,8 +393,8 @@ public class PolygonsView extends View {
             locationPaint.setStyle(Paint.Style.FILL);
             PointF p1 = ConvWGSToScrPoint((float) shiplocation.getLongitude(), (float) shiplocation.getLatitude());
             PointF p2 = new PointF(p1.x + xoffset, p1.y + yoffset);
-            locationPaint.setColor(Color.argb(120, 0, 120, 150));
-            float cirvleRadius = 15.0f;
+            locationPaint.setColor(Color.argb(120, 255, 0, 0));
+            float cirvleRadius = 25.0f;
             if (viewCurPos) {
                 canvas.drawCircle(p2.x, p2.y, cirvleRadius, locationPaint);
             }
@@ -441,7 +452,7 @@ public class PolygonsView extends View {
         }
 
     }
-    private void pushBuffer()
+    public void pushBuffer()
     {
         PointF newLatLon = ConvScrPointToWGS((int) (scrCtX - buf_x), (int) (scrCtY - buf_y));
         mlat = newLatLon.y;
@@ -476,15 +487,6 @@ public class PolygonsView extends View {
             //if(buf_y>scrCtY/4||buf_x>scrCtX/4)pushBuffer();
             //MainActivity.polygonsView.refreshDrawableState();
             invalidate();
-            switch (MainActivity.CHOOSE_DISTANE_OR_ROUTE){
-                case 0:{
-                    break;
-                }
-                default:{
-                    MainActivity.distancePTPView.invalidate();
-                    break;
-                }
-            }
         }
         return true;
     }
@@ -548,6 +550,23 @@ public class PolygonsView extends View {
         nearbyShips = nearbyShips_input;
     }
 
+    public void disableSearch_Direction(int choose){
+        // Khi disable Direct
+        if(choose == 1) {
+            DIRECTIONS = false;
+            mScale = 10f;
+            setLonLatSearchPlace(searchPlace_lat, searchPlace_lon);
+        }
+        // Khi disable Search
+        else if(choose == 0){
+            SEARCHPLACE = false;
+            mlat = shiplocation.getLatitude();
+            mlon = shiplocation.getLongitude();
+            drawMap();
+        }
+
+    }
+
     public void setLonLatMyLocation(double latLoc, double lonLoc,boolean gotoLocation ){
         //save old location
         Location newLocation = new Location("GPS");
@@ -585,7 +604,7 @@ public class PolygonsView extends View {
     public void setLonLatSearchPlace(float latSearchLoc, float lonSearchLoc){
         mlat = searchPlace_lat = latSearchLoc;
         mlon = searchPlace_lon = lonSearchLoc;
-        if(mScale>15)mScale = 15;
+        if(mScale > 20)mScale = 20;
         SEARCHPLACE = true;
         DIRECTIONS = false;
         drawMap();

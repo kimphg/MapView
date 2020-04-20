@@ -12,6 +12,26 @@
         >
 
         <FrameLayout
+            android:id="@+id/frame_layout_map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+
+
+        </FrameLayout>
+
+        <include layout="@layout/activity_search_result"
+                android:id="@+id/layout_search_result"
+            android:visibility="invisible"
+            ></include>
+
+        <include layout="@layout/activity_route_result"
+            android:id="@+id/layout_route_result"
+            android:visibility="invisible"
+            >
+        </include>
+
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/content_frame">

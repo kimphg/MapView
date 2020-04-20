@@ -3,6 +3,7 @@ package com.SeaMap.myapplication.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
@@ -33,6 +34,7 @@ import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -70,8 +72,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     //Todo: khi click
     public static int CHOOSE_BTN_LAYERS = 0;
     public static int CHOOSE_DISTANE_OR_ROUTE = 0;
-    //0: search 1:direction
-    public static int CHOOSE_SEARCH_OR_DIRECTION = 0;
+    //-1: reset 0: search 1:direction
+    public static int CHOOSE_SEARCH_OR_DIRECTION = -1;
     //
     private int onViewMain = 0;
     private int REQUEST_SEARCH = 0;
@@ -100,12 +102,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private Places places;
 
     //Todo: Cac nut an va nhan su kien
-    private ImageButton getCurLocationButton, imageButtonOther, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, addDestinationButton, imageBtnLayer;
+    private ImageButton getCurLocationButton, imageButtonOther, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, addDestinationButton, imageBtnLayer, imageBtnBackRoute;
     private GoogleApiClient googleApiClient;
 
     //Todo : layout main va layout route
-    private FrameLayout frameLayout;
-    private RelativeLayout route_layout;
+    private FrameLayout frameLayout_main, frameLayout_map;
+    private RelativeLayout route_layout, route_result_layout;
+    private CoordinatorLayout coordinatorLayout_second;
+    private EditText first_Point, second_Point;
     private DrawerLayout mDrawerLayout;
 
     //Todo: khai bao cho route
@@ -131,8 +135,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     int etaToNextDestination = -1;
     boolean arrived;
     boolean isCalculating = false;
-    TextView toNextDestinationDistanceText;
-    TextView etaToNextDestinationText;
+    private TextView toNextDestinationDistanceText;
+    private TextView etaToNextDestinationText;
 
     //todo: thong so khac
     private float temp_Search_lon = 0, temp_Search_lat = 0;
@@ -227,13 +231,20 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
 
-        frameLayout = findViewById(R.id.content_frame);
+        frameLayout_main = findViewById(R.id.content_frame);
+        frameLayout_map = findViewById(R.id.frame_layout_map);
         read = new ReadFile(getApplicationContext());
         // su kien bat dau lo trinh
 
+        route_result_layout = findViewById(R.id.layout_route_result);
+        coordinatorLayout_second = findViewById(R.id.layout_second_route_result);
+        first_Point = findViewById(R.id.edit_text_first_point);
+        second_Point = findViewById(R.id.edit_text_second_point);
+        imageBtnBackRoute = findViewById(R.id.back_route);
+
         //setting map;
         map = new SeaMap(getApplicationContext());
-        frameLayout.addView(map, 0);
+        frameLayout_map.addView(map, 0);
 
         curLocationText = findViewById(R.id.curLocationText);
         curVelocityText = findViewById(R.id.curVelocityText);
@@ -285,18 +296,25 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     private void onScreecBtn_Direction_Search() {
         imageButtonDirection = findViewById(R.id.ic_btn_directions);
-        imageButtonDirection.setOnClickListener(v -> {
-            switch (REQUEST_SEARCH) {
-                case 1:
-                    //float
-                    //Khong can vi tri vi da biet vi tri search trc do
-                    map.myLocationToDirection(0, 0, 0);
-                    break;
-                case 0:
-                    CHOOSE_SEARCH_OR_DIRECTION = 1;
-                    Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
-                    startActivityForResult(searchIntent, REQUEST_INPUT);
-                    break;
+        imageButtonDirection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(REQUEST_SEARCH == 1){
+                    if(CHOOSE_SEARCH_OR_DIRECTION == 0) {
+                        //float
+                        //Khong can vi tri vi da biet vi tri search trc do
+                        map.myLocationToDirection(0, 0, 0);
+                        String name_first_Point = first_Point.getText().toString();
+                        second_Point.setText(name_first_Point);
+                        CHOOSE_SEARCH_OR_DIRECTION = 1;
+                        setSearch_Route_result_layout("Vị trí của tôi", name_first_Point);
+                    }
+                }
+                else {
+                        CHOOSE_SEARCH_OR_DIRECTION = 1;
+                        Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
+                        startActivityForResult(searchIntent, REQUEST_INPUT);
+                }
             }
         });
 
@@ -347,9 +365,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 arrayAdapter.notifyDataSetChanged();
 
                 float[] coor = place.getCoordinate();
-                map.setLonLatSearchPlace(coor[1], coor[0]);
+                //map.setLonLatSearchPlace(coor[1], coor[0]);
+
                 Coordinate selected = new Coordinate(coor[0], coor[1]);
                 curRoute.addNewDestination(selected);
+
                 if (!isCalculating) {
                     isCalculating = true;
                     runEtaTimer();
@@ -373,6 +393,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 // thiet lap lai va ve
                 distancePTPView.setListCoor(route);
                 distancePTPView.invalidate();
+                map.drawMap();
+                runEtaTimer();
             }
         });
 
@@ -504,7 +526,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         curRoute = new Route();
 
                         distancePTPView = new DistancePTPView(getApplicationContext(), map);
-                        frameLayout.addView(distancePTPView);
+
+                        frameLayout_map.addView(distancePTPView);
                         route_layout.setVisibility(View.VISIBLE);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         addDestinationButton.setVisibility(View.VISIBLE);
@@ -514,7 +537,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         CHOOSE_DISTANE_OR_ROUTE = DISTANCE;
                         onViewMain = 1;
                         distancePTPView = new DistancePTPView(getApplicationContext(), map);
-                        frameLayout.addView(distancePTPView);
+                        frameLayout_map.addView(distancePTPView);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         addDestinationButton.setVisibility(View.VISIBLE);
 
@@ -547,12 +570,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         imageButtonOther.setBackgroundResource(R.drawable.icon_cancel);
                         addDestinationButton.setVisibility(View.INVISIBLE);
                         navigationView.getCheckedItem().setChecked(false);
-                        frameLayout.removeView(distancePTPView);
+                        frameLayout_map.removeView(distancePTPView);
                         distancePTPView = null;
                         route_layout.setVisibility(View.INVISIBLE);
                         route_layout.getLayoutParams().height = heightScrUse * 2 / 5;
                         route_layout.requestLayout();
 
+                        //dat lai gia tri ban dau
+                        map.drawMap();
                         namePlaces.clear();
                         route.clear();
                         arrayAdapter.notifyDataSetChanged();
@@ -734,10 +759,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 switch (CHOOSE_SEARCH_OR_DIRECTION) {
                     case 0: {
                         map.setLonLatSearchPlace(mlat, mlon);
-                        CHOOSE_SEARCH_OR_DIRECTION = 1;
+                        enable_disable_Layout_Search_Route();
+                        setSearch_Route_result_layout(textSearch.getName(), null);
                         break;
                     }
                     case 1: {
+                        setSearch_Route_result_layout("Vị trí của tôi", textSearch.getName());
                         map.myLocationToDirection(1, mlat, mlon);
                         break;
                     }
@@ -759,6 +786,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     }
                 }
             }
+
         }
     }
 
@@ -807,7 +835,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-
         // Checks the orientation of the screen
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             heightScrUse = widthScr;
@@ -815,6 +842,52 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
             heightScrUse = heightScr;
             changeLocationuttonWhenRoute();
+        }
+    }
+
+    private void enable_disable_Layout_Search_Route(){
+        if(CHOOSE_SEARCH_OR_DIRECTION == 1 || CHOOSE_SEARCH_OR_DIRECTION == 0){
+            frameLayout_main.setVisibility(View.INVISIBLE);
+            route_result_layout.setVisibility(View.VISIBLE);
+        }
+        else {
+            frameLayout_main.setVisibility(View.VISIBLE);
+            route_result_layout.setVisibility(View.INVISIBLE);
+            first_Point.setText("");
+            //reset Map
+            map.disableSearch_Direction(0);
+        }
+    }
+
+    private void setSearch_Route_result_layout(String name_first_Point, String name_second_Point){
+
+        if (name_second_Point == null) {
+            first_Point.setText(name_first_Point);
+        }
+        else {
+            first_Point.setText(name_first_Point);
+            second_Point.setText(name_second_Point);
+            coordinatorLayout_second.setVisibility(View.VISIBLE);
+
+        }
+    }
+
+    public void onBackSearch_Route(View view){
+        if(CHOOSE_SEARCH_OR_DIRECTION == 1){
+            String name_first_Point = second_Point.getText().toString();
+            first_Point.setText(name_first_Point);
+            second_Point.setText("");
+            coordinatorLayout_second.setVisibility(View.INVISIBLE);
+            CHOOSE_SEARCH_OR_DIRECTION = 0;
+            REQUEST_SEARCH = 1;
+            map.disableSearch_Direction(1);
+        }
+        else if(CHOOSE_SEARCH_OR_DIRECTION == 0){
+            CHOOSE_SEARCH_OR_DIRECTION  = -1;
+            enable_disable_Layout_Search_Route();
+            map.disableSearch_Direction(0);
+            REQUEST_SEARCH = 0;
+            coordinatorLayout_second.setVisibility(View.INVISIBLE);
         }
     }
 }

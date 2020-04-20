@@ -3,8 +3,8 @@
     <item android:height="50dp"
         android:width="50dp">
         <shape xmlns:android="http://schemas.android.com/apk/res/android"
-            android:shape="rectangle">
-            <solid android:color="#FFFF"/>
+            android:shape="oval">
+            <solid android:color="#ADFFFFFF"/>
         </shape>
     </item>
     <item android:drawable="@drawable/ic_arrow_back_black_24dp"

@@ -1,6 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_marginTop="5dp"
     android:layout_height="match_parent">
+    <ImageButton
+        android:id="@+id/back_route"
+        android:paddingLeft="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/icon_back"
+        android:stateListAnimator="@animator/animatorbtnimg"
+        android:layout_marginRight="10dp"
+        android:onClick="onBackSearch_Route"
+        />
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/back_route"
+        android:background="#880097A7"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="10dp"
+        >
+        <EditText
+            android:id="@+id/edit_text_first_point"
+            android:layout_width="match_parent"
+            android:enabled="false"
+            android:textStyle="bold"
+            android:text="First Search"
+            android:drawableLeft="@drawable/ic_search_black_24dp"
+            android:layout_height="wrap_content"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="20dp"
+        android:layout_toRightOf="@+id/back_route"
+        android:background="#880097A7"
+        android:layout_marginTop="50dp"
+        android:id="@+id/layout_second_route_result"
+        android:visibility="invisible"
+        >
+        <EditText
+            android:id="@+id/edit_text_second_point"
+            android:text="Second Search"
+            android:textStyle="bold"
+            android:drawableLeft="@drawable/ic_search_black_24dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            />
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <ImageButton
+        android:id="@+id/ic_btn_directions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:background="@drawable/icon_directions"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="20dp"
+        android:layout_marginRight="20dp"
+        android:stateListAnimator="@animator/animatorbtnimg"
+        />
+
+
+</RelativeLayout>

@@ -21,11 +21,11 @@ import java.util.List;
 public class SearchActivity extends FragmentActivity implements SearchView.OnQueryTextListener{
 
     public static final String EXTRA_DATA = "EXTRA_DATA";
-    ImageButton imgbtback;
-    SearchView search;
-    ListView listView;
-    Places adapter;
-    List list;
+    private ImageButton imgbtback;
+    private SearchView search;
+    private ListView listView;
+    private Places adapter;
+    private List list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +36,6 @@ public class SearchActivity extends FragmentActivity implements SearchView.OnQue
         search = findViewById(R.id.sv_place);
         listView = findViewById(R.id.listView);
 
-        Intent intent = getIntent();
         list = ReadFile.ListPlace;
 
         adapter = new Places(this,list);
