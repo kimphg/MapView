@@ -3,6 +3,8 @@ package com.SeaMap.myapplication.classes;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.IOException;
@@ -55,9 +57,26 @@ public class PacketSender extends Thread {
         }
         else return null;
     }
+    /** Returns the consumer friendly device name */
+    public static String getDeviceName() {
+        String manufacturer = Build.MANUFACTURER;
+        String model = Build.MODEL;
+        return manufacturer + " " + model;
+    }
 
     public void run() {
-
+        try {
+            byte[] deviceName = getDeviceName().getBytes("UTF-8");
+            byte[] data = new byte[20];
+            System.arraycopy(deviceName,0,data,0,Math.min(20,deviceName.length));
+            setDataPacket(data);
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAdd, remotePort);
+            udpSocket.send(packet);
+        }
+        catch(Exception ex)
+        {
+            Log.e("Devive model:", "Error:", ex);
+        }
         while(true) {
 
             try {
@@ -67,6 +86,7 @@ public class PacketSender extends Thread {
                 Log.e("UdpListen:", "Timeout:", e);
                 try {
                     if(mPacketPending) {
+
                         DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAdd, remotePort);
                         udpSocket.send(packet);
                         mPacketPending  = false;
