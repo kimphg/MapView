@@ -17,7 +17,7 @@ public class Coordinate {
         double convertLat = Math.abs( lat );
         int latDeg = (int) Math.floor( convertLat );
         int latMin = (int) Math.floor( (convertLat - latDeg ) * 60 );
-        int latSec = (int) Math.floor( (convertLat - latDeg) * 60 - latMin);
+        int latSec = (int) Math.floor( (convertLat - latDeg) * 60.0 - latMin)*60;
         String latCardinal = ( (lat > 0) ? "N" : "S");
 
         double convertLon = Math.abs( lon );

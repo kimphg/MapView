@@ -23,6 +23,7 @@ import androidx.annotation.RequiresApi;
 
 import com.SeaMap.myapplication.Activity.MainActivity;
 import com.SeaMap.myapplication.R;
+import com.SeaMap.myapplication.classes.Coordinate;
 import com.SeaMap.myapplication.classes.ReadFile;
 import com.SeaMap.myapplication.object.Buoy;
 import com.SeaMap.myapplication.object.Density;
@@ -44,11 +45,12 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 
 public class PolygonsView extends View {
+    public boolean mapOutdated = true;
     private Timer timer1s;
     private boolean isBufferBusy = false;
     double buf_x=0,buf_y=0;
     private Location shiplocation = new Location("GPS");
-    public boolean isShowDensityMap = false;
+    public boolean isShowInfo = false;
     protected static double mlat = 20.0;//lattitude of the center of the screen
     protected static double mlon = 106.5;//longtitude of the center of the screen
     protected static float mScale = 10f;// 1km = mScale*pixcels
@@ -73,7 +75,7 @@ public class PolygonsView extends View {
 //    protected Bitmap bitmapBouy;
     protected Paint buoyPaint = new Paint();
 //    private int heightBuoy, widthBuoy;
-    private boolean viewCurPos = true;
+    private int viewCurPos = 3;
     public PolygonsView(Context context) {
         super(context);
         shiplocation.setLatitude(20);
@@ -86,8 +88,9 @@ public class PolygonsView extends View {
         mTask1 = new TimerTask() {
             @Override
             public void run() {
-                viewCurPos = !viewCurPos;
-                invalidate();
+                if(viewCurPos<5)viewCurPos++;else viewCurPos=3;
+                if(mapOutdated)drawMap();
+                else invalidate();
             }
         };
         timer1s = new Timer();
@@ -102,7 +105,7 @@ public class PolygonsView extends View {
         pointTopRight = ConvScrPointToWGS(scrCtX * 2,0);
         pointBotLeft = ConvScrPointToWGS(0, scrCtY * 2);
         initPaints();
-        drawMap();
+        mapOutdated = true;
     }
 
     private void initPaints() {
@@ -115,11 +118,11 @@ public class PolygonsView extends View {
 
         riverPaint.setAntiAlias(true);
         riverPaint.setStyle(Paint.Style.FILL);
-        riverPaint.setColor(Color.rgb(115, 178, 235));
+        riverPaint.setColor(Color.rgb(180, 220, 240));
 
         buoyPaint.setColor(Color.MAGENTA);
         borderlinePaint.setStrokeWidth(2);
-        drawMap();
+        mapOutdated = true;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -169,7 +172,7 @@ public class PolygonsView extends View {
                     int blue = (int) (color - red * 65536 - green * 256);
                     textPaint.setColor(Color.rgb(red, green, blue));
                     int fontSize = (int) (distance*0.9 / text.getName().length());
-                    if(fontSize>scrCtX||fontSize<scrCtX*0.03)continue;
+                    if(fontSize>scrCtX*0.3||fontSize<scrCtX*0.03)continue;
                     textPaint.setTextSize(fontSize);
                     if(text.getType() == 3)canvasBuf.drawText(text.getName(), p1.x, p1.y, textPaint);
                     else
@@ -202,8 +205,9 @@ public class PolygonsView extends View {
             }
         }
     }
-    public void drawMap()
+    private void drawMap()
     {
+        mapOutdated = false;
         long tStart = System.currentTimeMillis();
         isBufferBusy=true;
         canvasBuf.drawColor(Color.WHITE);
@@ -363,11 +367,11 @@ public class PolygonsView extends View {
 //                    pointf[i] = p1.x;
 //                    pointf[i + 1] = p1.y;
 
-                    double brightness =  (density.getCountMove()/60.0);
+                    double brightness =  (density.getCountMove()/30.0);
                     if(brightness>1)brightness=1;
                     if(brightness<0.4)brightness=0.4;
-                    pointDensity.setColor(Color.argb((int)(brightness*255),30, 230, 250));
-                    pointDensity.setStrokeWidth((int) (  mScale /9.0));
+                    pointDensity.setColor(Color.argb((int)(brightness*255),30, 150, 180));
+                    pointDensity.setStrokeWidth((int) Math.max(1,  mScale /9.0));
                     canvasBuf.drawPoint(p1.x, p1.y, pointDensity);
                 }
             }
@@ -385,26 +389,50 @@ public class PolygonsView extends View {
     {
         float xoffset = (float)buf_x;
         float yoffset = (float)buf_y;
+
         Paint locationPaint = new Paint();
-
-
-        {//ve hinh tron o toa do hien tai
-            locationPaint.setStyle(Paint.Style.FILL);
+        {
             PointF p1 = ConvWGSToScrPoint((float) shiplocation.getLongitude(), (float) shiplocation.getLatitude());
-            PointF p2 = new PointF(p1.x + xoffset, p1.y + yoffset);
-            locationPaint.setColor(Color.argb(120, 255, 0, 0));
-            float cirvleRadius = 25.0f;
-            if (viewCurPos) {
-                canvas.drawCircle(p2.x, p2.y, cirvleRadius, locationPaint);
+            p1.offset(xoffset, yoffset);
+            boolean shipInsideScreen = (p1.x > 0) && (p1.y > 0) && (p1.x < scrCtX * 2) && (p1.y < scrCtY * 2);
+
+            float pointSize = Math.max(4, scrCtX * 0.01f);
+            if (shipInsideScreen) {//ve hinh tron o toa do hien tai
+                locationPaint.setStyle(Paint.Style.FILL);
+                locationPaint.setColor(Color.argb(80, 255, 0, 0));
+                //ve hinh tron
+                canvas.drawCircle(p1.x, p1.y, pointSize * viewCurPos, locationPaint);
             }
-            //ve vien hinh tron va dau cong
-            locationPaint.setStyle(Paint.Style.STROKE);
-            locationPaint.setStrokeWidth(5);
-            cirvleRadius -= 3;
-            canvas.drawCircle(p2.x , p2.y , cirvleRadius, locationPaint);
-            canvas.drawLine(p2.x+cirvleRadius, p2.y,p2.x-cirvleRadius,p2.y,locationPaint);
-            canvas.drawLine(p2.x, p2.y+cirvleRadius,p2.x,p2.y-cirvleRadius,locationPaint);
+            if (isShowInfo) {// ve vi tri tam man hinh
+                Location scrLocation = new Location("GPS");
+                scrLocation.setLatitude(mlat);
+                scrLocation.setLongitude(mlon);
+                PointF p2 = ConvWGSToScrPoint((float) scrLocation.getLongitude(), (float) scrLocation.getLatitude());
+                //p2.offset(xoffset, yoffset);
+
+                float crossSize = pointSize * 10;
+                locationPaint.setStrokeWidth(Math.max(2, pointSize ));
+                locationPaint.setColor(Color.argb(150, 50, 10, 0));
+                canvas.drawLine(p2.x + pointSize, p2.y, p2.x - pointSize, p2.y, locationPaint);
+                canvas.drawLine(p2.x, p2.y + pointSize, p2.x, p2.y - pointSize, locationPaint);
+                PointF p3 = ConvWGSToScrPoint((float) shiplocation.getLongitude(), (float) shiplocation.getLatitude());
+                //PointF p4 = new PointF(p1.x + xoffset, p1.y + yoffset);
+                float distance = scrLocation.distanceTo(shiplocation);
+                float bearing = shiplocation.bearingTo(scrLocation);
+                p2.offset(pointSize * 2, pointSize * 2);
+                locationPaint.setTextSize(pointSize*6);
+                if (distance > 1) {
+                    canvas.drawText(String.format("%.1f",  bearing) + "\260 "+ String.format("%.1f", distance / 1000.0) + "km", p2.x, p2.y, locationPaint);
+                } else {
+                    canvas.drawText(String.format("%.1f",  bearing) + "\260 "+ String.format("%d", (int) distance) + "m", p2.x, p2.y, locationPaint);
+                }
+                p2.offset(0, pointSize * 7);
+                String[] dms=Coordinate.decimalToDMS(mlon,mlat);
+                canvas.drawText(dms[0]+","+dms[1], p2.x, p2.y, locationPaint);
+            }
+
         }
+
         locationPaint.setStyle(Paint.Style.FILL);
         //draw nearby ships
         if(nearbyShips!=null)
@@ -494,7 +522,7 @@ public class PolygonsView extends View {
         @Override
         public boolean onScale(ScaleGestureDetector sgd){
             mScale *= sgd.getScaleFactor();
-            mScale = Math.max(2.0f, Math.min(mScale, 150));
+            mScale = Math.max(2.0f, Math.min(mScale, 200));
             lockDragging = true;
             invalidate();
             return true;
@@ -561,7 +589,7 @@ public class PolygonsView extends View {
             SEARCHPLACE = false;
             mlat = shiplocation.getLatitude();
             mlon = shiplocation.getLongitude();
-            drawMap();
+            mapOutdated = true;
         }
 
     }
@@ -582,9 +610,10 @@ public class PolygonsView extends View {
         if (gotoLocation ) {
             mlat = shiplocation.getLatitude();
             mlon = shiplocation.getLongitude();
+            mapOutdated = true;
             //if(mScale<10)mScale = 10;
         }
-        drawMap();
+
 
     }
 
@@ -597,7 +626,7 @@ public class PolygonsView extends View {
         mlat = (searchPlace_lat + shiplocation.getLatitude()) / 2;
         mlon = (searchPlace_lon + shiplocation.getLongitude()) / 2;
         mScale = scrCtY / (abs((float)shiplocation.getLatitude() - searchPlace_lat) * 111.132954f) ;
-        drawMap();
+        mapOutdated = true;
     }
 
     public void setLonLatSearchPlace(float latSearchLoc, float lonSearchLoc){
@@ -606,7 +635,7 @@ public class PolygonsView extends View {
         if(mScale > 20)mScale = 20;
         SEARCHPLACE = true;
         DIRECTIONS = false;
-        drawMap();
+        mapOutdated = true;
     }
 
 }

@@ -10,8 +10,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.res.Configuration;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.Manifest;
@@ -393,7 +391,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 // thiet lap lai va ve
                 distancePTPView.setListCoor(route);
                 distancePTPView.invalidate();
-                map.drawMap();
+                map.mapOutdated = true;
                 runEtaTimer();
             }
         });
@@ -482,12 +480,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             public void onClick(View v) {
                 switch (CHOOSE_BTN_LAYERS) {
                     case 0: {
-                        map.isShowDensityMap = true;
+                        map.isShowInfo = true;
                         CHOOSE_BTN_LAYERS = 1;
                         break;
                     }
                     case 1: {
-                        map.isShowDensityMap = false;
+                        map.isShowInfo = false;
                         CHOOSE_BTN_LAYERS = 0;
                         break;
                     }
@@ -577,7 +575,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         route_layout.requestLayout();
 
                         //dat lai gia tri ban dau
-                        map.drawMap();
+                        map.mapOutdated = true;
                         namePlaces.clear();
                         route.clear();
                         arrayAdapter.notifyDataSetChanged();

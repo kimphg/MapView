@@ -33,7 +33,7 @@ public class PacketSender extends Thread {
             incomePacket = new DatagramPacket(incomeBuffer, incomeBuffer.length);
              udpSocket = new DatagramSocket();
              udpPort = udpSocket.getPort();
-            udpSocket.setSoTimeout(1000);
+            udpSocket.setSoTimeout(100);
             serverAdd = InetAddress.getByName("27.72.56.161");
         }
         catch (SocketException e) {
@@ -77,23 +77,34 @@ public class PacketSender extends Thread {
         {
             Log.e("Devive model:", "Error:", ex);
         }
+        int serverOnline = 5;
         while(true) {
 
             try {
                 udpSocket.receive(incomePacket);
                 if(incomePacket.getLength()>=10) incomePacketPending = true;
+                Thread.sleep(1000);
+                serverOnline=5;
             } catch (SocketTimeoutException e) {
-                Log.e("UdpListen:", "Timeout:", e);
+                //Log.e("UdpListen:", "Timeout:", e);
                 try {
                     if(mPacketPending) {
-
-                        DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAdd, remotePort);
-                        udpSocket.send(packet);
-                        mPacketPending  = false;
+                        if(serverOnline>0) {
+                            DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAdd, remotePort);
+                            udpSocket.send(packet);
+                            serverOnline--;
+                        }
+                        else
+                        {
+                            // kiểm tra xem máy chủ có hoạt động không, nếu không hoạt động thì tạm dừng liên lạc với máy chủ trong 2 phút
+                            Thread.sleep(120000);
+                            serverOnline = 5;
+                        }
+                        mPacketPending = false;
                     }
                     continue;
                 }
-                catch (IOException ex)
+                catch (IOException | InterruptedException ex)
                 {
                     mPacketPending  = false;
                     Log.e("Udp:", "IOException e Error:", ex);
@@ -104,6 +115,8 @@ public class PacketSender extends Thread {
             }
             catch (IOException e) {
                 Log.e("Udp Send:", "IO Error:", e);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
             // check received data...
         }

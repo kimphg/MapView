@@ -173,7 +173,7 @@ public class ReadFile {
         Vector<Density> vtDensity = new Vector<>();
         String key = "";
         try {
-            InputStream is = mCtx.getAssets().open("density_2.bin");
+            InputStream is = mCtx.getAssets().open("density.bin");
             ois = new ObjectInputStream(is);
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block

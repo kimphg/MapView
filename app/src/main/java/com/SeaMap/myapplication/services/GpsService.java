@@ -153,12 +153,16 @@ public class GpsService extends Service {
             }
         }
     }
-
+    Location lastLocation = new Location("GPS");
     @RequiresApi(api = Build.VERSION_CODES.N)
     protected void sendOwnLocation(Location location) {
         //gui toa do den may chu
         if(mPacketSender==null)return;
-        mPacketSender.setDataPacket(makePacket(location));
+        if(lastLocation.distanceTo(location)>0.1)// send if moved more than 100m
+        {
+            mPacketSender.setDataPacket(makePacket(location));
+            lastLocation=location;
+        }
         getDataFromServer();
 
     }
