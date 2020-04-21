@@ -340,7 +340,6 @@ public class PolygonsView extends View {
                 break;
             }
         }
-
         invalidate();
         long tEnd = System.currentTimeMillis();
         long tDelta = tEnd - tStart;
@@ -401,7 +400,7 @@ public class PolygonsView extends View {
             //ve vien hinh tron va dau cong
             locationPaint.setStyle(Paint.Style.STROKE);
             locationPaint.setStrokeWidth(5);
-            cirvleRadius-=3;
+            cirvleRadius -= 3;
             canvas.drawCircle(p2.x , p2.y , cirvleRadius, locationPaint);
             canvas.drawLine(p2.x+cirvleRadius, p2.y,p2.x-cirvleRadius,p2.y,locationPaint);
             canvas.drawLine(p2.x, p2.y+cirvleRadius,p2.x,p2.y-cirvleRadius,locationPaint);
@@ -423,7 +422,7 @@ public class PolygonsView extends View {
                 locationPaint.setColor(Color.argb(150, 70, 50, 30));
                 for (Location ship : locationHistory) {
                     PointF pship = ConvWGSToScrPoint((float) ship.getLongitude(), (float) ship.getLatitude());
-                    canvas.drawPoint(pship.x+xoffset, pship.y+yoffset, locationPaint);
+                    canvas.drawPoint(pship.x+xoffset, pship.y + yoffset, locationPaint);
                 }
             }
         if(DIRECTIONS) {
