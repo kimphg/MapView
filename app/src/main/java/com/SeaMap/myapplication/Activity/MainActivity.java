@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                read.readDensity();
+                read.ReadBigData();
             }
         });
         // su kien bat dau lo trinh

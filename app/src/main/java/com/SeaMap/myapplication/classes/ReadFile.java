@@ -38,8 +38,7 @@ public class ReadFile {
         mCtx = context;
         //readBoat();
         //readDensity();
-        readRiver();
-        readDataSeaMap();
+
         readBaseRegions();
         readBasePlgRivers();
         readBouys();
@@ -47,7 +46,12 @@ public class ReadFile {
         getListPlaceOnText();
 
     }
-
+    public void  ReadBigData()
+    {
+        readRiver();
+        readDataSeaMap();
+        readDensity();
+    }
     private void readDataSeaMap(){
         ObjectInputStream ois = null;
         int sizeList = 0, sizeVt = 0;
@@ -167,7 +171,7 @@ public class ReadFile {
     }
 
 
-    public void readDensity(){
+    private void readDensity(){
         ObjectInputStream ois = null;
         int sizeList = 0, sizeVt = 0;
         Vector<Density> vtDensity = new Vector<>();
