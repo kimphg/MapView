@@ -37,12 +37,12 @@ public class ReadFile {
         super();
         mCtx = context;
         //readBoat();
-        readDensity();
+        //readDensity();
         readRiver();
         readDataSeaMap();
         readBaseRegions();
         readBasePlgRivers();
-        readBoat();
+        readBouys();
         readBorderMap();
         getListPlaceOnText();
 
@@ -142,7 +142,7 @@ public class ReadFile {
         System.out.println("");
     }
 
-    private void readBoat(){
+    private void readBouys(){
         ObjectInputStream ois = null;
         try {
             InputStream is = mCtx.getAssets().open("buoys.bin");

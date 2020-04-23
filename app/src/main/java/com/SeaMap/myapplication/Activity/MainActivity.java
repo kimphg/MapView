@@ -10,6 +10,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.res.Configuration;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.Manifest;
@@ -232,6 +233,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         frameLayout_main = findViewById(R.id.content_frame);
         frameLayout_map = findViewById(R.id.frame_layout_map);
         read = new ReadFile(getApplicationContext());
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                read.readDensity();
+            }
+        });
         // su kien bat dau lo trinh
 
         route_result_layout = findViewById(R.id.layout_route_result);

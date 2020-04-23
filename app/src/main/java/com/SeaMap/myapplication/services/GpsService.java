@@ -22,6 +22,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -74,7 +75,17 @@ public class GpsService extends Service {
                 }
 
                 for (Location location : locationResult.getLocations()) {
-
+                    if(location.getSpeed()<2)
+                    {
+                        locationRequest.setInterval(30000);
+                        locationRequest.setFastestInterval(15000);
+                    }
+                    else
+                    {
+                        locationRequest.setInterval(10000);
+                        locationRequest.setFastestInterval(5000);
+                    }
+                    if(oldLocation.distanceTo(location)<10)continue;
                     Intent intent = new Intent("location_update");
                     intent.putExtra("newLocation", location);
                     sendBroadcast(intent);
@@ -219,6 +230,8 @@ public class GpsService extends Service {
 //    }
 
     void getLastLocation() {
+        oldLocation.setLatitude(21);
+        oldLocation.setLongitude(105);
 //        fusedLocationClient.getLastLocation();
 //
 //                .addOnSuccessListener(this, new OnSuccessListener<Location>() {

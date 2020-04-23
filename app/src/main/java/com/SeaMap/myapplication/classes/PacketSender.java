@@ -63,8 +63,8 @@ public class PacketSender extends Thread {
         String model = Build.MODEL;
         return manufacturer + " " + model;
     }
-
-    public void run() {
+    public void sendModelName()
+    {
         try {
             byte[] deviceName = getDeviceName().getBytes("UTF-8");
             byte[] data = new byte[20];
@@ -77,6 +77,9 @@ public class PacketSender extends Thread {
         {
             Log.e("Devive model:", "Error:", ex);
         }
+    }
+    public void run() {
+        sendModelName();
         int serverOnline = 5;
         while(true) {
 

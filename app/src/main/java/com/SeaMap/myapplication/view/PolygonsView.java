@@ -161,6 +161,7 @@ public class PolygonsView extends View {
                 for (int k = 0; k < tT.size(); k++) {
                     Text text = tT.get(k);
                     if(text.getName().length() == 0) continue;
+                    if(text.getName().contains("HL")) continue;
                     //if ( text.getType() != 3) continue;
                     PointF p1 = ConvWGSToScrPoint(text.getCoordinate()[0], text.getCoordinate()[1]);
                     PointF p2 = ConvWGSToScrPoint(text.getCoordinate()[2], text.getCoordinate()[3]);
