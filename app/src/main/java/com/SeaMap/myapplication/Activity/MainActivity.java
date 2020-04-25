@@ -59,6 +59,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
@@ -176,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return false;
     }
 
-    List<Location> nearbyShips = new ArrayList<Location>();
+    List<Location> nearbyShips = new LinkedList<Location>();
     double speedKmh = 0;
     @Override
     protected void onResume() {
@@ -206,14 +207,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         );
 //                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
                     }
-                    if ((nearbyShips != null) && (!nearbyShips.isEmpty())) {
-                        map.setNearbyShips(nearbyShips);
-                        nearbyShips.clear();
-                    }
+//                    if ((nearbyShips != null) && (!nearbyShips.isEmpty())) {
+//                        map.setNearbyShips(nearbyShips);
+//                        //nearbyShips.clear();
+//                    }
                     for (int i = 0; i < 10; i++) {
                         Location ship = intent.getParcelableExtra("nearbyShips" + Integer.toString(i));
                         if (ship != null)
-                            nearbyShips.add(ship);
+                            map.setNearbyShips(ship);
                     }
 
                 }

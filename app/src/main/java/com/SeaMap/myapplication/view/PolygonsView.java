@@ -34,6 +34,7 @@ import com.SeaMap.myapplication.object.Text;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Timer;
@@ -438,7 +439,7 @@ public class PolygonsView extends View {
         //draw nearby ships
         if(nearbyShips!=null)
             if(nearbyShips.size()>0) {
-                locationPaint.setColor(Color.argb(150, 200, 0, 0));
+                locationPaint.setColor(Color.argb(150, 150, 0, 0));
                 for (Location ship : nearbyShips) {
                     PointF pship = ConvWGSToScrPoint((float) ship.getLongitude(), (float) ship.getLatitude());
                     canvas.drawCircle(pship.x+xoffset, pship.y+yoffset, 7, locationPaint);
@@ -570,12 +571,13 @@ public class PolygonsView extends View {
         double olon = (x-scrCtX)/mScale/(111.31949079327357f*(float)cos(refLat))+ mlon;
         return new PointF((float)olon,(float)olat);
     }
-    List<Location> nearbyShips;
+    List<Location> nearbyShips = new LinkedList<Location>();
     List<Location> locationHistory  = new ArrayList<Location>();
 
-    public void setNearbyShips(List<Location> nearbyShips_input)
+    public void setNearbyShips(Location ship)
     {
-        nearbyShips = nearbyShips_input;
+        nearbyShips.add(ship);
+        while(nearbyShips.size()>100)nearbyShips.remove(0);
     }
 
     public void disableSearch_Direction(int choose){

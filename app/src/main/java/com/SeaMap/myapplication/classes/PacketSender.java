@@ -102,6 +102,7 @@ public class PacketSender extends Thread {
                             // kiểm tra xem máy chủ có hoạt động không, nếu không hoạt động thì tạm dừng liên lạc với máy chủ trong 2 phút
                             Thread.sleep(120000);
                             serverOnline = 5;
+                            sendModelName();
                         }
                         mPacketPending = false;
                     }

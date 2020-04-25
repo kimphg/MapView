@@ -141,16 +141,17 @@ public class GpsService extends Service {
             int sizeOne = Short.BYTES + Float.BYTES + Float.BYTES;
             int index = 0;
             List<Location> nearbyShips = new ArrayList<>();
+            ByteBuffer buffer;
+            buffer = ByteBuffer.wrap(answer);
             while (index <= (answer.length - sizeOne)) {
-                ByteBuffer buffer;
-                buffer = ByteBuffer.wrap(answer, index, 10);
 
-                float lon = buffer.getFloat(0);
-                float lat = buffer.getFloat(4);
-                short time = buffer.getShort(8);
+                float lon =  buffer.getFloat( index);
+                float lat = buffer.getFloat(index+4);
+                short cog = buffer.getShort(index+8);
                 Location ship = new Location("GPS");
                 ship.setLongitude(lon);
                 ship.setLatitude(lat);
+                ship.setBearing(cog);
                 nearbyShips.add(ship);
                 index = index + sizeOne;
             }
