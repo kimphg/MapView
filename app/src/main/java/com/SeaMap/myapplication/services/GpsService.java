@@ -181,7 +181,8 @@ public class GpsService extends Service {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private byte[] makePacket(Location location) {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(Long.BYTES + Float.BYTES + Float.BYTES);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(2+Long.BYTES + Float.BYTES + Float.BYTES);
+        byteBuffer.putShort((short)0);
         byteBuffer.putLong(System.currentTimeMillis());
         byteBuffer.putFloat((float) (location.getLongitude()));
         byteBuffer.putFloat((float) (location.getLatitude()));

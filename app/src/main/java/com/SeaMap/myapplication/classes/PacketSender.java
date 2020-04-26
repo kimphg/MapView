@@ -1,11 +1,6 @@
 package com.SeaMap.myapplication.classes;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
-import android.text.TextUtils;
-import android.util.Log;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -13,12 +8,10 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.nio.Buffer;
-
-import static androidx.core.content.ContextCompat.getSystemService;
 
 public class PacketSender extends Thread {
     byte[] buf;
+    int serverOnline = 5;
     DatagramSocket udpSocket;
     int udpPort;
     int remotePort = 50000;
@@ -37,9 +30,9 @@ public class PacketSender extends Thread {
             serverAdd = InetAddress.getByName("27.72.56.161");
         }
         catch (SocketException e) {
-            Log.e("Udp:", "Socket Error:", e);
+            sendMsgToServer(e.toString(),null);
         } catch (IOException e) {
-            Log.e("Udp Send:", "IO Error:", e);
+            sendMsgToServer(e.toString(),null);
         }
     }
     public void setDataPacket(byte[] packet)
@@ -66,21 +59,46 @@ public class PacketSender extends Thread {
     public void sendModelName()
     {
         try {
-            byte[] deviceName = getDeviceName().getBytes("UTF-8");
-            byte[] data = new byte[20];
-            System.arraycopy(deviceName,0,data,0,Math.min(20,deviceName.length));
-            setDataPacket(data);
-            DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAdd, remotePort);
-            udpSocket.send(packet);
+            sendMsgToServer(getDeviceName(),hexStringToByteArray("0a0a"));
+
         }
         catch(Exception ex)
         {
-            Log.e("Devive model:", "Error:", ex);
+            sendMsgToServer(ex.toString(),null);
+//            Log.e("Devive model:", "Error:", ex);
         }
+    }
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
+    public void sendMsgToServer(String message, byte[] header )
+    {
+        if(serverOnline>0)
+        try {
+            byte[] data = message.getBytes();
+            if(header==null) header = hexStringToByteArray("ffff");
+            byte[] frame = new byte[header.length + data.length];
+            System.arraycopy(header, 0, frame, 0, 2);
+            System.arraycopy(data, 0, frame, header.length, data.length);
+            setDataPacket(frame);
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, serverAdd, remotePort);
+            udpSocket.send(packet);
+        }
+        catch (IOException ex)
+        {
+
+        }
+
     }
     public void run() {
         sendModelName();
-        int serverOnline = 5;
+
         while(true) {
 
             try {
@@ -111,16 +129,19 @@ public class PacketSender extends Thread {
                 catch (IOException | InterruptedException ex)
                 {
                     mPacketPending  = false;
-                    Log.e("Udp:", "IOException e Error:", ex);
+                    sendMsgToServer(ex.toString(),null);
+//                    Log.e("Udp:", "IOException e Error:", ex);
                 }
 
 
 
             }
             catch (IOException e) {
-                Log.e("Udp Send:", "IO Error:", e);
+                sendMsgToServer(e.toString(),null);
+//                Log.e("Udp Send:", "IO Error:", e);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
+                sendMsgToServer(e.toString(),null);
             }
             // check received data...
         }
