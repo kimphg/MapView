@@ -126,7 +126,7 @@
                 android:layout_marginLeft="20dp"
                 android:layout_marginTop="70dp"
                 android:alpha="1"
-                android:background="#880097A7">
+                android:background="#A00097A7">
 
                 <TextView
                     android:id="@+id/locationText"

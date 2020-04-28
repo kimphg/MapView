@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     List<Location> nearbyShips = new LinkedList<Location>();
-    double speedKmh = 0;
+    double speedKnots = 0;
     @Override
     protected void onResume() {
         super.onResume();
@@ -195,8 +195,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         dms = Coordinate.decimalToDMS(newLocation.getLongitude(), newLocation.getLatitude());
                         String dmsCoord = dms[0] + "/" + dms[1];
                         curLocationText.setText(dmsCoord);
-                        speedKmh+= (newLocation.getSpeed() * 3600.0 / 1000.0-speedKmh)/3.0;
-                        curVelocityText.setText(String.valueOf((int) speedKmh));
+                        speedKnots += (newLocation.getSpeed() * 3600.0 / 1852.0 - speedKnots)/3.0;
+                        curVelocityText.setText(String.format("%.1f",speedKnots)+" Hải lý/h");
                         if (curLocation != null) {
                             curBearingText.setText(String.valueOf((int) newLocation.getBearing()));
                         }

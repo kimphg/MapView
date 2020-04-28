@@ -3,6 +3,7 @@ package com.SeaMap.myapplication.classes;
 import android.content.Context;
 
 import com.SeaMap.myapplication.object.*;
+import com.SeaMap.myapplication.object.Buoy;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,8 +30,9 @@ public class ReadFile {
 
     public static HashMap<String,Vector<Buoy>> listBuoys =new HashMap<>();
     public static HashMap<String, Vector<Density>> listDensity = new HashMap<>();
-
+    public static HashMap<String, Vector<Density>> listDensity1 = new HashMap<>();
     public static List<Text> ListPlace = new ArrayList<>();
+    public static boolean dataReady = false;
 
     private Context mCtx;
     public ReadFile(Context context){
@@ -51,6 +53,7 @@ public class ReadFile {
         readRiver();
         readDataSeaMap();
         readDensity();
+        dataReady =true;
     }
     private void readDataSeaMap(){
         ObjectInputStream ois = null;
@@ -172,6 +175,57 @@ public class ReadFile {
 
 
     private void readDensity(){
+        try {
+            InputStream inputStream = mCtx.getAssets().open("density.bin");
+            int max_row_count = 4000000;
+            int elementSize = 5;
+            int lat,lon, rowCount;
+            int value;
+            byte[] buff = new byte[max_row_count*elementSize];
+            while(true)
+            {
+                try {
+
+
+                    lat = inputStream.read() ;
+                    lat += inputStream.read() << 8;
+                    lat += inputStream.read() << 16;
+                    lat += inputStream.read() << 24;
+                    rowCount = inputStream.read() ;
+                    rowCount += inputStream.read() << 8;
+                    rowCount += inputStream.read() << 16;
+                    rowCount += inputStream.read()<< 24;
+//                if( (inputStream.read()&lat,sizeof(lat),1,binFile) )<1)break;//read lat
+//                if( (fread(&rowCount,sizeof(rowCount),1,binFile) )<1)break;//read rowCount
+                    if (rowCount < 1 || rowCount > max_row_count) break;//check rowcount
+//                if( (fread(buff,sizeof(uchar),rowCount*elementSize,binFile))<1)break;//read data
+                    inputStream.read(buff, 0, rowCount * elementSize);
+                    for (int row = 0; row < rowCount; row++) {
+                        //memcpy(&lon,buff+row*elementSize,sizeof(row));
+                        lon = (buff[row * elementSize]) & 0xFF ;
+                        lon += ( (buff[row * elementSize + 1] ) & 0xFF) << 8;
+                        lon += ( (buff[row * elementSize + 2] ) & 0xFF) << 16;
+                        lon += ( (buff[row * elementSize + 3] ) & 0xFF) << 24;
+                        value = ( buff[row * elementSize + 4]) & 0xFF;
+                        String key = Integer.toString(lon/1000)+","+Integer.toString(lat/1000);
+                        addDensityPoint100(key,lat,lon,value);
+                    }
+                }
+                catch (IOException ex)
+                {
+                    break;
+                }
+            }
+
+            return;
+        }catch (FileNotFoundException ex)
+        {
+            return;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        /*
         ObjectInputStream ois = null;
         int sizeList = 0, sizeVt = 0;
         Vector<Density> vtDensity = new Vector<>();
@@ -209,8 +263,22 @@ public class ReadFile {
 
             listDensity.put(key, vtDensity);
         }
-        System.out.println("");
+        System.out.println("");*/
     }
+     private void addDensityPoint100(String key, int lat, int lon, int  value)
+     {
+         if(listDensity.containsKey(key))
+         {
+             listDensity.get(key).add(new Density(lat/1000.0f,lon/1000.0f,value));
+
+         }
+         else {
+             Vector<Density> vtDensity = new Vector<Density>();
+             vtDensity.add(new Density(lat/1000.0f,lon/1000.0f,value));
+             listDensity.put(key, vtDensity);
+         }
+
+     }
 
     public void readRiver(){
         ObjectInputStream ois = null;
