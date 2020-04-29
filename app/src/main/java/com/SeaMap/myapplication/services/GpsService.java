@@ -17,12 +17,12 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
 import com.SeaMap.myapplication.classes.PacketSender;
+import com.SeaMap.myapplication.classes.ReadFile;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -136,6 +136,7 @@ public class GpsService extends Service {
     protected void getDataFromServer() {
         //doc goi tin phan hoi tu may chu
         if(mPacketSender==null)return;
+
         byte[] answer = mPacketSender.getAnswer();
         if ((answer != null) && (answer.length > 0)) {
             int sizeOne = Short.BYTES + Float.BYTES + Float.BYTES;
@@ -172,7 +173,7 @@ public class GpsService extends Service {
         if(mPacketSender==null)return;
         if(lastLocation.distanceTo(location)>0.1)// send if moved more than 100m
         {
-            mPacketSender.setDataPacket(makePacket(location));
+            mPacketSender.setDataPacket(makeReportPacket(location));
             lastLocation=location;
         }
         getDataFromServer();
@@ -180,10 +181,11 @@ public class GpsService extends Service {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    private byte[] makePacket(Location location) {
+    private byte[] makeReportPacket(Location location) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(2+Long.BYTES + Float.BYTES + Float.BYTES);
         byteBuffer.putShort((short)0);
-        byteBuffer.putLong(System.currentTimeMillis());
+        byteBuffer.putInt(0);
+        byteBuffer.putInt(ReadFile.getID());
         byteBuffer.putFloat((float) (location.getLongitude()));
         byteBuffer.putFloat((float) (location.getLatitude()));
         return byteBuffer.array();

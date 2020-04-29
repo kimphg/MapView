@@ -5,10 +5,16 @@ import android.content.Context;
 import com.SeaMap.myapplication.object.*;
 import com.SeaMap.myapplication.object.Buoy;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,10 +37,14 @@ public class ReadFile {
     public static HashMap<String,Vector<Buoy>> listBuoys =new HashMap<>();
     public static HashMap<String, Vector<Density>> listDensity = new HashMap<>();
     public static HashMap<String, Vector<Density>> listDensity1 = new HashMap<>();
+    private static int mID = 0;
+    private static HashMap<String, String> mConfig = new HashMap<String, String>();
+    private static boolean  isConfigChanged = false;
     public static List<Text> ListPlace = new ArrayList<>();
     public static boolean dataReady = false;
+    private static File userConfigFile;
+    private  static Context mCtx;
 
-    private Context mCtx;
     public ReadFile(Context context){
         super();
         mCtx = context;
@@ -46,6 +56,101 @@ public class ReadFile {
         readBouys();
         readBorderMap();
         getListPlaceOnText();
+        LoadConfig();
+    }
+
+    public static String GetConfig(String key) {
+        if(!mConfig.containsKey(key))
+        {
+            SetConfig(key,"0");
+            return "0";
+        }
+        else
+        {
+            return mConfig.get(key);
+        }
+
+    }
+
+    public static int getID() {
+        if(mID==0)
+        mID = Integer.parseInt(GetConfig("ID"));
+        return mID;
+    }
+
+    private void LoadConfig() {
+        userConfigFile =  new File(mCtx.getFilesDir(), "cfg.txt");
+        if(userConfigFile.exists()) {
+            try {
+                FileInputStream stream = new FileInputStream(userConfigFile);
+            }
+            catch (FileNotFoundException ex)
+            {
+                try {
+                    userConfigFile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else
+        {
+            try {
+                userConfigFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            FileInputStream  inputStream = mCtx.openFileInput(userConfigFile.getName());
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                while(true) {
+                    String line = reader.readLine();
+                    if(line==null)break;
+                    String[] strList = line.split(";");
+                    if ( strList.length< 2)continue;
+                    String key = strList[0];
+                    String value = strList[1];
+                    mConfig.put(key,value);
+                }
+                if(!mConfig.containsKey("ID"))
+                {
+                    SetConfig("ID","0");
+                }
+            } catch (IOException e) {
+                // Error occurred when opening raw file for reading.
+            }
+        }
+        catch (IOException e)
+        {
+
+        }
+    }
+    public static void SetConfig(String key,String value)
+    {
+        mConfig.put(key,value);
+        isConfigChanged = true;
+    }
+    public static void SaveConfig()
+    {
+        if(!isConfigChanged)return;
+        isConfigChanged = false;
+        try {
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(mCtx.openFileOutput("cfg.txt", Context.MODE_PRIVATE));
+            for (HashMap.Entry<String, String> element : mConfig.entrySet()) {
+
+                outputStreamWriter.write(element.getKey()+";"+element.getValue()+"\n");
+
+            }
+            outputStreamWriter.close();
+        }
+        catch (FileNotFoundException ex)
+        {
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
     public void  ReadBigData()

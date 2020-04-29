@@ -88,6 +88,7 @@ public class PolygonsView extends View {
                 if(viewCurPos>3)viewCurPos--;else viewCurPos=5;
                 if(mapOutdated)drawMap();
                 else invalidate();
+                ReadFile.SaveConfig();
             }
         };
         timer1s = new Timer();

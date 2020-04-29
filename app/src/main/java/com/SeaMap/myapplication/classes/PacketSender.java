@@ -43,8 +43,9 @@ public class PacketSender extends Thread {
 
     public byte[] getAnswer() {
         if(incomePacketPending) {
-            byte[] output = new byte[incomePacket.getLength()];
-            System.arraycopy(incomeBuffer,0,output,0,incomePacket.getLength());
+            int len = incomePacket.getLength();
+            byte[] output = new byte[len];
+            System.arraycopy(incomeBuffer,0,output,0,len);
             incomePacketPending = false;
             return  output;
         }
@@ -58,8 +59,11 @@ public class PacketSender extends Thread {
     }
     public void sendModelName()
     {
+        int id= ReadFile.getID();//mID;
+
+        if(id!=0)return;
         try {
-            sendMsgToServer(getDeviceName(),hexStringToByteArray("0a0a"));
+            sendMsgToServer(getDeviceName(),hexStringToByteArray("5aa5"));
 
         }
         catch(Exception ex)
@@ -103,7 +107,14 @@ public class PacketSender extends Thread {
 
             try {
                 udpSocket.receive(incomePacket);
-                if(incomePacket.getLength()>=10) incomePacketPending = true;
+                int len = incomePacket.getLength();
+                if(len==6&&(incomeBuffer[0]==0x5a)&&(incomeBuffer[0]==0x5a))//server set ID
+                {
+                    int ID = (incomeBuffer[2]<<3) + (incomeBuffer[3]<<2) + (incomeBuffer[4]<<1) +(incomeBuffer[5]);
+                    ReadFile.SetConfig("ID",String.valueOf(ID));
+                    incomePacketPending = false;
+                }
+                if(len>=2) incomePacketPending = true;
                 Thread.sleep(1000);
                 serverOnline=5;
             } catch (SocketTimeoutException e) {
