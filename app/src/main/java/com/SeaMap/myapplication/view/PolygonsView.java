@@ -57,7 +57,7 @@ public class PolygonsView extends View {
     private static boolean SEARCHPLACE = false;
     private static boolean DIRECTIONS = false;
     private Bitmap bufferBimap;
-    public Canvas canvasBuf;
+    public Canvas canvasBuf = new Canvas();
     float searchPlace_lon, searchPlace_lat;
     public int scrCtY,scrCtX;
     PointF pointTopRight,pointBotLeft;
@@ -68,11 +68,13 @@ public class PolygonsView extends View {
     protected PointF dragOldPoint, dragNewPoint;
     protected Context mCtx;
     private TimerTask mTask1;
-    Path pathBouy ;
+    Path pathBouy = new Path();;
 //    protected Bitmap bitmapBouy;
     protected Paint buoyPaint = new Paint();
 //    private int heightBuoy, widthBuoy;
     private int viewCurPos = 5;
+    private boolean paintParamsReady = false;
+
     public PolygonsView(Context context) {
         super(context);
         shiplocation.setLatitude(20);
@@ -110,11 +112,11 @@ public class PolygonsView extends View {
         bufferBimap = Bitmap.createBitmap(this.getWidth(),this.getHeight(), Bitmap.Config.ARGB_8888);
         //bufferBimap1 = Bitmap.createBitmap(this.getWidth(),this.getHeight(), Bitmap.Config.ARGB_8888);
         canvasBuf = new Canvas(bufferBimap);
-        landPaint.setAntiAlias(true);
+        landPaint.setAntiAlias(false);
         landPaint.setStyle(Paint.Style.FILL);
         landPaint.setColor(Color.rgb(201, 185, 123));
 
-        riverPaint.setAntiAlias(true);
+        riverPaint.setAntiAlias(false);
         riverPaint.setStyle(Paint.Style.FILL);
         riverPaint.setColor(Color.rgb(180, 220, 240));
 
@@ -133,6 +135,7 @@ public class PolygonsView extends View {
 
          borderlinePaint.setStrokeWidth(2);
         mapOutdated = true;
+        this.paintParamsReady = true;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -185,8 +188,9 @@ public class PolygonsView extends View {
                     int fontSize = (int) (distance*0.9 / text.getName().length());
                     if ( text.getType() == 3||text.getType()==0)
                     {
-                        if(text.getName().length()<4)continue;//todo:remove later
+                        if(text.getName().length()<3)continue;//todo:remove later
                         if(text.getName().contains("Báo Cáo"))continue;//todo:remove later
+                        if(text.getName().contains("Cn"))continue;//todo:remove later
                         fontSize*=2;
 
                     }
@@ -242,6 +246,7 @@ public class PolygonsView extends View {
     }
     private void drawMap()
     {
+        if(!paintParamsReady)return;
         mapOutdated = false;
         long tStart = System.currentTimeMillis();
         isBufferBusy=true;

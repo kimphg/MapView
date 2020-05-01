@@ -108,9 +108,9 @@ public class PacketSender extends Thread {
             try {
                 udpSocket.receive(incomePacket);
                 int len = incomePacket.getLength();
-                if(len==6&&(incomeBuffer[0]==0x5a)&&(incomeBuffer[0]==0x5a))//server set ID
+                if(len==6&&(incomeBuffer[0]==90)&&(incomeBuffer[1]==-91))//server set ID 5aa5
                 {
-                    int ID = (incomeBuffer[2]<<3) + (incomeBuffer[3]<<2) + (incomeBuffer[4]<<1) +(incomeBuffer[5]);
+                    int ID = (incomeBuffer[2]<<24) + (incomeBuffer[3]<<16) + (incomeBuffer[4]<<8) +(incomeBuffer[5]);
                     ReadFile.SetConfig("ID",String.valueOf(ID));
                     incomePacketPending = false;
                 }

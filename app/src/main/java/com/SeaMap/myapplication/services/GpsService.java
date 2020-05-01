@@ -85,7 +85,8 @@ public class GpsService extends Service {
                         locationRequest.setInterval(10000);
                         locationRequest.setFastestInterval(5000);
                     }
-                    if(oldLocation.distanceTo(location)<10)continue;
+
+                    if(oldLocation.distanceTo(location)<12)continue;
                     Intent intent = new Intent("location_update");
                     intent.putExtra("newLocation", location);
                     sendBroadcast(intent);
@@ -166,16 +167,16 @@ public class GpsService extends Service {
             }
         }
     }
-    Location lastLocation = new Location("GPS");
+//    Location lastLocation = new Location("GPS");
     @RequiresApi(api = Build.VERSION_CODES.N)
     protected void sendOwnLocation(Location location) {
         //gui toa do den may chu
         if(mPacketSender==null)return;
-        if(lastLocation.distanceTo(location)>0.1)// send if moved more than 100m
-        {
+//        if(lastLocation.distanceTo(location)>0.1)// send if moved more than 100m
+//        {
             mPacketSender.setDataPacket(makeReportPacket(location));
-            lastLocation=location;
-        }
+//            lastLocation=location;
+//        }
         getDataFromServer();
 
     }
