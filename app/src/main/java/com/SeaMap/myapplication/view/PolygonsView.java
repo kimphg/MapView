@@ -90,6 +90,7 @@ public class PolygonsView extends View {
                 if(viewCurPos>3)viewCurPos--;else viewCurPos=5;
                 if(mapOutdated)drawMap();
                 else invalidate();
+                isBufferBusy = false;// allow access to draw buffer after drawmap() is done
                 ReadFile.SaveConfig();
             }
         };
@@ -142,8 +143,12 @@ public class PolygonsView extends View {
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        int nwait = 0;
         while(isBufferBusy)// wait if bufferBimap is updating
-        {}
+        {
+            if(nwait>1000)return;
+            nwait++;
+        }
         Rect dst = new Rect(0,0,scrCtX*2,scrCtY*2);
         dst.offset((int)buf_x,(int)buf_y);
         if(mScale!=mOldScale) {
@@ -371,7 +376,7 @@ public class PolygonsView extends View {
                 break;
             }
             default:{
-                MainActivity.distancePTPView.invalidate();
+                //MainActivity.distancePTPView.invalidate();
                 break;
             }
         }

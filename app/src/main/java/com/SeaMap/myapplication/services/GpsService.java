@@ -128,7 +128,7 @@ public class GpsService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        fusedLocationClient.removeLocationUpdates(locationCallback);//location by phuong
+        //fusedLocationClient.removeLocationUpdates(locationCallback);//location by phuong
 
 //        Toast.makeText(this, "Service stopped", Toast.LENGTH_LONG).show();
     }
