@@ -103,8 +103,8 @@ public class PolygonsView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         scrCtY = h / 2;
         scrCtX = w / 2;
-        pointTopRight = ConvScrPointToWGS(scrCtX * 3,-scrCtY);
-        pointBotLeft = ConvScrPointToWGS(-scrCtX, scrCtY * 3);
+        pointTopRight = ConvScrPointToWGS(scrCtX * 2,0);
+        pointBotLeft = ConvScrPointToWGS(0, scrCtY * 2);
         initPaints();
         mapOutdated = true;
     }
@@ -166,7 +166,7 @@ public class PolygonsView extends View {
     }
     void DrawTextMap()
     {
-        //cusPaint.setAntiAlias(true);
+        cusPaint.setAntiAlias(true);
         cusPaint.setStyle(Paint.Style.STROKE);
         cusPaint.setColor(Color.rgb(255, 239, 213));
         cusPaint.setStyle(Paint.Style.FILL);
@@ -252,14 +252,12 @@ public class PolygonsView extends View {
     private void drawMap()
     {
         if(!paintParamsReady)return;
-
         mapOutdated = false;
-        pointTopRight = ConvScrPointToWGS(scrCtX * 3,-scrCtY);
-        pointBotLeft = ConvScrPointToWGS(-scrCtX, scrCtY * 3);
         long tStart = System.currentTimeMillis();
-        if(isBufferBusy){isBufferBusy = false; return;}
-        else isBufferBusy=true;
+        isBufferBusy=true;
         canvasBuf.drawColor(Color.WHITE);
+        pointTopRight = ConvScrPointToWGS(scrCtX * 2,0);
+        pointBotLeft = ConvScrPointToWGS(0, scrCtY * 2);
         //DRAW POLYGON
         if(ReadFile.dataReady)
         for(int lon = (int) pointBotLeft.x - 2; lon<= (int) pointTopRight.x + 2; lon++) {
