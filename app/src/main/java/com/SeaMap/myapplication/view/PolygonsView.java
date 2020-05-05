@@ -10,10 +10,12 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Build;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.OrientationEventListener;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
@@ -38,6 +40,7 @@ import java.util.Vector;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
+import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 
 public class PolygonsView extends View {
@@ -68,13 +71,18 @@ public class PolygonsView extends View {
     protected PointF dragOldPoint, dragNewPoint;
     protected Context mCtx;
     private TimerTask mTask1;
-    Path pathBouy = new Path();;
+    Path pathBouy = new Path();
+
+    Path pathOrientationPhone = new Path();
+    private float orientationPhoneR = 0;
 //    protected Bitmap bitmapBouy;
     protected Paint buoyPaint = new Paint();
 //    private int heightBuoy, widthBuoy;
     private int viewCurPos = 5;
     private boolean paintParamsReady = false;
 
+
+    OrientationEventListener myOrientationEventListener;
     public PolygonsView(Context context) {
         super(context);
         shiplocation.setLatitude(20);
@@ -84,6 +92,7 @@ public class PolygonsView extends View {
         mCtx = context;
 //        bitmapBouy = BitmapFactory.decodeResource(getResources(), R.drawable.buoy_object); //getBitmap(R.drawable.buoy_object);
 
+        ListenerRotate();
         mTask1 = new TimerTask() {
             @Override
             public void run() {
@@ -124,6 +133,7 @@ public class PolygonsView extends View {
         buoyPaint.setColor(Color.MAGENTA);
         buoyPaint.setStyle(Paint.Style.FILL);
         buoyPaint.setStrokeWidth(3);
+
         pathBouy = new Path();
         PointF p = new PointF(0,0);
         PointF pm1=new PointF(p.x,p.y),pm2 = new PointF(p.x,p.y);
@@ -134,7 +144,7 @@ public class PolygonsView extends View {
         pathBouy.lineTo(pm1.x,pm1.y);
         pathBouy.lineTo(pm2.x,pm2.y);
 
-         borderlinePaint.setStrokeWidth(2);
+        borderlinePaint.setStrokeWidth(2);
         mapOutdated = true;
         this.paintParamsReady = true;
     }
@@ -444,8 +454,21 @@ public class PolygonsView extends View {
             if (shipInsideScreen) {//ve hinh tron o toa do hien tai
                 locationPaint.setStyle(Paint.Style.FILL);
                 locationPaint.setColor(Color.argb(120, 150, 30, 0));
-                //ve hinh tron
+
+                Paint oriPaint = new Paint();
+                oriPaint.setStyle(Paint.Style.FILL);
+                oriPaint.setColor(Color.RED);
+                //ve hinh tron, huong
+                double offsetX =  cos(1.5708 - orientationPhoneR) * 20;
+                double offsetY =  - 20 * sin(1.5708 - orientationPhoneR);
+
+                PointF oriP1 = new PointF(p1.x, p1.y);
+                oriP1.offset((float) offsetX ,  (float) offsetY);
+
+                // Ve huong bang cach ve hinh tron do
                 canvas.drawCircle(p1.x, p1.y, pointSize * viewCurPos, locationPaint);
+                //
+                canvas.drawCircle(oriP1.x, oriP1.y,  viewCurPos * 2, oriPaint);
             }
             if (isShowInfo) {// ve vi tri tam man hinh
                 Location scrLocation = new Location("GPS");
@@ -664,6 +687,18 @@ public class PolygonsView extends View {
         }
 
 
+    }
+
+    void ListenerRotate() {
+        myOrientationEventListener =
+                new OrientationEventListener(mCtx, SensorManager.SENSOR_DELAY_NORMAL) {
+                    @Override
+                    public void onOrientationChanged(int i) {
+                        Log.d("Goc: ", "" + i );
+                        orientationPhoneR = (float) (((float)i / 180) * 3.14f);
+                    }
+                };
+        myOrientationEventListener.enable();
     }
 
     public void myLocationToDirection(int type, float latDirectionLoc, float lonDirectionLoc){

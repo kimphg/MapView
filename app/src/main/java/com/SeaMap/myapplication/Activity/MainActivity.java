@@ -29,7 +29,6 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -141,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     //todo: thong so khac
     private float temp_Search_lon = 0, temp_Search_lat = 0;
     private int heightScr, widthScr, heightScrUse;
-    OrientationEventListener myOrientationEventListener;
 
     @Override
     protected void onStart() {
