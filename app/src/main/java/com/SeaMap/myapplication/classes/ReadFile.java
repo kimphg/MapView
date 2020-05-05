@@ -36,7 +36,7 @@ public class ReadFile {
 
     public static HashMap<String,Vector<Buoy>> listBuoys =new HashMap<>();
     public static HashMap<String, Vector<Density>> listDensity = new HashMap<>();
-    public static HashMap<String, Vector<Density>> listDensity1 = new HashMap<>();
+//    public static HashMap<String, Vector<Density>> listDensity1 = new HashMap<>();
     private static int mID = 0;
     private static HashMap<String, String> mConfig = new HashMap<String, String>();
     private static boolean  isConfigChanged = false;

@@ -146,7 +146,7 @@ public class PolygonsView extends View {
         int nwait = 0;
         while(isBufferBusy)// wait if bufferBimap is updating
         {
-            if(nwait>1000)return;
+            if(nwait>1000) return;
             nwait++;
         }
         Rect dst = new Rect(0,0,scrCtX*2,scrCtY*2);
@@ -178,8 +178,9 @@ public class PolygonsView extends View {
                 if (tT == null) continue;
                 for (int k = 0; k < tT.size(); k++) {
                     Text text = tT.get(k);
-                    if(text.getName().length() == 0) continue;
-                    if(text.getName().contains("HL")) continue;//todo:remove later
+                    //Todo: Du lieu da loai bo
+//                    if(text.getName().length() == 0) continue;
+//                    if(text.getName().contains("HL")) continue;//todo:remove later
 
                     PointF p1 = ConvWGSToScrPoint(text.getCoordinate()[0], text.getCoordinate()[1]);
                     PointF p2 = ConvWGSToScrPoint(text.getCoordinate()[2], text.getCoordinate()[3]);
@@ -191,14 +192,17 @@ public class PolygonsView extends View {
                     int blue = (int) (color - red * 65536 - green * 256);
                     textPaint.setColor(Color.rgb(red, green, blue));
                     int fontSize = (int) (distance*0.9 / text.getName().length());
-                    if ( text.getType() == 3||text.getType()==0)
-                    {
-                        if(text.getName().length()<3)continue;//todo:remove later
-                        if(text.getName().contains("Báo Cáo"))continue;//todo:remove later
-                        if(text.getName().contains("Cn"))continue;//todo:remove later
-                        fontSize*=2;
-
-                    }
+                    if ( text.getType() == 3||text.getType()==0) fontSize*=2;
+                    //todo: du lieu da duoc loai bo
+//                    {
+//
+////                        if(text.getName().length()<3)
+////                            continue;//todo:remove later
+////                        if(text.getName().contains("Báo Cáo"))continue;//todo:remove later
+////                        if(text.getName().contains("Cn"))continue;//todo:remove later
+//                        fontSize*=2;
+//
+//                    }
                     if(fontSize>scrCtX*0.3||fontSize<scrCtX*0.03)continue;
                     textPaint.setTextSize(fontSize);
                     if(text.getType() == 3)canvasBuf.drawText(text.getName(), p1.x, p1.y, textPaint);
