@@ -55,7 +55,6 @@ public class ReadFile {
         readBasePlgRivers();
         readBouys();
         readBorderMap();
-        getListPlaceOnText();
         LoadConfig();
     }
 
@@ -158,6 +157,7 @@ public class ReadFile {
         readRiver();
         readDataSeaMap();
         readDensity();
+        getListPlaceOnText();
         dataReady =true;
     }
     private void readDataSeaMap(){

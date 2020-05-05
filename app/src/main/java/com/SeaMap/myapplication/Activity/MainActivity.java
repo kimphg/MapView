@@ -234,6 +234,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         frameLayout_main = findViewById(R.id.content_frame);
         frameLayout_map = findViewById(R.id.frame_layout_map);
         read = new ReadFile(getApplicationContext());
+
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
