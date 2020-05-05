@@ -166,7 +166,7 @@ public class PolygonsView extends View {
     }
     void DrawTextMap()
     {
-        cusPaint.setAntiAlias(true);
+        cusPaint.setAntiAlias(false);
         cusPaint.setStyle(Paint.Style.STROKE);
         cusPaint.setColor(Color.rgb(255, 239, 213));
         cusPaint.setStyle(Paint.Style.FILL);
@@ -258,7 +258,8 @@ public class PolygonsView extends View {
         if(!paintParamsReady)return;
         mapOutdated = false;
         long tStart = System.currentTimeMillis();
-        isBufferBusy=true;
+        if(isBufferBusy){isBufferBusy = false; return;}
+        else isBufferBusy=true;
         canvasBuf.drawColor(Color.WHITE);
         pointTopRight = ConvScrPointToWGS(scrCtX * 2,0);
         pointBotLeft = ConvScrPointToWGS(0, scrCtY * 2);
