@@ -155,10 +155,16 @@ public class ReadFile {
     }
     public void  ReadBigData()
     {
-        readRiver();
-        readDataSeaMap();
-        readDensity();
-        dataReady =true;
+        try {
+            dataReady = false;
+            readRiver();
+            readDataSeaMap();
+            readDensity();
+            Thread.sleep(500);
+            dataReady = true;
+        } catch (InterruptedException e) {
+            return;
+        }
     }
     private void readDataSeaMap(){
         ObjectInputStream ois = null;
