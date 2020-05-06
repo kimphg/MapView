@@ -1,8 +1,10 @@
 package com.SeaMap.myapplication.Activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
@@ -92,8 +94,4 @@ public class SearchActivity extends FragmentActivity implements SearchView.OnQue
         setResult(Activity.RESULT_CANCELED);
         super.onBackPressed();
     }
-
-
-
-
 }
