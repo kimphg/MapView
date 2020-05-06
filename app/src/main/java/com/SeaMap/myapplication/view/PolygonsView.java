@@ -89,7 +89,7 @@ public class PolygonsView extends View {
             public void run() {
                 if(viewCurPos>3)viewCurPos--;else viewCurPos=5;
                 if(mapOutdated)drawMap();
-                else invalidate();
+                invalidate();
                 isBufferBusy = false;// allow access to draw buffer after drawmap() is done
                 ReadFile.SaveConfig();
             }
@@ -381,11 +381,11 @@ public class PolygonsView extends View {
                 break;
             }
             default:{
-                //MainActivity.distancePTPView.invalidate();
+                //MainActivity.distancePTPView.invalidate();//Không được call ngược về MainActivity từ đây, crash reports rất nhiều
                 break;
             }
         }
-        invalidate();
+//        invalidate();
         long tEnd = System.currentTimeMillis();
         long tDelta = tEnd - tStart;
         Log.d("tDelta",Long.toString(tDelta));
