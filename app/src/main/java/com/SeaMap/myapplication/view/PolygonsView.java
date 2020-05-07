@@ -6,9 +6,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.hardware.SensorManager;
 import android.location.Location;
@@ -60,6 +62,7 @@ public class PolygonsView extends View {
     private static boolean SEARCHPLACE = false;
     private static boolean DIRECTIONS = false;
     private Bitmap bufferBimap;
+    private Bitmap oriPhoneBitmap1, oriPhoneBitmap2;
     public Canvas canvasBuf = new Canvas();
     float searchPlace_lon, searchPlace_lat;
     public int scrCtY,scrCtX;
@@ -72,14 +75,17 @@ public class PolygonsView extends View {
     protected Context mCtx;
     private TimerTask mTask1;
     Path pathBouy = new Path();
+    public boolean shipMove = false;
 
     Path pathOrientationPhone = new Path();
-    private float orientationPhoneR = 0;
+    private float orientationPhoneR = 0, orientationPhoneD = 0;
+    public double orientationShipD = 0;
 //    protected Bitmap bitmapBouy;
     protected Paint buoyPaint = new Paint();
 //    private int heightBuoy, widthBuoy;
     private int viewCurPos = 5;
     private boolean paintParamsReady = false;
+    Canvas oriPhoneCanvas ;
 
 
     OrientationEventListener myOrientationEventListener;
@@ -120,8 +126,11 @@ public class PolygonsView extends View {
 
     private void initPaints() {
         bufferBimap = Bitmap.createBitmap(this.getWidth(),this.getHeight(), Bitmap.Config.ARGB_8888);
+        oriPhoneBitmap1 = Bitmap.createBitmap(15, 15, Bitmap.Config.ARGB_8888);
+        oriPhoneBitmap2 = Bitmap.createBitmap(15, 15, Bitmap.Config.ARGB_8888);
         //bufferBimap1 = Bitmap.createBitmap(this.getWidth(),this.getHeight(), Bitmap.Config.ARGB_8888);
         canvasBuf = new Canvas(bufferBimap);
+        oriPhoneCanvas = new Canvas(oriPhoneBitmap1);
         landPaint.setAntiAlias(false);
         landPaint.setStyle(Paint.Style.FILL);
         landPaint.setColor(Color.rgb(201, 185, 123));
@@ -147,6 +156,19 @@ public class PolygonsView extends View {
         borderlinePaint.setStrokeWidth(2);
         mapOutdated = true;
         this.paintParamsReady = true;
+
+        Paint oriPaint = new Paint();
+        oriPaint.setStyle(Paint.Style.FILL);
+        oriPaint.setColor(Color.argb(120, 150, 30, 0));
+        pathOrientationPhone = new Path();
+        PointF oriPP1 = new PointF(0,15);
+        PointF oriPP2 =  new PointF(7.5f,0);
+        PointF oriPP3 = new PointF(15,15);
+        pathOrientationPhone.moveTo(oriPP1.x,oriPP1.y);
+        pathOrientationPhone.lineTo(oriPP2.x,oriPP2.y);
+        pathOrientationPhone.lineTo(oriPP3.x,oriPP3.y);
+        oriPhoneCanvas.drawPath(pathOrientationPhone, oriPaint);
+        oriPhoneBitmap2 = oriPhoneBitmap1;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -223,6 +245,7 @@ public class PolygonsView extends View {
                         mPath.lineTo(p2.x, p2.y);
                         canvasBuf.drawTextOnPath(text.getName(), mPath, 0, 0, textPaint);
                     }
+
                     //type 0: ten cac thanh pho
                     //type 1: do sau
                     //type 2: hon dao nho
@@ -454,22 +477,30 @@ public class PolygonsView extends View {
             if (shipInsideScreen) {//ve hinh tron o toa do hien tai
                 locationPaint.setStyle(Paint.Style.FILL);
                 locationPaint.setColor(Color.argb(120, 150, 30, 0));
-
-                Paint oriPaint = new Paint();
-                oriPaint.setStyle(Paint.Style.FILL);
-                oriPaint.setColor(Color.RED);
                 //ve hinh tron, huong
-                double offsetX =  cos(1.5708 - orientationPhoneR) * 20;
-                double offsetY =  - 20 * sin(1.5708 - orientationPhoneR);
+                double offsetX =  cos(orientationPhoneR) * 30;
+                double offsetY =  - 30 * sin(orientationPhoneR);
 
                 PointF oriP1 = new PointF(p1.x, p1.y);
                 oriP1.offset((float) offsetX ,  (float) offsetY);
 
-                // Ve huong bang cach ve hinh tron do
+                canvas.drawBitmap(oriPhoneBitmap1, oriP1.x - 7.5f, oriP1.y - 7.5f, null);
                 canvas.drawCircle(p1.x, p1.y, pointSize * viewCurPos, locationPaint);
-                //
-                canvas.drawCircle(oriP1.x, oriP1.y,  viewCurPos * 2, oriPaint);
             }
+//            if(shipMove){ // Ve huong di chuyen tau
+//                drawOrientation((float)orientationShipD);
+//
+//                double offsetX =  cos(Math.toRadians(orientationShipD)) * 50;
+//                double offsetY =  - 50 * sin(Math.toRadians(orientationShipD));
+//
+//                PointF oriP1 = new PointF(p1.x, p1.y);
+//                oriP1.offset((float) offsetX ,  (float) offsetY);
+//                canvas.drawBitmap(oriPhoneBitmap1, oriP1.x - 7.5f, oriP1.y - 7.5f, null);
+//            }else {
+//                oriPhoneCanvas.drawColor(Color.TRANSPARENT);
+//            }
+//            else
+//                oriPhoneCanvas.drawColor(Color.TRANSPARENT);
             if (isShowInfo) {// ve vi tri tam man hinh
                 Location scrLocation = new Location("GPS");
                 scrLocation.setLatitude(mlat);
@@ -685,8 +716,12 @@ public class PolygonsView extends View {
             mapOutdated = true;
             //if(mScale<10)mScale = 10;
         }
+    }
 
-
+    private void drawOrientation(float angle){
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        oriPhoneBitmap1 = Bitmap.createBitmap(oriPhoneBitmap2, 0, 0,15,15, matrix,true);
     }
 
     void ListenerRotate() {
@@ -695,7 +730,11 @@ public class PolygonsView extends View {
                     @Override
                     public void onOrientationChanged(int i) {
                         Log.d("Goc: ", "" + i );
-                        orientationPhoneR = (float) (((float)i / 180) * 3.14f);
+//                        Matrix matrix = new Matrix();
+//                        matrix.postRotate(i);
+                        drawOrientation(i);
+                        orientationPhoneD = i;
+                        orientationPhoneR = (float) Math.toRadians(90 - i);
                     }
                 };
         myOrientationEventListener.enable();
@@ -721,5 +760,6 @@ public class PolygonsView extends View {
         DIRECTIONS = false;
         mapOutdated = true;
     }
+
 
 }

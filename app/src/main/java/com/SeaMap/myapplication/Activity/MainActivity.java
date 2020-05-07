@@ -197,6 +197,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         curVelocityText.setText(String.format("%.1f",speedKnots)+" Hải lý/h");
                         if (curLocation != null) {
                             curBearingText.setText(String.valueOf((int) newLocation.getBearing()));
+                            map.orientationShipD = newLocation.getBearing();
+                            map.shipMove = true;
                         }
                         curLocation = newLocation;
                         map.setLonLatMyLocation(
@@ -205,6 +207,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         );
 //                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
                     }
+                    else {
+                        map.shipMove = false;
+                    }
+
 //                    if ((nearbyShips != null) && (!nearbyShips.isEmpty())) {
 //                        map.setNearbyShips(nearbyShips);
 //                        //nearbyShips.clear();
