@@ -28,6 +28,7 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -60,6 +61,11 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
     //Todo: dung dinh danh moi request
@@ -141,6 +147,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private float temp_Search_lon = 0, temp_Search_lat = 0;
     private int heightScr, widthScr, heightScrUse;
 
+    private SensorManager sensorService;
+    private Sensor sensor;
     @Override
     protected void onStart() {
         super.onStart();
@@ -152,6 +160,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
             startService(intent);
 
+        }
+
+        // Sensor
+        if (sensor != null) {
+            sensorService.registerListener(mySensorEventListener, sensor,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+            Log.i("Compass MainActivity", "Registerered for ORIENTATION Sensor");
+        } else {
+            Log.e("Compass MainActivity", "Registerered for ORIENTATION Sensor");
+            Toast.makeText(this, "ORIENTATION Sensor not found",
+                    Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
@@ -239,6 +259,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         frameLayout_map = findViewById(R.id.frame_layout_map);
         read = new ReadFile(getApplicationContext());
 
+        sensorService = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorService.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -282,6 +305,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         onScreecBtn_Direction_Search();
         //enableButtons();
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (sensor != null) {
+            sensorService.unregisterListener(mySensorEventListener);
+        }
     }
 
     //Todo: init and add onclick for button on screen
@@ -713,6 +744,22 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void onStop() {
         super.onStop();
     }
+
+    private SensorEventListener mySensorEventListener = new SensorEventListener() {
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            // angle between the magnetic north direction
+            // 0=North, 90=East, 180=South, 270=West
+            float azimuth = event.values[0];
+            Log.d("Goc amu: ", "" + azimuth);
+            map.updateAzimuthCompass(azimuth);
+        }
+    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

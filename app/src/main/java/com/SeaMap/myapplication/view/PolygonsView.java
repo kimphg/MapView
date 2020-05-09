@@ -495,8 +495,6 @@ public class PolygonsView extends View {
                 matrix.postRotate(azimuthCompass, bounds.centerX(), bounds.centerY());
                 pat.transform(matrix);
                 canvas.drawPath(pat, oriPaint);
-
-
             }
 //            if(shipMove){ // Ve huong di chuyen tau
 //                drawOrientation((float)orientationShipD);
@@ -727,26 +725,6 @@ public class PolygonsView extends View {
         }
     }
 
-    private void drawOrientation(float angle){
-        orientationPhoneD = angle;
-    }
-
-//    void ListenerRotate() {
-//        myOrientationEventListener =
-//                new OrientationEventListener(mCtx, SensorManager.SENSOR_DELAY_NORMAL) {
-//                    @Override
-//                    public void onOrientationChanged(int i) {
-////                        Log.d("Goc: ", "" + i );
-////                        Matrix matrix = new Matrix();
-////                        matrix.postRotate(i);
-//                        //drawOrientation(i);
-//                        orientationPhoneD = i;
-//                        orientationPhoneR = (float) Math.toRadians(90 - i);
-//                    }
-//                };
-//        myOrientationEventListener.enable();
-//    }
-
     public void myLocationToDirection(int type, float latDirectionLoc, float lonDirectionLoc){
         DIRECTIONS = true;
         if(type == 1){
@@ -768,8 +746,11 @@ public class PolygonsView extends View {
         mapOutdated = true;
     }
 
-    public void updateAzimuth(float azimuth){
+    public void updateAzimuthCompass(float azimuth){
         azimuthCompass = - azimuth;
-        drawOrientation(azimuthCompass);
+    }
+
+    public void updateAzimuthShip(float azimith){
+
     }
 }
