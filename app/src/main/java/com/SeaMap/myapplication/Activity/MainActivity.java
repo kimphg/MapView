@@ -10,10 +10,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.res.Configuration;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.DisplayMetrics;
@@ -32,7 +28,6 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -122,7 +117,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private List<String> namePlaces;
     //listview search trong phan info_route;
     private ListView listPlaceSeacrh, routesListView;
+
     private Places adapter;
+
+
     //Khai bao cho GPS
     //functional variables
     private Location curLocation;
@@ -142,10 +140,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     //todo: thong so khac
     private float temp_Search_lon = 0, temp_Search_lat = 0;
     private int heightScr, widthScr, heightScrUse;
-
-    //
-    private SensorManager sensorService;
-    private Sensor sensor;
 
     @Override
     protected void onStart() {
@@ -231,18 +225,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             };
         }
         registerReceiver(broadcastReceiver, new IntentFilter("location_update"));
-
-        // Sensor
-        if (sensor != null) {
-            sensorService.registerListener(mySensorEventListener, sensor,
-                    SensorManager.SENSOR_DELAY_NORMAL);
-            Log.i("Compass MainActivity", "Registerered for ORIENTATION Sensor");
-        } else {
-            Log.e("Compass MainActivity", "Registerered for ORIENTATION Sensor");
-            Toast.makeText(this, "ORIENTATION Sensor not found",
-                    Toast.LENGTH_LONG).show();
-            finish();
-        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
@@ -300,8 +282,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         onScreecBtn_Direction_Search();
         //enableButtons();
 
-        sensorService = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensor = sensorService.getDefaultSensor(Sensor.TYPE_ORIENTATION);
     }
 
     //Todo: init and add onclick for button on screen
@@ -323,14 +303,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             }
 
         });
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (sensor != null) {
-            sensorService.unregisterListener(mySensorEventListener);
-        }
     }
 
     private void onScreecBtn_Direction_Search() {
@@ -854,22 +826,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return false;
     }
 
-    private SensorEventListener mySensorEventListener = new SensorEventListener() {
-
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        }
-
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            // angle between the magnetic north direction
-            // 0=North, 90=East, 180=South, 270=West
-            float azimuth = event.values[0];
-            Log.d("Goc amu: ", "" + azimuth);
-            map.updateAzimuth(azimuth);
-        }
-    };
-
     //Ham lay kich thuoc man hinh
     private void getDisplayMetrics() {
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -945,6 +901,4 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             coordinatorLayout_second.setVisibility(View.INVISIBLE);
         }
     }
-
-
 }
