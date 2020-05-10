@@ -56,7 +56,9 @@ public class PolygonsView extends View {
 //    protected static boolean MYLOCATION = false; // vi tri hien tai
     private static boolean SEARCHPLACE = false;
     private static boolean DIRECTIONS = false;
+
     public static float azimuthCompass = 0;
+    public static float azimuthShip = 0;
 
     public boolean mapOutdated = true;
     private Timer timer1s;
@@ -72,7 +74,7 @@ public class PolygonsView extends View {
     PointF pointTopRight,pointBotLeft;
     //protected double shipLocationLon = 105.43f, shipLocationLat = 18.32f;
     private boolean lockDragging = false;// khóa không cho drag khi đang zoom
-    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint(), cusPaint = new Paint(),textPaint = new Paint(), oriPaint ;
+    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint(), cusPaint = new Paint(),textPaint = new Paint(), oriPaintPhone, oriPaintShip;
     private ScaleGestureDetector scaleGestureDetector;
     protected PointF dragOldPoint, dragNewPoint;
     protected Context mCtx;
@@ -87,9 +89,8 @@ public class PolygonsView extends View {
     private int viewCurPos = 5;
     private boolean paintParamsReady = false;
 
-    Path pathOrientationPhone = new Path();
-    private float orientationPhoneR = 0, orientationPhoneD = 0;
-    public double orientationShipD = 0;
+    private Path pathOrientationPhone = new Path();
+    private Path pathOrientationShip = new Path();
 
     OrientationEventListener myOrientationEventListener;
     public PolygonsView(Context context) {
@@ -159,17 +160,31 @@ public class PolygonsView extends View {
         pathBouy.lineTo(pm1.x,pm1.y);
         pathBouy.lineTo(pm2.x,pm2.y);
 
-
-        oriPaint = new Paint();
-        oriPaint.setStyle(Paint.Style.FILL);
-        oriPaint.setColor(Color.argb(120, 150, 30, 0));
+        //path de ve orientation phone
+        oriPaintPhone = new Paint();
+        oriPaintPhone.setStyle(Paint.Style.FILL);
+        oriPaintPhone.setColor(Color.argb(120, 150, 30, 0));
         pathOrientationPhone = new Path();
-        PointF oriPP1 = new PointF(0,15);
+        PointF oriPP1 = new PointF(0,-15);
         PointF oriPP2 =  new PointF(7.5f,0);
-        PointF oriPP3 = new PointF(15,15);
+        PointF oriPP3 = new PointF(-7.5f,0);
         pathOrientationPhone.moveTo(oriPP1.x,oriPP1.y);
         pathOrientationPhone.lineTo(oriPP2.x,oriPP2.y);
         pathOrientationPhone.lineTo(oriPP3.x,oriPP3.y);
+
+        //path de ve ori ship
+        oriPaintShip = new Paint();
+        oriPaintShip.setStyle(Paint.Style.FILL);
+        oriPaintShip.setColor(Color.rgb(113, 12, 12));
+        pathOrientationShip = new Path();
+        PointF oriSP1 = new PointF(0,-30);
+        PointF oriSP3 =  new PointF(0,-7.5f);
+        PointF oriSP2 = new PointF(7.5f,0);
+        PointF oriSP4 = new PointF(-7.5f,0);
+        pathOrientationShip.moveTo(oriSP1.x,oriSP1.y);
+        pathOrientationShip.lineTo(oriSP2.x,oriSP2.y);
+        pathOrientationShip.lineTo(oriSP3.x,oriSP3.y);
+        pathOrientationShip.lineTo(oriSP4.x,oriSP4.y);
 
         borderlinePaint.setStrokeWidth(2);
         mapOutdated = true;
@@ -485,33 +500,33 @@ public class PolygonsView extends View {
                 canvas.drawCircle(p1.x, p1.y, pointSize * viewCurPos, locationPaint);
 
                 //ve hinh tron, huong
-                double offsetX = sin(Math.toRadians(  azimuthCompass)) * 30;
-                double offsetY =  - 30 * cos(Math.toRadians(  azimuthCompass));
+                double offsetX = sin(Math.toRadians(  azimuthCompass)) * 25;
+                double offsetY = - 25 * cos(Math.toRadians(  azimuthCompass));
 
                 PointF oriP1 = new PointF(p1.x, p1.y);
                 oriP1.offset((float) offsetX ,  (float) offsetY);
                 Path pat = new Path();
 
-                pathOrientationPhone.offset(oriP1.x,oriP1.y,pat);
                 Matrix matrix = new Matrix();
-                RectF bounds = new RectF();
-                pat.computeBounds(bounds, true);
-                matrix.postRotate(azimuthCompass, bounds.centerX(), bounds.centerY());
-                pat.transform(matrix);
-                canvas.drawPath(pat, oriPaint);
+                matrix.setRotate(azimuthCompass, 0, 0);
+                pathOrientationPhone.transform(matrix,pat);
+                pat.offset(oriP1.x,oriP1.y);
+                canvas.drawPath(pat, oriPaintPhone);
             }
-//            if(shipMove){ // Ve huong di chuyen tau
-//                drawOrientation((float)orientationShipD);
-//
-//                double offsetX =  sin(Math.toRadians(orientationShipD)) * 50;
-//                double offsetY =  - 50 * cos(Math.toRadians(orientationShipD));
-//
-//                PointF oriP1 = new PointF(p1.x, p1.y);
-//                oriP1.offset((float) offsetX ,  (float) offsetY);
-//                canvas.drawBitmap(oriPhoneBitmap1, oriP1.x - 7.5f, oriP1.y - 7.5f, null);
-//            }else {
-//                oriPhoneCanvas.drawColor(Color.TRANSPARENT);
-//            }
+            if(shipMove) { // Ve huong di chuyen tau
+                double offsetX = sin(Math.toRadians(  azimuthShip)) * 30;
+                double offsetY = - 30 * cos(Math.toRadians(  azimuthShip));
+
+                PointF oriP1 = new PointF(p1.x, p1.y);
+                oriP1.offset((float) offsetX ,  (float) offsetY);
+                Path pat = new Path();
+
+                Matrix matrix = new Matrix();
+                matrix.setRotate(azimuthShip, 0, 0);
+                pathOrientationShip.transform(matrix,pat);
+                pat.offset(oriP1.x,oriP1.y);
+                canvas.drawPath(pat, oriPaintShip);
+            }
             if (isShowInfo) {// ve vi tri tam man hinh
                 Location scrLocation = new Location("GPS");
                 scrLocation.setLatitude(mlat);
@@ -751,7 +766,7 @@ public class PolygonsView extends View {
     }
 
     public void updateAzimuthCompass(float azimuth){
-        azimuthCompass = - azimuth;
+        azimuthCompass = azimuth;
     }
 
     public void updateAzimuthShip(float azimith){

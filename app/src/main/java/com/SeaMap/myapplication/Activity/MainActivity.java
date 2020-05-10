@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         curVelocityText.setText(String.format("%.1f",speedKnots)+" Hải lý/h");
                         if (curLocation != null) {
                             curBearingText.setText(String.valueOf((int) newLocation.getBearing()));
-                            map.orientationShipD = newLocation.getBearing();
+                            PolygonsView.azimuthShip = newLocation.getBearing();
                             map.shipMove = true;
                         }
                         curLocation = newLocation;
@@ -228,6 +228,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 //                        Toast.makeText(MainActivity.this, curLocation.getLatitude() + " , " + curLocation.getLongitude(), Toast.LENGTH_LONG).show();
                     }
                     else {
+                        curBearingText.setText("");
                         map.shipMove = false;
                     }
 
