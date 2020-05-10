@@ -104,13 +104,17 @@ public class PolygonsView extends View {
             public void run() {
                 if(viewCurPos>3)viewCurPos--;else viewCurPos=5;
                 if(mapOutdated)drawMap();
-                invalidate();
+                updateView();
                 isBufferBusy = false;// allow access to draw buffer after drawmap() is done
                 ReadFile.SaveConfig();
             }
         };
         timer1s = new Timer();
         timer1s.schedule(mTask1,1000,1000);
+    }
+    void updateView()
+    {
+        postInvalidate();
     }
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh)
@@ -414,7 +418,7 @@ public class PolygonsView extends View {
                 break;
             }
             default:{
-                //MainActivity.distancePTPView.invalidate();//Không được call ngược về MainActivity từ đây, crash reports rất nhiều
+                MainActivity.distancePTPView.postInvalidate();
                 break;
             }
         }
