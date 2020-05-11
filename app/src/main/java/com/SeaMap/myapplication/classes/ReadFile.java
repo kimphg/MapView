@@ -296,8 +296,6 @@ public class ReadFile {
             while(true)
             {
                 try {
-
-
                     lat = inputStream.read() ;
                     lat += inputStream.read() << 8;
                     lat += inputStream.read() << 16;
@@ -320,6 +318,7 @@ public class ReadFile {
                         value = ( buff[row * elementSize + 4]) & 0xFF;
                         String key = Integer.toString(lon/1000)+","+Integer.toString(lat/1000);
                         addDensityPoint100(key,lat,lon,value);
+
                     }
                 }
                 catch (IOException ex)
@@ -334,6 +333,11 @@ public class ReadFile {
             return;
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        catch (OutOfMemoryError E)
+        {
+            listDensity.clear();
+            return;
         }
 
         /*
