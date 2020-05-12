@@ -10,10 +10,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
-import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Build;
 import android.util.Log;
@@ -462,7 +459,7 @@ public class PolygonsView extends View {
                 for(Density density: vtDensity){
 
                     if(recudeResolution) {
-                        if (!density.reducceRes) continue;
+                        if (!density.reduceRes) continue;
                     }
                     PointF p1 = ConvWGSToScrPoint(density.longitude, density.latitude);
                     double brightness =  (density.countMove/5.0);

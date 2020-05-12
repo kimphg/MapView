@@ -1,6 +1,9 @@
 package com.SeaMap.myapplication.classes;
 
 import android.content.Context;
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import com.SeaMap.myapplication.object.*;
 import com.SeaMap.myapplication.object.Buoy;
@@ -152,14 +155,14 @@ public class ReadFile {
         }
 
     }
-
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     public void  ReadBigData()
     {
         try {
             dataReady = false;
             readRiver();
             readDataSeaMap();
-            readDensity();
+            if(Build.VERSION.SDK_INT>=23)readDensity();
             Thread.sleep(500);
             dataReady = true;
         } catch (InterruptedException e) {
@@ -291,7 +294,7 @@ public class ReadFile {
             int max_row_count = 4000000;
             int elementSize = 5;
             int lat,lon, rowCount;
-            int value;
+            short value;
             byte[] buff = new byte[max_row_count*elementSize];
             while(true)
             {
@@ -315,7 +318,7 @@ public class ReadFile {
                         lon += ( (buff[row * elementSize + 1] ) & 0xFF) << 8;
                         lon += ( (buff[row * elementSize + 2] ) & 0xFF) << 16;
                         lon += ( (buff[row * elementSize + 3] ) & 0xFF) << 24;
-                        value = ( buff[row * elementSize + 4]) & 0xFF;
+                        value = (short)(( buff[row * elementSize + 4]) & 0xFF);
                         String key = Integer.toString(lon/1000)+","+Integer.toString(lat/1000);
                         addDensityPoint100(key,lat,lon,value);
 
@@ -380,7 +383,7 @@ public class ReadFile {
         }
         System.out.println("");*/
     }
-     private void addDensityPoint100(String key, int lat, int lon, int  value)
+     private void addDensityPoint100(String key, int lat, int lon, short  value)
      {
          if(listDensity.containsKey(key))
          {
