@@ -60,8 +60,9 @@ public class GpsService extends Service {
                 activeNetwork.isConnectedOrConnecting();
         return isConnected;
     }
-    Location oldLocation = new Location("GPS");//use old location to estimate speed and movement
-
+    Location oldLocation = new Location("GPS");
+    Location curLocation = new Location("GPS");//use old location to estimate speed and movement
+    private Location lastSavedLocation = new Location("GPS");
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @SuppressLint("MissingPermission")
     @Override
@@ -75,23 +76,35 @@ public class GpsService extends Service {
                 }
 
                 for (Location location : locationResult.getLocations()) {
-                    if(location.getSpeed()<2)
-                    {
-                        locationRequest.setInterval(30000);
-                        locationRequest.setFastestInterval(15000);
-                    }
-                    else
-                    {
-                        locationRequest.setInterval(10000);
-                        locationRequest.setFastestInterval(5000);
-                    }
 
-                    if(oldLocation.distanceTo(location)<12)continue;
-                    Intent intent = new Intent("location_update");
-                    intent.putExtra("newLocation", location);
-                    sendBroadcast(intent);
-                    sendOwnLocation(location);
-                    oldLocation = location;
+                    curLocation = location;
+                }
+                if(curLocation.getSpeed()<2)
+                {
+                    locationRequest.setInterval(30000);
+                    locationRequest.setFastestInterval(15000);
+                }
+                else
+                {
+                    locationRequest.setInterval(10000);
+                    locationRequest.setFastestInterval(5000);
+                }
+
+                if(curLocation.distanceTo(oldLocation)<5)return;
+                oldLocation = curLocation;
+                Intent intent = new Intent("location_update");
+                intent.putExtra("newLocation", curLocation);
+                sendBroadcast(intent);
+                sendOwnLocation(curLocation);
+                //save location to file
+                if(curLocation.distanceTo(lastSavedLocation)>50) {
+                    if(curLocation.getAccuracy()<80) {
+//                        locationHistory.add(newLocation);
+//                        while (locationHistory.size() > 50) locationHistory.remove(0);
+                        String time = String.valueOf(System.currentTimeMillis());
+                        String location = String.valueOf(curLocation.getLatitude()) + "," + String.valueOf(curLocation.getLongitude());
+                        ReadFile.SetConfig(time, location);
+                    }
                 }
             }
         };
@@ -235,8 +248,9 @@ public class GpsService extends Service {
 //    }
 
     void getLastLocation() {
-        oldLocation.setLatitude(21);
-        oldLocation.setLongitude(105);
+        curLocation.setLatitude(21);
+        curLocation.setLongitude(105);
+        oldLocation = curLocation;
 //        fusedLocationClient.getLastLocation();
 //
 //                .addOnSuccessListener(this, new OnSuccessListener<Location>() {

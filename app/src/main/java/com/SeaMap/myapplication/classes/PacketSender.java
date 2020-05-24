@@ -61,7 +61,6 @@ public class PacketSender extends Thread {
     {
         int id= ReadFile.getID();//mID;
 
-        if(id!=0)return;
         try {
             sendMsgToServer(getDeviceName(),hexStringToByteArray("5aa5"));
 
@@ -111,7 +110,7 @@ public class PacketSender extends Thread {
                 if(len==6&&(incomeBuffer[0]==90)&&(incomeBuffer[1]==-91))//server set ID 5aa5
                 {
                     int ID = (incomeBuffer[2]<<24) + (incomeBuffer[3]<<16) + (incomeBuffer[4]<<8) +(incomeBuffer[5]);
-                    ReadFile.SetConfig("ID",String.valueOf(ID));
+                    //ReadFile.SetConfig("ID",String.valueOf(ID));
                     incomePacketPending = false;
                 }
                 if(len>=2) incomePacketPending = true;
@@ -131,7 +130,7 @@ public class PacketSender extends Thread {
                             // kiểm tra xem máy chủ có hoạt động không, nếu không hoạt động thì tạm dừng liên lạc với máy chủ trong 2 phút
                             Thread.sleep(120000);
                             serverOnline = 5;
-                            sendModelName();
+                            //sendModelName();
                         }
                         mPacketPending = false;
                     }

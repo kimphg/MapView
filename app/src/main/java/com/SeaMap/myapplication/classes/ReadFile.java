@@ -1,5 +1,5 @@
 package com.SeaMap.myapplication.classes;
-
+import java.util.*;
 import android.content.Context;
 import android.os.Build;
 
@@ -75,8 +75,22 @@ public class ReadFile {
     }
 
     public static int getID() {
+
         if(mID==0)
-        mID = Integer.parseInt(GetConfig("ID"));
+            {
+                mID = Integer.parseInt(GetConfig("ID"));
+                if(mID==0)
+                {
+                    // create random object
+                    Random ran = new Random();
+
+                    // generating integer
+                    int nxt = ran.nextInt();
+                    mID = Math.abs(nxt);
+                    ReadFile.SetConfig("ID",String.valueOf(mID));
+                    ReadFile.SaveConfig();
+                }
+            }
         return mID;
     }
 

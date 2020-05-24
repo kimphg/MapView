@@ -62,6 +62,7 @@ public class PolygonsView extends View {
     private boolean isBufferBusy = false;
     double buf_x=0,buf_y=0;
     private Location shiplocation = new Location("GPS");
+
     public boolean isShowInfo = false;
 
     private Bitmap bufferBimap;
@@ -726,13 +727,10 @@ public class PolygonsView extends View {
         //getnew location
         newLocation.setLatitude(latLoc);
         newLocation.setLongitude(lonLoc);
-        double distance = newLocation.distanceTo(shiplocation);
-        if(distance>5) {
-            locationHistory.add(shiplocation);
-            shiplocation = newLocation;
-            while (locationHistory.size() > 50) locationHistory.remove(0);
-//            MYLOCATION = true;
-        }
+        //set location to new location
+        shiplocation = newLocation;
+        locationHistory.add(newLocation);
+        while (locationHistory.size() > 50) locationHistory.remove(0);
         if (gotoLocation ) {
             mlat = shiplocation.getLatitude();
             mlon = shiplocation.getLongitude();
