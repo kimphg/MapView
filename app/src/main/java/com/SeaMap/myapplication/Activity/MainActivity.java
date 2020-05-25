@@ -28,7 +28,6 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -148,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private int heightScr, widthScr, heightScrUse;
 
     private SensorManager sensorService;
-    private Sensor sensor,accele;
+    private Sensor magne,accele;
     @Override
     protected void onStart() {
         super.onStart();
@@ -226,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 //                        map.setNearbyShips(nearbyShips);
 //                        //nearbyShips.clear();
 //                    }
-                    for (int i = 0; i < 10; i++) {
+                    for (int i = 0; i < 50; i++) {
                         Location ship = intent.getParcelableExtra("nearbyShips" + Integer.toString(i));
                         if (ship != null)
                             map.setNearbyShips(ship);
@@ -241,13 +240,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void onResume() {
         super.onResume();
         // Sensor
-        if (sensor != null) {
-            sensorService.registerListener(mySensorEventListener, sensor,
+        if (magne != null) {
+            sensorService.registerListener(mySensorEventListener, magne,
                     SensorManager.SENSOR_DELAY_NORMAL);
-            Log.i("Compass MainActivity", "Registerered for ORIENTATION Sensor");
+            sensorService.registerListener(mySensorEventListener, accele,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+            //Log.i("Compass MainActivity", "Registerered for ORIENTATION Sensor");
         } else {
-            Log.e("Compass MainActivity", "Registerered for ORIENTATION Sensor");
-            Toast.makeText(this, "ORIENTATION Sensor not found",
+            //Log.e("Compass MainActivity", "Registerered for ORIENTATION Sensor");
+            Toast.makeText(this, "Sensor not found",
                     Toast.LENGTH_LONG).show();
             finish();
         }
@@ -314,29 +315,43 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private void InitSensor() {
 
         sensorService = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensor = sensorService.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        magne = sensorService.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         accele = sensorService.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mySensorEventListener = new SensorEventListener() {
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
             }
-
+            float[] mGravity;
+            float[] mGeomagnetic;
+            float azimut;
             @Override
             public void onSensorChanged(SensorEvent event) {
-                float azimuth;
-                float R[] = new float[9];
-                float I[] = new float[9];
-                boolean success = SensorManager.getRotationMatrix(R, I, accele, sensor);
-                if (success) {
-                    float orientation[] = new float[3];
-                    SensorManager.getOrientation(R, orientation);
-                    azimuth = orientation[0]; // contains azimuth, pitch, roll
-//                float[] mGeomagnetic=null;
-//                if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
-//                    mGeomagnetic = event.values;
-//                float azimut=mGeomagnetic[0];
-//                map.updateAzimuthCompass(event.values[0]);
+                if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+                    mGravity = event.values;
+
+                if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
+                    mGeomagnetic = event.values;
+
+                if (mGravity != null && mGeomagnetic != null) {
+                    float R[] = new float[9];
+                    float I[] = new float[9];
+                    if (SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic)) {
+                        // orientation contains azimut, pitch and roll
+                        float orientation[] = new float[3];
+                        SensorManager.getOrientation(R, orientation);
+                        float dazi = orientation[0]-azimut;
+                        if(dazi>3.1415926535f)
+                        {
+                            dazi = 3.1415926535f*2-dazi;
+                        }
+                        if(dazi<-3.1415926535f)
+                        {
+                            dazi = 3.1415926535f*2+dazi;
+                        }
+                        azimut += (dazi)/5.0f;
+                        map.updateAzimuthCompass(azimut);
+                    }
                 }
             }
 
@@ -345,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     protected void onPause() {
         super.onPause();
-        if (sensor != null) {
+        if (magne != null) {
             sensorService.unregisterListener(mySensorEventListener);
         }
     }

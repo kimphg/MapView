@@ -40,7 +40,6 @@ import java.util.Vector;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
-import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 
 public class PolygonsView extends View {
@@ -72,7 +71,7 @@ public class PolygonsView extends View {
     PointF pointTopRight,pointBotLeft;
     //protected double shipLocationLon = 105.43f, shipLocationLat = 18.32f;
     private boolean lockDragging = false;// khóa không cho drag khi đang zoom
-    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint(), cusPaint = new Paint(),textPaint = new Paint(), oriPaintPhone, oriPaintShip;
+    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint(), cusPaint = new Paint(),textPaint = new Paint(), oriPaint;
     private ScaleGestureDetector scaleGestureDetector;
     protected PointF dragOldPoint, dragNewPoint;
     protected Context mCtx;
@@ -80,11 +79,11 @@ public class PolygonsView extends View {
     Path pathBouy = new Path();
     public boolean shipMove = false;
 
-
+    Paint locationPaint = new Paint();
 //    protected Bitmap bitmapBouy;
     protected Paint buoyPaint = new Paint();
 //    private int heightBuoy, widthBuoy;
-    private int viewCurPos = 5;
+    private int blinkSize = 5;
     private boolean paintParamsReady = false;
 
     private Path pathOrientationPhone = new Path();
@@ -104,7 +103,7 @@ public class PolygonsView extends View {
         mTask1 = new TimerTask() {
             @Override
             public void run() {
-                if(viewCurPos>3)viewCurPos--;else viewCurPos=5;
+                if(blinkSize >1) blinkSize/=2.0;
                 if(mapOutdated)drawMap();
                 updateView();
                 isBufferBusy = false;// allow access to draw buffer after drawmap() is done
@@ -112,7 +111,7 @@ public class PolygonsView extends View {
             }
         };
         timer1s = new Timer();
-        timer1s.schedule(mTask1,1000,1000);
+        timer1s.schedule(mTask1,1000,500);
 
     }
     void updateView()
@@ -157,28 +156,24 @@ public class PolygonsView extends View {
         pathBouy.moveTo(p.x,p.y);
         pathBouy.lineTo(pm1.x,pm1.y);
         pathBouy.lineTo(pm2.x,pm2.y);
-
+        float basicObjectSize = scrCtX/10.0f;
         //path de ve orientation phone
-        oriPaintPhone = new Paint();
-        oriPaintPhone.setStyle(Paint.Style.FILL);
-        oriPaintPhone.setColor(Color.argb(120, 150, 30, 0));
+        oriPaint = new Paint();
+        oriPaint.setStyle(Paint.Style.FILL);
+        oriPaint.setColor(Color.argb(120, 100, 50, 50));
         pathOrientationPhone = new Path();
         PointF oriPP1 = new PointF(0,0);
-        PointF oriPP2 =  new PointF(scrCtX/10f,-scrCtX/10f);
-        PointF oriPP3 = new PointF(-scrCtX/10f,-scrCtX/10f);
+        PointF oriPP2 =  new PointF(basicObjectSize*0.5f,-basicObjectSize);
+        PointF oriPP3 = new PointF(-basicObjectSize*0.5f,-basicObjectSize);
         pathOrientationPhone.moveTo(oriPP1.x,oriPP1.y);
         pathOrientationPhone.lineTo(oriPP2.x,oriPP2.y);
         pathOrientationPhone.lineTo(oriPP3.x,oriPP3.y);
 
-        //path de ve ori ship
-        oriPaintShip = new Paint();
-        oriPaintShip.setStyle(Paint.Style.FILL);
-        oriPaintShip.setColor(Color.rgb(113, 12, 12));
         pathOrientationShip = new Path();
-        PointF oriSP1 = new PointF(0,-30);
-        PointF oriSP3 =  new PointF(0,-7.5f);
-        PointF oriSP2 = new PointF(7.5f,0);
-        PointF oriSP4 = new PointF(-7.5f,0);
+        PointF oriSP1 = new PointF(0,-basicObjectSize);
+        PointF oriSP3 =  new PointF(0,0);
+        PointF oriSP2 = new PointF(basicObjectSize/2.0f,basicObjectSize/2.0f);
+        PointF oriSP4 = new PointF(-basicObjectSize/2.0f,basicObjectSize/2.0f);
         pathOrientationShip.moveTo(oriSP1.x,oriSP1.y);
         pathOrientationShip.lineTo(oriSP2.x,oriSP2.y);
         pathOrientationShip.lineTo(oriSP3.x,oriSP3.y);
@@ -480,12 +475,22 @@ public class PolygonsView extends View {
         return (float) sqrt(dx*dx+dy*dy);
 
     }
+    void DrawShip(float lat,float lon, float cogDeg,Canvas canvas)
+    {
+        PointF p1 = ConvWGSToScrPoint(lon,lat);
+        p1.offset((float)buf_x, (float)buf_y);
+        Path pat = new Path(pathOrientationShip);
+        Matrix matrix = new Matrix();
+        matrix.setRotate(cogDeg, 0, 0);
+        pat.transform(matrix);
+        pat.offset(p1.x,p1.y);
+        canvas.drawPath(pat, oriPaint);
+    }
     void DrawScrObjects(Canvas canvas)
     {
         float xoffset = (float)buf_x;
         float yoffset = (float)buf_y;
 
-        Paint locationPaint = new Paint();
         {
             PointF p1 = ConvWGSToScrPoint((float) shiplocation.getLongitude(), (float) shiplocation.getLatitude());
             p1.offset(xoffset, yoffset);
@@ -494,37 +499,23 @@ public class PolygonsView extends View {
             float pointSize = Math.max(4, scrCtX * 0.01f);
             if (shipInsideScreen) {//ve hinh tron o toa do hien tai
                 locationPaint.setStyle(Paint.Style.FILL);
-                locationPaint.setColor(Color.argb(120, 150, 30, 0));
-                canvas.drawCircle(p1.x, p1.y, pointSize * viewCurPos, locationPaint);
-
-                //ve hinh tron, huong
-                //double offsetX = sin(Math.toRadians(  azimuthCompass)) * 25;
-                //double offsetY = 25 * cos(Math.toRadians(  azimuthCompass));
-
-                //PointF oriP1 = new PointF(p1.x, p1.y);
-                //oriP1.offset((float) offsetX ,  (float) offsetY);
+                locationPaint.setColor(Color.argb(80, 30, 150, 50));
+                canvas.drawCircle(p1.x, p1.y, pointSize *3 +blinkSize, locationPaint);
+                //ve huong la ban
                 Path pat = new Path(pathOrientationPhone);
-
                 Matrix matrix = new Matrix();
                 matrix.setRotate(( azimuthCompass), 0, 0);
                 pat.transform(matrix);
                 pat.offset(p1.x,p1.y);
-                canvas.drawPath(pat, oriPaintPhone);
+                canvas.drawPath(pat, oriPaint);
+                oriPaint.setStrokeWidth(Math.max(2, pointSize ));
+                canvas.drawLine(p1.x , p1.y, p1.x+ (float)(scrCtX/2.0f*Math.sin(Math.toRadians(  azimuthCompass))) , p1.y- (float)(scrCtX/2.0f*Math.cos(Math.toRadians(  azimuthCompass))), oriPaint);
+                // Ve huong di chuyen tau
+                if(shipMove) {
+                    DrawShip((float) shiplocation.getLatitude(),(float) shiplocation.getLongitude(),azimuthShip,canvas);
+                }
             }
-            if(shipMove) { // Ve huong di chuyen tau
-                double offsetX = sin(Math.toRadians(  azimuthShip)) * 30;
-                double offsetY = - 30 * cos(Math.toRadians(  azimuthShip));
 
-                PointF oriP1 = new PointF(p1.x, p1.y);
-                oriP1.offset((float) offsetX ,  (float) offsetY);
-                Path pat = new Path();
-
-                Matrix matrix = new Matrix();
-                matrix.setRotate(azimuthShip, 0, 0);
-                pathOrientationShip.transform(matrix,pat);
-                pat.offset(oriP1.x,oriP1.y);
-                canvas.drawPath(pat, oriPaintShip);
-            }
             if (isShowInfo) {// ve vi tri tam man hinh
                 Location scrLocation = new Location("GPS");
                 scrLocation.setLatitude(mlat);
@@ -552,7 +543,6 @@ public class PolygonsView extends View {
                 String[] dms=Coordinate.decimalToDMS(mlon,mlat);
                 canvas.drawText(dms[0]+","+dms[1], p3.x, p3.y, locationPaint);
 
-
                 locationPaint.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
                 canvas.drawLine(p1.x, p1.y, p2.x, p2.y , locationPaint);
             }
@@ -566,7 +556,8 @@ public class PolygonsView extends View {
                 locationPaint.setColor(Color.argb(150, 150, 0, 0));
                 for (Location ship : nearbyShips) {
                     PointF pship = ConvWGSToScrPoint((float) ship.getLongitude(), (float) ship.getLatitude());
-                    canvas.drawCircle(pship.x+xoffset, pship.y+yoffset, 7, locationPaint);
+                    DrawShip((float) ship.getLatitude(),(float) ship.getLongitude(),ship.getBearing(),canvas);
+                    //canvas.drawCircle(pship.x+xoffset, pship.y+yoffset, 7, locationPaint);
                 }
             }
         //draw location history
@@ -701,7 +692,7 @@ public class PolygonsView extends View {
     public void setNearbyShips(Location ship)
     {
         nearbyShips.add(ship);
-        while(nearbyShips.size()>100)nearbyShips.remove(0);
+        while(nearbyShips.size()>50)nearbyShips.remove(0);
     }
 
     public void disableSearch_Direction(int choose){
@@ -722,7 +713,9 @@ public class PolygonsView extends View {
     }
 
     public void setLonLatMyLocation(double latLoc, double lonLoc,boolean gotoLocation ){
+        blinkSize = 200;
         //save old location
+
         Location newLocation = new Location("GPS");
         //getnew location
         newLocation.setLatitude(latLoc);
@@ -761,7 +754,7 @@ public class PolygonsView extends View {
     }
 
     public void updateAzimuthCompass(float azimuth){
-        azimuthCompass = azimuth;
+        azimuthCompass = azimuth/3.1415926535f*180.0f;
     }
 
     public void updateAzimuthShip(float azimith){

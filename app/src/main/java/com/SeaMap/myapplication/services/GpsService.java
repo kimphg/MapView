@@ -67,6 +67,11 @@ public class GpsService extends Service {
     @SuppressLint("MissingPermission")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        getLastLocation();
+        Intent intent1 = new Intent("location_update");
+        intent1.putExtra("newLocation", curLocation);
+        sendBroadcast(intent1);
+        sendOwnLocation(curLocation);
         locationCallback = new LocationCallback() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
@@ -104,6 +109,7 @@ public class GpsService extends Service {
                         String time = String.valueOf(System.currentTimeMillis());
                         String location = String.valueOf(curLocation.getLatitude()) + "," + String.valueOf(curLocation.getLongitude());
                         ReadFile.SetConfig(time, location);
+                        ReadFile.SetConfig("last_location", location);
                     }
                 }
             }
@@ -122,7 +128,6 @@ public class GpsService extends Service {
             fusedLocationClient.requestLocationUpdates(locationRequest,
                     locationCallback,
                     Looper.getMainLooper());
-            getLastLocation();
         } else {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
             locationRequest = LocationRequest.create();
@@ -132,7 +137,7 @@ public class GpsService extends Service {
             fusedLocationClient.requestLocationUpdates(locationRequest,
                     locationCallback,
                     Looper.getMainLooper());
-            getLastLocation();
+
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -155,9 +160,10 @@ public class GpsService extends Service {
         if ((answer != null) && (answer.length > 0)) {
             int sizeOne = Short.BYTES + Float.BYTES + Float.BYTES;
             int index = 0;
-            List<Location> nearbyShips = new ArrayList<>();
+            //List<Location> nearbyShips = new ArrayList<>();
             ByteBuffer buffer;
             buffer = ByteBuffer.wrap(answer);
+            int i=0;
             while (index <= (answer.length - sizeOne)) {
 
                 float lon =  buffer.getFloat( index);
@@ -167,17 +173,13 @@ public class GpsService extends Service {
                 ship.setLongitude(lon);
                 ship.setLatitude(lat);
                 ship.setBearing(cog);
-                nearbyShips.add(ship);
-                index = index + sizeOne;
-            }
-            int i = 0;
-            for (Location ship : nearbyShips) {
                 Intent intent = new Intent("location_update");
                 intent.putExtra("nearbyShips" + i, ship);
                 i++;
                 sendBroadcast(intent);
-                //sendOwnLocation(location);
+                index = index + sizeOne;
             }
+
         }
     }
 //    Location lastLocation = new Location("GPS");
@@ -248,24 +250,18 @@ public class GpsService extends Service {
 //    }
 
     void getLastLocation() {
-        curLocation.setLatitude(21);
-        curLocation.setLongitude(105);
+        String location = ReadFile.GetConfig("last_location");
+        String[] latlon = location.split(",");
+        if(latlon.length<2) {
+            curLocation.setLatitude(21);
+            curLocation.setLongitude(105);
+        }
+        else
+        {
+            curLocation.setLatitude(Float.parseFloat(latlon[0]));
+            curLocation.setLongitude(Float.parseFloat(latlon[1]));
+        }
         oldLocation = curLocation;
-//        fusedLocationClient.getLastLocation();
-//
-//                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-//                    @Override
-//                    public void onSuccess(Location location) {
-//                        // Got last known location. In some rare situations this can be null.
-//                        if (location != null) {
-//                            // Logic to handle location object
-//                            Intent intent = new Intent("location_update");
-//                            intent.putExtra("newLocation", location);
-//                            sendBroadcast( intent );
-//                        }
-//
-//                    }
-//                });
     }
 
 //    @RequiresApi(api = Build.VERSION_CODES.O)

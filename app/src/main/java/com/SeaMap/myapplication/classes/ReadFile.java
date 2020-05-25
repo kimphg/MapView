@@ -87,8 +87,8 @@ public class ReadFile {
                     // generating integer
                     int nxt = ran.nextInt();
                     mID = Math.abs(nxt);
-                    ReadFile.SetConfig("ID",String.valueOf(mID));
-                    ReadFile.SaveConfig();
+                    SetConfig("ID",String.valueOf(mID));
+                    SaveConfig();
                 }
             }
         return mID;
