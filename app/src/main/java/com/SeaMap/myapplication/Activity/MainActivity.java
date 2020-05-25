@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private List<String> namePlaces;
     //listview search trong phan info_route;
     private ListView listPlaceSeacrh, routesListView;
-
+    private SensorEventListener mySensorEventListener ;
     private Places adapter;
 
 
@@ -148,10 +148,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private int heightScr, widthScr, heightScrUse;
 
     private SensorManager sensorService;
-    private Sensor sensor;
+    private Sensor sensor,accele;
     @Override
     protected void onStart() {
         super.onStart();
+        initGPSReceiver();
+
     }
 
     protected void StartLocationService() {
@@ -162,17 +164,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         }
 
-        // Sensor
-        if (sensor != null) {
-            sensorService.registerListener(mySensorEventListener, sensor,
-                    SensorManager.SENSOR_DELAY_NORMAL);
-            Log.i("Compass MainActivity", "Registerered for ORIENTATION Sensor");
-        } else {
-            Log.e("Compass MainActivity", "Registerered for ORIENTATION Sensor");
-            Toast.makeText(this, "ORIENTATION Sensor not found",
-                    Toast.LENGTH_LONG).show();
-            finish();
-        }
+
     }
 
     @Override
@@ -197,9 +189,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     List<Location> nearbyShips = new LinkedList<Location>();
     double speedKnots = 0;
-    @Override
-    protected void onResume() {
-        super.onResume();
+    private void initGPSReceiver()
+    {
 
         if (broadcastReceiver == null) {
             broadcastReceiver = new BroadcastReceiver() {
@@ -207,7 +198,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 public void onReceive(Context context, Intent intent) {
 
                     Location newLocation = intent.getParcelableExtra("newLocation");
-
                     if (newLocation != null) {
                         String[] dms;
                         dms = Coordinate.decimalToDMS(newLocation.getLongitude(), newLocation.getLatitude());
@@ -247,6 +237,21 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
         registerReceiver(broadcastReceiver, new IntentFilter("location_update"));
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Sensor
+        if (sensor != null) {
+            sensorService.registerListener(mySensorEventListener, sensor,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+            Log.i("Compass MainActivity", "Registerered for ORIENTATION Sensor");
+        } else {
+            Log.e("Compass MainActivity", "Registerered for ORIENTATION Sensor");
+            Toast.makeText(this, "ORIENTATION Sensor not found",
+                    Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @SuppressLint("ClickableViewAccessibility")
@@ -255,13 +260,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
-
+        InitSensor();
         frameLayout_main = findViewById(R.id.content_frame);
         frameLayout_map = findViewById(R.id.frame_layout_map);
         read = new ReadFile(getApplicationContext());
 
-        sensorService = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensor = sensorService.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
         AsyncTask.execute(new Runnable() {
             @Override
@@ -304,10 +307,41 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         onRoute();
         onDensityView();
         onScreecBtn_Direction_Search();
-        //enableButtons();
+
 
     }
 
+    private void InitSensor() {
+
+        sensorService = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorService.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        accele = sensorService.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mySensorEventListener = new SensorEventListener() {
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            }
+
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                float azimuth;
+                float R[] = new float[9];
+                float I[] = new float[9];
+                boolean success = SensorManager.getRotationMatrix(R, I, accele, sensor);
+                if (success) {
+                    float orientation[] = new float[3];
+                    SensorManager.getOrientation(R, orientation);
+                    azimuth = orientation[0]; // contains azimuth, pitch, roll
+//                float[] mGeomagnetic=null;
+//                if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
+//                    mGeomagnetic = event.values;
+//                float azimut=mGeomagnetic[0];
+//                map.updateAzimuthCompass(event.values[0]);
+                }
+            }
+
+        };
+    }
     @Override
     protected void onPause() {
         super.onPause();
@@ -746,21 +780,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         super.onStop();
     }
 
-    private SensorEventListener mySensorEventListener = new SensorEventListener() {
 
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        }
-
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            // angle between the magnetic north direction
-            // 0=North, 90=East, 180=South, 270=West
-            float azimuth = event.values[0];
-            Log.d("Goc amu: ", "" + azimuth);
-            map.updateAzimuthCompass(azimuth);
-        }
-    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

@@ -163,9 +163,9 @@ public class PolygonsView extends View {
         oriPaintPhone.setStyle(Paint.Style.FILL);
         oriPaintPhone.setColor(Color.argb(120, 150, 30, 0));
         pathOrientationPhone = new Path();
-        PointF oriPP1 = new PointF(0,-15);
-        PointF oriPP2 =  new PointF(7.5f,0);
-        PointF oriPP3 = new PointF(-7.5f,0);
+        PointF oriPP1 = new PointF(0,0);
+        PointF oriPP2 =  new PointF(scrCtX/10f,-scrCtX/10f);
+        PointF oriPP3 = new PointF(-scrCtX/10f,-scrCtX/10f);
         pathOrientationPhone.moveTo(oriPP1.x,oriPP1.y);
         pathOrientationPhone.lineTo(oriPP2.x,oriPP2.y);
         pathOrientationPhone.lineTo(oriPP3.x,oriPP3.y);
@@ -498,17 +498,17 @@ public class PolygonsView extends View {
                 canvas.drawCircle(p1.x, p1.y, pointSize * viewCurPos, locationPaint);
 
                 //ve hinh tron, huong
-                double offsetX = sin(Math.toRadians(  azimuthCompass)) * 25;
-                double offsetY = - 25 * cos(Math.toRadians(  azimuthCompass));
+                //double offsetX = sin(Math.toRadians(  azimuthCompass)) * 25;
+                //double offsetY = 25 * cos(Math.toRadians(  azimuthCompass));
 
-                PointF oriP1 = new PointF(p1.x, p1.y);
-                oriP1.offset((float) offsetX ,  (float) offsetY);
-                Path pat = new Path();
+                //PointF oriP1 = new PointF(p1.x, p1.y);
+                //oriP1.offset((float) offsetX ,  (float) offsetY);
+                Path pat = new Path(pathOrientationPhone);
 
                 Matrix matrix = new Matrix();
-                matrix.setRotate(azimuthCompass, 0, 0);
-                pathOrientationPhone.transform(matrix,pat);
-                pat.offset(oriP1.x,oriP1.y);
+                matrix.setRotate(( azimuthCompass), 0, 0);
+                pat.transform(matrix);
+                pat.offset(p1.x,p1.y);
                 canvas.drawPath(pat, oriPaintPhone);
             }
             if(shipMove) { // Ve huong di chuyen tau

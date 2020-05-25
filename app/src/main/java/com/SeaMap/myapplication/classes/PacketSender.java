@@ -2,6 +2,8 @@ package com.SeaMap.myapplication.classes;
 
 import android.os.Build;
 
+import androidx.annotation.RequiresApi;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -63,7 +65,6 @@ public class PacketSender extends Thread {
 
         try {
             sendMsgToServer(getDeviceName(),hexStringToByteArray("5aa5"));
-
         }
         catch(Exception ex)
         {
@@ -99,18 +100,20 @@ public class PacketSender extends Thread {
         }
 
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void run() {
-        sendModelName();
 
         while(true) {
 
             try {
                 udpSocket.receive(incomePacket);
                 int len = incomePacket.getLength();
-                if(len==6&&(incomeBuffer[0]==90)&&(incomeBuffer[1]==-91))//server set ID 5aa5
+                if(len==6&&(incomeBuffer[0]==90)&&(incomeBuffer[1]==-91))//server request device name 5aa5
                 {
-                    int ID = (incomeBuffer[2]<<24) + (incomeBuffer[3]<<16) + (incomeBuffer[4]<<8) +(incomeBuffer[5]);
-                    //ReadFile.SetConfig("ID",String.valueOf(ID));
+                    int ID = (Byte.toUnsignedInt(incomeBuffer[2])<<24) + (Byte.toUnsignedInt(incomeBuffer[3])<<16) + (Byte.toUnsignedInt(incomeBuffer[4])<<8) + Byte.toUnsignedInt(incomeBuffer[5]);
+
+                    if(ID==ReadFile.getID())
+                        sendModelName();
                     incomePacketPending = false;
                 }
                 if(len>=2) incomePacketPending = true;
@@ -130,7 +133,6 @@ public class PacketSender extends Thread {
                             // kiểm tra xem máy chủ có hoạt động không, nếu không hoạt động thì tạm dừng liên lạc với máy chủ trong 2 phút
                             Thread.sleep(120000);
                             serverOnline = 5;
-                            //sendModelName();
                         }
                         mPacketPending = false;
                     }
