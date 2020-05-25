@@ -157,7 +157,7 @@ public class GpsService extends Service {
         if(mPacketSender==null)return;
 
         byte[] answer = mPacketSender.getAnswer();
-        if ((answer != null) && (answer.length > 0)) {
+        if ((answer != null) && (answer.length >= 10)) {
             int sizeOne = Short.BYTES + Float.BYTES + Float.BYTES;
             int index = 0;
             //List<Location> nearbyShips = new ArrayList<>();

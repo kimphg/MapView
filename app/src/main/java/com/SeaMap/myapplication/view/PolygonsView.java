@@ -605,16 +605,28 @@ public class PolygonsView extends View {
         buf_y = 0;
         drawMap();
     }
+    PointF dragStartPoint;
+    long dragStartTime;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         scaleGestureDetector.onTouchEvent(event);
 //        gestureDetector.onTouchEvent(event);
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             dragOldPoint = new PointF(event.getX(),event.getY());
+            dragStartPoint = dragOldPoint;
+            dragStartTime = System.currentTimeMillis();
         }
         else if(event.getAction() == MotionEvent.ACTION_UP)
         {
+            PointF dragStopPoint = new PointF(event.getX(),event.getY());
+            if(Distance(dragStopPoint,dragStartPoint)<scrCtX/10) {
+                long dragStopTime = System.currentTimeMillis();
+                if (dragStopTime - dragStartTime < 700) {
+                    OnTap(dragStopPoint);
+                    return true;
 
+                }
+            }
             pushBuffer();
             lockDragging = false;
         }
@@ -632,7 +644,20 @@ public class PolygonsView extends View {
             //MainActivity.polygonsView.refreshDrawableState();
             invalidate();
         }
+
         return true;
+    }
+
+    private void OnTap(PointF dragStopPoint) {
+        PointF center = new PointF(scrCtX,scrCtY);
+        if(Distance(center,dragStopPoint)<scrCtX/10)
+        {
+            ReadFile.AddToSavedPoints(mlat,mlon);
+        }
+    }
+
+    public void clearNearbyShips() {
+        nearbyShips.clear();
     }
 
     private class ScaleLister extends ScaleGestureDetector.SimpleOnScaleGestureListener{
@@ -689,7 +714,7 @@ public class PolygonsView extends View {
     List<Location> nearbyShips = new LinkedList<Location>();
     List<Location> locationHistory  = new ArrayList<Location>();
 
-    public void setNearbyShips(Location ship)
+    public void addNearbyShip(Location ship)
     {
         nearbyShips.add(ship);
         while(nearbyShips.size()>50)nearbyShips.remove(0);

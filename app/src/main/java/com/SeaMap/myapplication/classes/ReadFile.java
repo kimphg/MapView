@@ -42,6 +42,7 @@ public class ReadFile {
 //    public static HashMap<String, Vector<Density>> listDensity1 = new HashMap<>();
     private static int mID = 0;
     private static HashMap<String, String> mConfig = new HashMap<String, String>();
+    private static HashMap<String, String> mSavedPoints = new HashMap<String, String>();
     private static boolean  isConfigChanged = false;
     public static List<Text> ListPlace = new ArrayList<>();
     public static boolean dataReady = false;
@@ -94,6 +95,21 @@ public class ReadFile {
         return mID;
     }
 
+    public static void AddToSavedPoints(double mlat, double mlon) {
+        String latlon = String.valueOf(mlat) + "," + String.valueOf(mlon);
+        mSavedPoints.put(latlon,latlon);
+        String savedPoints = "";
+        for (HashMap.Entry<String, String> element : mSavedPoints.entrySet()) {
+
+            savedPoints+=element.getKey()+","+element.getValue()+"#";
+        }
+        SetConfig("saved_points",savedPoints);
+    }
+    public HashMap<String, String> GetSavedPoints()
+    {
+        HashMap<String, String> points = mSavedPoints;
+        return points;
+    }
     private void LoadConfig() {
         userConfigFile =  new File(mCtx.getFilesDir(), "cfg.txt");
         if(userConfigFile.exists()) {
@@ -134,6 +150,24 @@ public class ReadFile {
                 {
                     SetConfig("ID","0");
                 }
+                String savedPoint = mConfig.get("saved_points");
+                if(savedPoint!=null)
+                if(savedPoint.length()>2) {
+                    String[] strPoints = savedPoint.split("#");
+                    if(strPoints.length>0)
+                    {
+                        for (String str:strPoints
+                             ) {
+                            String[] latlon = str.split(",");
+                            if(latlon.length==3)
+                            {
+                                mSavedPoints.put(latlon[0],latlon[1]+","+latlon[2]);
+                            }
+
+                        }
+                    }
+                }
+
             } catch (IOException e) {
                 // Error occurred when opening raw file for reading.
             }

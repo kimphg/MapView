@@ -225,11 +225,21 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 //                        map.setNearbyShips(nearbyShips);
 //                        //nearbyShips.clear();
 //                    }
-                    for (int i = 0; i < 50; i++) {
-                        Location ship = intent.getParcelableExtra("nearbyShips" + Integer.toString(i));
-                        if (ship != null)
-                            map.setNearbyShips(ship);
+                    Location ship = intent.getParcelableExtra("nearbyShips" + Integer.toString(0));
+                    if (ship != null) {//có dữ liệu mới, clear dữ liệu cũ
+                        map.clearNearbyShips();
+                        map.addNearbyShip(ship);
+
                     }
+                    else for (int i = 1; i < 50; i++) {
+                        ship = intent.getParcelableExtra("nearbyShips" + Integer.toString(i));
+                        if (ship != null)
+                        {
+                            map.addNearbyShip(ship);
+                            break;
+                        }
+                    }
+
 
                 }
             };
