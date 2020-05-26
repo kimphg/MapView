@@ -43,6 +43,7 @@ public class ReadFile {
     private static HashMap<String, String> mConfig = new HashMap<String, String>();
 //    private static HashMap<String, String> mSavedPointsAsStrings = new HashMap<String, String>();
     private static boolean  isConfigChanged = false;
+    private static boolean  isConfigBusy = false;
     public static List<Text> ListPlace = new ArrayList<>();
     public static boolean dataReady = false;
     private static File userConfigFile;
@@ -224,6 +225,7 @@ public class ReadFile {
     }
     public static void SetConfig(String key,String value)
     {
+        while(isConfigBusy){};
         mConfig.put(key,value);
         isConfigChanged = true;
     }
@@ -232,6 +234,7 @@ public class ReadFile {
         if(!isConfigChanged)return;
         isConfigChanged = false;
         try {
+            isConfigBusy = true;
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(mCtx.openFileOutput("cfg.txt", Context.MODE_PRIVATE));
             for (HashMap.Entry<String, String> element : mConfig.entrySet()) {
 
@@ -239,6 +242,7 @@ public class ReadFile {
 
             }
             outputStreamWriter.close();
+            isConfigBusy = false;
         }
         catch (FileNotFoundException ex)
         {
@@ -246,6 +250,7 @@ public class ReadFile {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        isConfigBusy = false;
 
     }
     @RequiresApi(api = Build.VERSION_CODES.Q)
