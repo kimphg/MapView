@@ -198,9 +198,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
                     Location newLocation = intent.getParcelableExtra("newLocation");
                     if (newLocation != null) {
-                        String[] dms;
-                        dms = Coordinate.decimalToDMS(newLocation.getLongitude(), newLocation.getLatitude());
-                        String dmsCoord = dms[0] + "/" + dms[1];
+
+                        String dmsCoord = Coordinate.decimalToDMS(newLocation.getLongitude(), newLocation.getLatitude());
                         curLocationText.setText(dmsCoord);
                         speedKnots += (newLocation.getSpeed() * 3600.0 / 1852.0 - speedKnots)/3.0;
                         curVelocityText.setText(String.format("%.1f",speedKnots)+" Hải lý/h");
@@ -395,7 +394,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         });
     }
-
+    public void EditMapPoint()
+    {
+        Intent intent = new Intent(getApplicationContext(), ObjectEditActivity.class);
+        startActivityForResult(intent, REQUEST_INPUT);
+    }
     private void onScreecBtn_Direction_Search() {
         imageButtonDirection = findViewById(R.id.ic_btn_directions);
         imageButtonDirection.setOnClickListener(new View.OnClickListener() {
@@ -553,9 +556,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         isCalculating = true;
                         runEtaTimer();
                     }
-                    String[] selectedStr = Coordinate.decimalToDMS(selected.longitude, selected.latitude);
 
-                    String name_place = selectedStr[0] + " / " + selectedStr[1];
+                    String name_place = Coordinate.decimalToDMS(selected.longitude, selected.latitude);
                     float[] coor = {p.x, p.y};
 
                     Text text = new Text();
@@ -584,12 +586,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             public void onClick(View v) {
                 switch (CHOOSE_BTN_LAYERS) {
                     case 0: {
-                        map.isShowInfo = true;
+                        Toast.makeText(MainActivity.this, "Nhấn vào (+) ở tâm bản đồ để thêm điểm", Toast.LENGTH_LONG).show();
+                        map.isPointMode = true;
                         CHOOSE_BTN_LAYERS = 1;
                         break;
                     }
                     case 1: {
-                        map.isShowInfo = false;
+                        Toast.makeText(MainActivity.this, "Đã tắt chế độ lưu điểm", Toast.LENGTH_LONG).show();
+                        map.isPointMode = false;
                         CHOOSE_BTN_LAYERS = 0;
                         break;
                     }
@@ -633,6 +637,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         route_layout.setVisibility(View.VISIBLE);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         addDestinationButton.setVisibility(View.VISIBLE);
+                        Toast.makeText(MainActivity.this, "Nhấn vào (+) ở tâm bản đồ để thêm điểm lộ trình", Toast.LENGTH_LONG).show();
                         break;
                     }
                     case R.id.nav_tinhkhoangcach: {
@@ -642,7 +647,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         frameLayout_map.addView(distancePTPView);
                         imageButtonOther.setBackgroundResource(R.drawable.icon_back);
                         addDestinationButton.setVisibility(View.VISIBLE);
-
 
                         break;
                     }

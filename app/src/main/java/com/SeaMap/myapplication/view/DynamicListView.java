@@ -327,6 +327,9 @@ public class DynamicListView extends ListView {
     }
 
     private void swapElements(ArrayList arrayList, int indexOne, int indexTwo) {
+        if(arrayList==null)return;
+        if(arrayList.size()<=indexOne)return;
+        if(arrayList.size()<=indexTwo)return;
         Object temp = arrayList.get(indexOne);
         arrayList.set(indexOne, arrayList.get(indexTwo));
         arrayList.set(indexTwo, temp);

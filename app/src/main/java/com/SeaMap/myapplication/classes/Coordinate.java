@@ -12,8 +12,8 @@ public class Coordinate {
         this.latitude = latitude;
     }
 
-    public static String[] decimalToDMS(double lon, double lat ){
-        String[] result = new String[2];
+    public static String decimalToDMS(double lon, double lat ){
+
         double convertLat = Math.abs( lat );
         int latDeg = (int) Math.floor( convertLat );
         int latMin = (int) Math.floor( (convertLat - latDeg ) * 60 );
@@ -26,8 +26,7 @@ public class Coordinate {
         int lonSec = (int)Math.floor( ( (convertLon - lonDeg ) * 60 - lonMin) *60.0);
         String lonCardinal = ( (lon > 0) ? "E" : "W");
 
-        result[0] = latDeg + "°" + latMin + "'" + latSec + "\"" + latCardinal;
-        result[1] = lonDeg + "°" + lonMin + "'" + lonSec + "\"" + lonCardinal;
+        String result  = latDeg + "°" + latMin + "'" + latSec + "\"" + latCardinal+"/"+ lonDeg + "°" + lonMin + "'" + lonSec + "\"" + lonCardinal;
 
         return result;
     }

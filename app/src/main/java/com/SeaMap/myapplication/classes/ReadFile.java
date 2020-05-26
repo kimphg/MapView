@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +41,7 @@ public class ReadFile {
 //    public static HashMap<String, Vector<Density>> listDensity1 = new HashMap<>();
     private static int mID = 0;
     private static HashMap<String, String> mConfig = new HashMap<String, String>();
-    private static HashMap<String, String> mSavedPoints = new HashMap<String, String>();
+//    private static HashMap<String, String> mSavedPointsAsStrings = new HashMap<String, String>();
     private static boolean  isConfigChanged = false;
     public static List<Text> ListPlace = new ArrayList<>();
     public static boolean dataReady = false;
@@ -94,21 +93,64 @@ public class ReadFile {
             }
         return mID;
     }
-
-    public static void AddToSavedPoints(double mlat, double mlon) {
-        String latlon = String.valueOf(mlat) + "," + String.valueOf(mlon);
-        mSavedPoints.put(latlon,latlon);
-        String savedPoints = "";
-        for (HashMap.Entry<String, String> element : mSavedPoints.entrySet()) {
-
-            savedPoints+=element.getKey()+","+element.getValue()+"#";
-        }
-        SetConfig("saved_points",savedPoints);
-    }
-    public HashMap<String, String> GetSavedPoints()
+    private static String  KeyValSeparator = "`";
+    private static String  ElementSeparator = "#";
+    private static String  ConfigSeparator = ";";
+    public static Vector<MapPoint> mMapPointList = new Vector<MapPoint> ();
+    public static void  removemapPoint(String latlonString)
     {
-        HashMap<String, String> points = mSavedPoints;
-        return points;
+        for(MapPoint point:mMapPointList)
+        {
+            if(latlonString==point.mlatlonString)
+            {
+                mMapPointList.remove(point);
+                break;
+            }
+        }
+        String mSavedPointsAsStrings = "";
+        for(MapPoint point :mMapPointList) {
+            if(point.type!=4)
+                mSavedPointsAsStrings += point.mName + KeyValSeparator + point.mlatlonString + ElementSeparator;
+
+        }
+        SetConfig("saved_points", mSavedPointsAsStrings);
+    }
+    public static void AddToSavedPoints(MapPoint newPoint )//float mlat, float mlon,String name)
+    {
+        if(newPoint.type==4)
+        {
+            removemapPoint(newPoint.mlatlonString);
+        }
+        else {
+            boolean pointExist = false;
+            for (MapPoint point : mMapPointList) {
+                if (newPoint.mlatlonString == point.mlatlonString) {
+                    point.SetPoint(newPoint);
+                    pointExist = true;
+                }
+            }
+            if (pointExist)//overwrite saved_points
+            {
+                String mSavedPointsAsStrings = "";
+                for (MapPoint point : mMapPointList) {
+                    if (point.type != 4)
+                        mSavedPointsAsStrings += point.mName + KeyValSeparator + point.mlatlonString + ElementSeparator;
+
+                }
+                SetConfig("saved_points", mSavedPointsAsStrings);
+            } else {//add to saved_points
+                mMapPointList.add(newPoint);
+                String mSavedPointsAsStrings = GetConfig("saved_points");
+                mSavedPointsAsStrings += newPoint.mName + KeyValSeparator + newPoint.mlatlonString + ElementSeparator;
+                SetConfig("saved_points", mSavedPointsAsStrings);
+            }
+        }
+
+    }
+
+    public static Vector<MapPoint>  GetSavedPoints()
+    {
+        return mMapPointList;
     }
     private void LoadConfig() {
         userConfigFile =  new File(mCtx.getFilesDir(), "cfg.txt");
@@ -140,7 +182,7 @@ public class ReadFile {
                 while(true) {
                     String line = reader.readLine();
                     if(line==null)break;
-                    String[] strList = line.split(";");
+                    String[] strList = line.split(ConfigSeparator);
                     if ( strList.length< 2)continue;
                     String key = strList[0];
                     String value = strList[1];
@@ -153,15 +195,18 @@ public class ReadFile {
                 String savedPoint = mConfig.get("saved_points");
                 if(savedPoint!=null)
                 if(savedPoint.length()>2) {
-                    String[] strPoints = savedPoint.split("#");
+                    String[] strPoints = savedPoint.split(ElementSeparator);
                     if(strPoints.length>0)
                     {
                         for (String str:strPoints
                              ) {
-                            String[] latlon = str.split(",");
-                            if(latlon.length==3)
+                            String[] keylatlon = str.split(KeyValSeparator);
+                            if(keylatlon.length==2)
                             {
-                                mSavedPoints.put(latlon[0],latlon[1]+","+latlon[2]);
+                                String name = keylatlon[0];
+                                String latlon = keylatlon[1];
+                                MapPoint newPoint = new MapPoint(name,latlon);
+                                mMapPointList.add(newPoint);
                             }
 
                         }
@@ -190,7 +235,7 @@ public class ReadFile {
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(mCtx.openFileOutput("cfg.txt", Context.MODE_PRIVATE));
             for (HashMap.Entry<String, String> element : mConfig.entrySet()) {
 
-                outputStreamWriter.write(element.getKey()+";"+element.getValue()+"\n");
+                outputStreamWriter.write(element.getKey()+ConfigSeparator+element.getValue()+"\n");
 
             }
             outputStreamWriter.close();

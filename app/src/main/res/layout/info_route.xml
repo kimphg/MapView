@@ -46,7 +46,7 @@
         android:id="@+id/_distance"
         android:layout_below="@+id/route_listview"
         android:text="Khoảng cách đến điểm tiếp theo: "
-        android:background="#570097A7"
+        android:background="#800097A7"
         />
 
     <TextView
@@ -56,7 +56,7 @@
         android:id="@+id/_timeRun"
         android:layout_below="@+id/_distance"
         android:text="Thơi gian đến điểm tiếp theo: "
-        android:background="#570097A7"
+        android:background="#800097A7"
         />
 
     <FrameLayout
