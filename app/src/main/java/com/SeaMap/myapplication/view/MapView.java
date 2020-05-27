@@ -27,7 +27,7 @@ import com.SeaMap.myapplication.Activity.MainActivity;
 import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.Coordinate;
 import com.SeaMap.myapplication.classes.MapPoint;
-import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.classes.GlobalDataManager;
 import com.SeaMap.myapplication.object.Buoy;
 import com.SeaMap.myapplication.object.Density;
 import com.SeaMap.myapplication.object.Polyline;
@@ -45,7 +45,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 
-public class PolygonsView extends View {
+public class MapView extends View {
     protected static double mlat = 20.0;//lattitude of the center of the screen
     protected static double mlon = 106.5;//longtitude of the center of the screen
     protected static float mScale = 10f;// 1km = mScale*pixcels
@@ -74,7 +74,7 @@ public class PolygonsView extends View {
     PointF pointTopRight,pointBotLeft;
     //protected double shipLocationLon = 105.43f, shipLocationLat = 18.32f;
     private boolean lockDragging = false;// khóa không cho drag khi đang zoom
-    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint(), cusPaint = new Paint(),textPaint = new Paint(), oriPaint;
+    private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint(), cusPaint = new Paint(),textPaint = new Paint(), ownShipPaint;
     private ScaleGestureDetector scaleGestureDetector;
     protected PointF dragOldPoint, dragNewPoint;
     protected Context mCtx;
@@ -93,7 +93,7 @@ public class PolygonsView extends View {
     private Path pathOrientationShip = new Path();
 
     OrientationEventListener myOrientationEventListener;
-    public PolygonsView(Context context) {
+    public MapView(Context context) {
         super(context);
         shiplocation.setLatitude(20);
         shiplocation.setLongitude(106);
@@ -110,7 +110,7 @@ public class PolygonsView extends View {
                 if(mapOutdated)drawMap();
                 updateView();
                 isBufferBusy = false;// allow access to draw buffer after drawmap() is done
-                ReadFile.SaveConfig();
+
             }
         };
         timer1s = new Timer();
@@ -164,13 +164,13 @@ public class PolygonsView extends View {
         pathBouy.lineTo(pm2.x,pm2.y);
         float basicObjectSize = scrCtX/10.0f;
         //path de ve orientation phone
-        oriPaint = new Paint();
-        oriPaint.setStyle(Paint.Style.FILL);
-        oriPaint.setColor(Color.argb(120, 100, 50, 50));
+        ownShipPaint = new Paint();
+        ownShipPaint.setStyle(Paint.Style.FILL);
+        ownShipPaint.setColor(Color.argb(180, 10, 100, 10));
         pathOrientationPhone = new Path();
         PointF oriPP1 = new PointF(0,0);
-        PointF oriPP2 =  new PointF(basicObjectSize*0.5f,-basicObjectSize);
-        PointF oriPP3 = new PointF(-basicObjectSize*0.5f,-basicObjectSize);
+        PointF oriPP2 =  new PointF(basicObjectSize*0.4f,-basicObjectSize*0.5f);
+        PointF oriPP3 = new PointF(-basicObjectSize*0.4f,-basicObjectSize*0.5f);
         pathOrientationPhone.moveTo(oriPP1.x,oriPP1.y);
         pathOrientationPhone.lineTo(oriPP2.x,oriPP2.y);
         pathOrientationPhone.lineTo(oriPP3.x,oriPP3.y);
@@ -230,7 +230,7 @@ public class PolygonsView extends View {
             for (int lat = (int) pointBotLeft.y; lat <= (int) pointTopRight.y; lat++) {
                 String area = lon + "-" + lat;
 //                //draw text
-                Vector<Text> tT = ReadFile.tTexts.get(area);
+                Vector<Text> tT = GlobalDataManager.tTexts.get(area);
                 if (tT == null) continue;
                 for (int k = 0; k < tT.size(); k++) {
                     Text text = tT.get(k);
@@ -294,7 +294,7 @@ public class PolygonsView extends View {
                 //draw buoys
                 if( mScale > 10) {
                     //draw buoy
-                    Vector<Buoy> bouyVectors = ReadFile.listBuoys.get(area);
+                    Vector<Buoy> bouyVectors = GlobalDataManager.listBuoys.get(area);
                     if (bouyVectors == null) continue;
                     for (int k = 0; k < bouyVectors.size(); k++) {
                         Buoy buoy = bouyVectors.get(k);
@@ -321,15 +321,15 @@ public class PolygonsView extends View {
         pointTopRight = ConvScrPointToWGS(scrCtX * 2,0);
         pointBotLeft = ConvScrPointToWGS(0, scrCtY * 2);
         //DRAW POLYGON
-        if(ReadFile.dataReady)
+        if(GlobalDataManager.dataReady)
         for(int lon = (int) pointBotLeft.x - 2; lon<= (int) pointTopRight.x + 2; lon++) {
             for (int lat = (int) pointBotLeft.y - 2; lat <= (int) pointTopRight.y + 2; lat++) {
                 Vector<Region> regions;
                 if(mScale < 8) {
-                    regions = ReadFile.BaseRegions.get(lon + "-" + lat);
+                    regions = GlobalDataManager.BaseRegions.get(lon + "-" + lat);
                 }
                 else
-                    regions = ReadFile.Poligons.get(lon + "-" + lat);
+                    regions = GlobalDataManager.Poligons.get(lon + "-" + lat);
                 if(regions == null) continue;
                 for(int k =0;  k< regions.size() ; k++){
                     Region polygon = regions.get(k);
@@ -355,9 +355,9 @@ public class PolygonsView extends View {
 
                 Vector<Region> river;
                 if(mScale < 8) {
-                    river = ReadFile.BasePlgRiver.get(area);
+                    river = GlobalDataManager.BasePlgRiver.get(area);
                 }
-                else river = ReadFile.PolygonRivers.get(area);
+                else river = GlobalDataManager.PolygonRivers.get(area);
                 if(river == null) continue;
                 for(int k =0;  k< river.size() ; k++){
                     Region polygon = river.get(k);
@@ -374,7 +374,7 @@ public class PolygonsView extends View {
                 }
 
                 //DrawBorder
-                Vector<Polyline> border = ReadFile.Border_Map.get(area);
+                Vector<Polyline> border = GlobalDataManager.Border_Map.get(area);
                 if (border== null) continue;
                 for (int k = 0; k < border.size(); k++) {
                     Polyline pl = border.get(k);
@@ -400,7 +400,7 @@ public class PolygonsView extends View {
                 for (int lat = (int) pointBotLeft.y ; lat <= (int) pointTopRight.y ; lat++) {
                     String area = lon + "-" + lat;
                     //draw polyline
-                    Vector<Polyline> PL = ReadFile.PLines.get(area);
+                    Vector<Polyline> PL = GlobalDataManager.PLines.get(area);
                     if (PL == null) continue;
                     for (int k = 0; k < PL.size(); k++) {
                         Polyline pl = PL.get(k);
@@ -438,7 +438,7 @@ public class PolygonsView extends View {
                 break;
             }
             default:{
-                MainActivity.distancePTPView.postInvalidate();
+                MainActivity.routingModeView.postInvalidate();
                 break;
             }
         }
@@ -449,7 +449,7 @@ public class PolygonsView extends View {
     }
     void DrawDensityMap()
     {
-        if(!ReadFile.dataReady)return;
+        if(!GlobalDataManager.dataReady)return;
         boolean recudeResolution = (mScale<10);
         Paint pointDensity = new Paint();
         float size = (float) Math.max(1, mScale /8.0 );
@@ -459,7 +459,7 @@ public class PolygonsView extends View {
         for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x ; lon++) {
             for (int lat = (int) pointBotLeft.y ; lat <= (int) pointTopRight.y ; lat++) {
                 String area = lon + "," + lat;
-                Vector<Density> vtDensity = ReadFile.listDensity.get(area);
+                Vector<Density> vtDensity = GlobalDataManager.listDensity.get(area);
                 if (vtDensity == null) continue;
 
 //                float []pointf = new float[size * 2];
@@ -495,14 +495,33 @@ public class PolygonsView extends View {
         matrix.setRotate(cogDeg, 0, 0);
         pat.transform(matrix);
         pat.offset(p1.x,p1.y);
-        canvas.drawPath(pat, oriPaint);
+        canvas.drawPath(pat, objectPaint);
     }
-    void DrawSavedPoint(float lat,float lon, String name,Canvas canvas)
+
+    void DrawSavedPoint(MapPoint point,Canvas canvas)
     {
-        PointF p1 = ConvWGSToScrPoint(lon,lat);
+        PointF p1 = ConvWGSToScrPoint(point.mlon,point.mlat);
         p1.offset((float)buf_x, (float)buf_y);
-        drawCross(p1,objectPaint,canvas);
-        canvas.drawText(name,p1.x,p1.y,objectPaint);
+        switch (point.mType)
+        {
+            case 0:
+                objectPaint.setColor(Color.argb(160, 20,200 , 20));
+                break;
+            case 1:
+                objectPaint.setColor(Color.argb(160, 200,20 , 20));
+                break;
+            case 2:
+                objectPaint.setColor(Color.argb(160, 200,200 , 20));
+                break;
+            case 3:
+                objectPaint.setColor(Color.argb(160, 20,20 , 20));
+                break;
+            case 4:
+                objectPaint.setColor(Color.argb(50, 20,20 , 20));
+                return;
+        }
+        drawRomb(p1,objectPaint,canvas);
+        canvas.drawText(point.mName,p1.x+pointSize*5,p1.y,objectPaint);
     }
     private boolean isInsiseScr(float plat,float plon)
     {
@@ -517,10 +536,18 @@ public class PolygonsView extends View {
     }
     void drawCross(PointF scrPoint,Paint paint,Canvas canvas)
     {
-        float crossSize = pointSize * 3;
-
+        float crossSize = pointSize * 6;
         canvas.drawLine(scrPoint.x + crossSize, scrPoint.y, scrPoint.x - crossSize, scrPoint.y, paint);
         canvas.drawLine(scrPoint.x, scrPoint.y + crossSize, scrPoint.x, scrPoint.y - crossSize, paint);
+    }
+    void drawRomb(PointF scrPoint,Paint paint,Canvas canvas)
+    {
+        float crossSize = pointSize * 6;
+        canvas.drawLine(scrPoint.x- crossSize, scrPoint.y ,     scrPoint.x , scrPoint.y-crossSize, paint);
+        canvas.drawLine(scrPoint.x, scrPoint.y - crossSize,         scrPoint.x + crossSize, scrPoint.y , paint);
+        canvas.drawLine(scrPoint.x + crossSize, scrPoint.y,         scrPoint.x , scrPoint.y + crossSize, paint);
+        canvas.drawLine(scrPoint.x, scrPoint.y + crossSize,         scrPoint.x- crossSize, scrPoint.y , paint);
+        canvas.drawLine(scrPoint.x, scrPoint.y ,         scrPoint.x, scrPoint.y -crossSize, paint);
     }
     void DrawScrObjects(Canvas canvas)
     {
@@ -543,11 +570,12 @@ public class PolygonsView extends View {
                 matrix.setRotate(( azimuthCompass), 0, 0);
                 pat.transform(matrix);
                 pat.offset(p1.x,p1.y);
-                canvas.drawPath(pat, oriPaint);
-                oriPaint.setStrokeWidth(Math.max(2, pointSize ));
-                canvas.drawLine(p1.x , p1.y, p1.x+ (float)(scrCtX/2.0f*Math.sin(Math.toRadians(  azimuthCompass))) , p1.y- (float)(scrCtX/2.0f*Math.cos(Math.toRadians(  azimuthCompass))), oriPaint);
+                canvas.drawPath(pat, ownShipPaint);
+                ownShipPaint.setStrokeWidth(Math.max(2, pointSize ));
+                canvas.drawLine(p1.x , p1.y, p1.x+ (float)(scrCtX/2.0f*Math.sin(Math.toRadians(  azimuthCompass))) , p1.y- (float)(scrCtX/2.0f*Math.cos(Math.toRadians(  azimuthCompass))), ownShipPaint);
                 // Ve huong di chuyen tau
                 if(shipMove) {
+                    objectPaint.setColor(Color.argb(180, 200, 50 , 10));
                     DrawShip((float) shiplocation.getLatitude(),(float) shiplocation.getLongitude(),azimuthShip,canvas);
                 }
             }
@@ -558,7 +586,7 @@ public class PolygonsView extends View {
                 scrLocation.setLongitude(mlon);
                 PointF p2 = ConvWGSToScrPoint((float) scrLocation.getLongitude(), (float) scrLocation.getLatitude());
                 //p2.offset(xoffset, yoffset);
-                objectPaint.setColor(Color.argb(150, 30, 20, 10));
+                objectPaint.setColor(Color.argb(180, 200, 50 , 10));
                 drawCross(p2, objectPaint,canvas);
                 //locationPaint.setStyle(Paint.Style.STROKE);
 
@@ -626,12 +654,12 @@ public class PolygonsView extends View {
             canvas.drawText(String.format("%.1f",distance[0]/1000.0)+"km",p1.x+xoffset, p1.y+yoffset+scrCtX/12,searchPl);
         }
 
-        for (MapPoint mPoint:ReadFile.GetSavedPoints()) {
+        for (MapPoint mPoint: GlobalDataManager.GetSavedPoints()) {
             float pLat = mPoint.mlat;
             float pLon = mPoint.mlon;
             if(isInsiseScr(pLat,pLon))
             {
-                DrawSavedPoint(pLat,pLon,mPoint.mName,canvas);
+                DrawSavedPoint(mPoint,canvas);
             }
         }
     }
@@ -691,13 +719,13 @@ public class PolygonsView extends View {
         if(isPointMode) {
             PointF center = new PointF(scrCtX, scrCtY);
             if (Distance(center, tapPoint) < scrCtX / 10) {
-                MapPoint newPoint = new MapPoint((float) mlat, (float) mlon, null);
-                ReadFile.AddToSavedPoints(newPoint);
+                MapPoint newPoint = new MapPoint((float) mlat, (float) mlon, null,0,0L);
+                GlobalDataManager.AddToSavedPoints(newPoint);
             }
             else {
                 float minDistance = scrCtX;
                 MapPoint nearestPoint = null;
-                for (MapPoint mPoint : ReadFile.GetSavedPoints()) {
+                for (MapPoint mPoint : GlobalDataManager.GetSavedPoints()) {
                     float pLat = mPoint.mlat;
                     float pLon = mPoint.mlon;
 
@@ -742,8 +770,8 @@ public class PolygonsView extends View {
     private MenuItem.OnMenuItemClickListener mMenuItemClickListener = new MenuItem.OnMenuItemClickListener() {
         @Override
         public boolean onMenuItemClick(MenuItem item) {
-            selectedMapPoint.type = item.getItemId();
-            ReadFile.AddToSavedPoints(selectedMapPoint);
+            selectedMapPoint.mType = item.getItemId();
+            GlobalDataManager.AddToSavedPoints(selectedMapPoint);
 
             return false;
         }

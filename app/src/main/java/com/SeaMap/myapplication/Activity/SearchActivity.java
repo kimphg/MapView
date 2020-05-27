@@ -1,10 +1,8 @@
 package com.SeaMap.myapplication.Activity;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.OrientationEventListener;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
@@ -14,7 +12,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.Places;
-import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.classes.GlobalDataManager;
 import com.SeaMap.myapplication.object.Text;
 
 import java.io.Serializable;
@@ -38,7 +36,7 @@ public class SearchActivity extends FragmentActivity implements SearchView.OnQue
         search = findViewById(R.id.sv_place);
         listView = findViewById(R.id.listView);
 
-        list = ReadFile.ListPlace;
+        list = GlobalDataManager.ListPlace;
 
         adapter = new Places(this,list);
         listView.setAdapter(adapter);

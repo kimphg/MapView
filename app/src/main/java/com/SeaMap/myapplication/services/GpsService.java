@@ -17,7 +17,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 
 import com.SeaMap.myapplication.classes.PacketSender;
-import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.classes.GlobalDataManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -25,8 +25,6 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 //import com.google.android.gms.tasks.OnSuccessListener;
 
 //import java.util.concurrent.Executor;
@@ -106,10 +104,10 @@ public class GpsService extends Service {
                     if(curLocation.getAccuracy()<80) {
 //                        locationHistory.add(newLocation);
 //                        while (locationHistory.size() > 50) locationHistory.remove(0);
-                        String time = String.valueOf(System.currentTimeMillis());
-                        String location = String.valueOf(curLocation.getLatitude()) + "," + String.valueOf(curLocation.getLongitude());
-                        ReadFile.SetConfig(time, location);
-                        ReadFile.SetConfig("last_location", location);
+                        //String time = String.valueOf(System.currentTimeMillis());
+                        //String location = String.valueOf(curLocation.getLatitude()) + "," + String.valueOf(curLocation.getLongitude());
+//                        GlobalDataManager.SetConfig(time, location);
+                        GlobalDataManager.AddLocation( curLocation);
                     }
                 }
             }
@@ -201,7 +199,7 @@ public class GpsService extends Service {
         ByteBuffer byteBuffer = ByteBuffer.allocate(2+Long.BYTES + Float.BYTES + Float.BYTES);
         byteBuffer.putShort((short)0);
         byteBuffer.putInt(0);
-        byteBuffer.putInt(ReadFile.getID());
+        byteBuffer.putInt(GlobalDataManager.getID());
         byteBuffer.putFloat((float) (location.getLongitude()));
         byteBuffer.putFloat((float) (location.getLatitude()));
         return byteBuffer.array();
@@ -250,7 +248,7 @@ public class GpsService extends Service {
 //    }
 
     void getLastLocation() {
-        String location = ReadFile.GetConfig("last_location");
+        String location = GlobalDataManager.GetConfig("last_location");
         String[] latlon = location.split(",");
         if(latlon.length<2) {
             curLocation.setLatitude(21);

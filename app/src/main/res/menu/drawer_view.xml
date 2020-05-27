@@ -1,36 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-        <item android:title="General">
+        <item android:title="Chức năng">
                 <menu>
-                        <group android:checkableBehavior="single">
-                                <item
-                                    android:id="@+id/nav_lotrinh"
-                                    android:icon="@drawable/ic_directions_boat_black_24dp"
-                                    android:title="Bắt đầu lộ trình"
-                                    />
-                                <item
-                                    android:id="@+id/nav_tinhkhoangcach"
-                                    android:icon="@drawable/ic_golf_course_black_24dp"
-                                    android:title="Tính khoảng cách" />
+                    <group
+                        android:id="@+id/functions"
+                        android:checkableBehavior="single">
+                        <item
+                            android:id="@+id/nav_lotrinh"
+                            android:icon="@drawable/ic_directions_boat_black_24dp"
+                            android:title="Bắt đầu lộ trình" />
+                        <item
+                            android:id="@+id/nav_tinhkhoangcach"
+                            android:icon="@drawable/ic_golf_course_black_24dp"
+                            android:title="Tính khoảng cách" />
+                        <item
+                            android:id="@+id/nav_history"
+                            android:icon="@drawable/ic_history"
+                            android:title="Lịch sử hành trình" />
+                    </group>
 
-                        </group>
                 </menu>
         </item>
 
-        <item android:title="Communicate">
+        <item android:title="Tra cứu"
+            android:icon="@drawable/icon_other"
+            >
                 <menu>
-                        <group android:checkableBehavior="single">
-<!--                                <item-->
-<!--                                    android:id="@+id/Share"-->
-<!--                                    android:icon="@drawable/ic_directions_black_24dp"-->
-<!--                                    android:title="Lo trinh" />-->
-<!--                                <item-->
-<!--                                    android:id="@+id/Sent"-->
-<!--                                    android:icon="@drawable/ic_info_outline_black_24dp"-->
-<!--                                    android:title="Info" />-->
-
-                        </group>
+                    <group
+                        android:icon="@drawable/icon_other"
+                        android:id="@+id/documents"
+                        >
+                        <item
+                            android:id="@+id/nav_view_colreg"
+                            android:title="Quy tắc phòng ngừa đâm va" />
+                        <item
+                            android:id="@+id/nav_view_law"
+                            android:title="Luật hàng hải" />
+                    </group>
                 </menu>
         </item>
+
 
 </menu>

@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,17 +17,15 @@ import com.SeaMap.myapplication.object.Text;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.OnItemClick;
-
-public class DistancePTPView extends View {
+public class RoutingModeView extends View {
 
     private List<Text> listTextRoute = new ArrayList<Text>();
     private Paint linePaint = new Paint();
-    private PolygonsView seaMap;
+    private MapView seaMap;
 
     private int mDistance;
 
-    public DistancePTPView(Context context, PolygonsView map) {
+    public RoutingModeView(Context context, MapView map) {
         super(context);
         seaMap = map;
         mDistance = 0;

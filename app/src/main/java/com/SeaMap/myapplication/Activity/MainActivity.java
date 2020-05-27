@@ -31,6 +31,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -44,14 +45,14 @@ import android.widget.Toast;
 import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.Coordinate;
 import com.SeaMap.myapplication.classes.Places;
-import com.SeaMap.myapplication.classes.ReadFile;
+import com.SeaMap.myapplication.classes.GlobalDataManager;
 import com.SeaMap.myapplication.classes.Route;
 import com.SeaMap.myapplication.classes.StableArrayAdapter;
 import com.SeaMap.myapplication.object.Text;
 import com.SeaMap.myapplication.services.GpsService;
-import com.SeaMap.myapplication.view.DistancePTPView;
-import com.SeaMap.myapplication.view.PolygonsView;
-import com.SeaMap.myapplication.view.SeaMap;
+import com.SeaMap.myapplication.view.RoutingModeView;
+import com.SeaMap.myapplication.view.MapView;
+import com.SeaMap.myapplication.view.HistoryMapView;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import com.google.android.material.navigation.NavigationView;
@@ -79,7 +80,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     //-1: reset 0: search 1:direction
     public static int CHOOSE_SEARCH_OR_DIRECTION = -1;
     //
-    private int onViewMain = 0;
+    private enum ViewMode {
+        NORMAL_VIEW_MODE, NAVI_VIEW_MODE,HIS_VIEW_MODE, MES_VIEW_MODE, LAW_VIEW_MODE, HELP_VIEW_MODE;
+    } ;
+    private ViewMode viewMode = ViewMode.NORMAL_VIEW_MODE;
     private int REQUEST_SEARCH = 0;
 
     //Khi an 1 keo dai khung hien thi route
@@ -93,20 +97,17 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private String lonlat[];
 
     //Todo: cac view hien thi
-    public static DistancePTPView distancePTPView;
-    public PolygonsView map;
+    public static RoutingModeView routingModeView;
+    public MapView map;
     private NavigationView navigationView;
 
     private SearchView searchView;
-
-    //Todo: Doc du lieu dau vao
-    private ReadFile read;
 
     private Text textSearch;
     private Places places;
 
     //Todo: Cac nut an va nhan su kien
-    private ImageButton getCurLocationButton, imageButtonOther, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, addDestinationButton, imageBtnLayer, imageBtnBackRoute;
+    private ImageButton getCurLocationButton, imageButtonMenu, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, addDestinationButton, imageBtnLayer, imageBtnBackRoute;
     private GoogleApiClient googleApiClient;
 
     //Todo : layout main va layout route
@@ -124,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private ListView listPlaceSeacrh, routesListView;
     private SensorEventListener mySensorEventListener ;
     private Places adapter;
-
+    HistoryMapView historyMapView;
 
     //Khai bao cho GPS
     //functional variables
@@ -205,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         curVelocityText.setText(String.format("%.1f",speedKnots)+" Hải lý/h");
                         if (curLocation != null) {
                             curBearingText.setText(String.valueOf((int) newLocation.getBearing()));
-                            PolygonsView.azimuthShip = newLocation.getBearing();
+                            MapView.azimuthShip = newLocation.getBearing();
                             map.shipMove = true;
                         }
                         curLocation = newLocation;
@@ -273,13 +274,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         InitSensor();
         frameLayout_main = findViewById(R.id.content_frame);
         frameLayout_map = findViewById(R.id.frame_layout_map);
-        read = new ReadFile(getApplicationContext());
-
-
+        GlobalDataManager.Init(getApplicationContext());
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                read.ReadBigData();
+                GlobalDataManager.ReadBigData();
             }
         });
         // su kien bat dau lo trinh
@@ -291,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         imageBtnBackRoute = findViewById(R.id.back_route);
 
         //setting map;
-        map = new SeaMap(getApplicationContext());
+        map = new MapView(getApplicationContext());
         frameLayout_map.addView(map, 0);
 
         curLocationText = findViewById(R.id.curLocationText);
@@ -369,6 +368,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     protected void onPause() {
         super.onPause();
+        GlobalDataManager.SaveData();
         if (magne != null) {
             sensorService.unregisterListener(mySensorEventListener);
         }
@@ -453,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         listPlaceSeacrh = findViewById(R.id.listplace);
         searchView = findViewById(R.id.searchview_place);
 
-        List list = ReadFile.ListPlace;
+        List list = GlobalDataManager.ListPlace;
         //.............tao adpter.....
         places = new Places(this, list);
         listPlaceSeacrh.setAdapter(places);
@@ -480,8 +480,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     runEtaTimer();
                 }
                 //thiet lap lai va ve
-                distancePTPView.setListCoor(route);
-                distancePTPView.invalidate();
+                routingModeView.setListCoor(route);
+                routingModeView.invalidate();
             }
         });
 
@@ -496,8 +496,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
                 arrayAdapter.notifyDataSetChanged();
                 // thiet lap lai va ve
-                distancePTPView.setListCoor(route);
-                distancePTPView.invalidate();
+                routingModeView.setListCoor(route);
+                routingModeView.invalidate();
                 map.mapOutdated = true;
                 runEtaTimer();
             }
@@ -568,8 +568,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     namePlaces.add(name_place);
                     arrayAdapter.notifyDataSetChanged();
 
-                    distancePTPView.setListCoor(route);
-                    distancePTPView.invalidate();
+                    routingModeView.setListCoor(route);
+                    routingModeView.invalidate();
                     break;
                 }
             }
@@ -613,7 +613,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
      * */
     private void navigationDrawer() {
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        imageButtonOther = findViewById(R.id.ibt_others);
+        imageButtonMenu = findViewById(R.id.ibt_others);
 
         navigationView = findViewById(R.id.nav_view);
 
@@ -625,34 +625,67 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 menuItem.setChecked(true);
 
                 switch (menuItem.getItemId()) {
-                    case R.id.nav_lotrinh: {
+                    case R.id.nav_lotrinh:
+                    {
                         CHOOSE_DISTANE_OR_ROUTE = ROUTE;
-                        onViewMain = 1;
+                        viewMode = ViewMode.NAVI_VIEW_MODE;
 
                         curRoute = new Route();
 
-                        distancePTPView = new DistancePTPView(getApplicationContext(), map);
+                        if(routingModeView==null)routingModeView = new RoutingModeView(getApplicationContext(), map);
 
-                        frameLayout_map.addView(distancePTPView);
+                        frameLayout_map.addView(routingModeView);
                         route_layout.setVisibility(View.VISIBLE);
-                        imageButtonOther.setBackgroundResource(R.drawable.icon_back);
+                        imageButtonMenu.setBackgroundResource(R.drawable.icon_back);
                         addDestinationButton.setVisibility(View.VISIBLE);
                         Toast.makeText(MainActivity.this, "Nhấn vào (+) ở tâm bản đồ để thêm điểm lộ trình", Toast.LENGTH_LONG).show();
                         break;
                     }
                     case R.id.nav_tinhkhoangcach: {
-                        CHOOSE_DISTANE_OR_ROUTE = DISTANCE;
-                        onViewMain = 1;
-                        distancePTPView = new DistancePTPView(getApplicationContext(), map);
-                        frameLayout_map.addView(distancePTPView);
-                        imageButtonOther.setBackgroundResource(R.drawable.icon_back);
-                        addDestinationButton.setVisibility(View.VISIBLE);
-
+//                        CHOOSE_DISTANE_OR_ROUTE = DISTANCE;
+//                        viewMode = ViewMode.MES_VIEW_MODE;
+//                        routingModeView = new RoutingModeView(getApplicationContext(), map);
+//                        frameLayout_map.addView(routingModeView);
+//                        imageButtonMenu.setBackgroundResource(R.drawable.icon_back);
+//                        addDestinationButton.setVisibility(View.VISIBLE);
+                        Toast.makeText(MainActivity.this, "Chức năng chưa khả dụng", Toast.LENGTH_LONG).show();
+                        break;
+                    }
+                    case R.id.nav_history: {
+                        if(historyMapView==null)historyMapView = new HistoryMapView(getApplicationContext());
+                        historyMapView.setLonLatMyLocation(
+                                curLocation.getLatitude(),
+                                curLocation.getLongitude(), true
+                        );
+                        frameLayout_map.removeAllViews();
+                        frameLayout_map.addView(historyMapView);
+                        imageButtonMenu.setBackgroundResource(R.drawable.icon_back);
+                        viewMode = ViewMode.HIS_VIEW_MODE;
+                        break;
+                    }
+                    case R.id.nav_view_law: {
+                        WebView webview = new WebView(getApplicationContext());
+                        webview.setVerticalScrollBarEnabled(false);
+                        frameLayout_map.removeAllViews();
+                        frameLayout_map.addView(webview);
+                        webview.loadUrl("file:///android_asset/law.html");
+                        imageButtonMenu.setBackgroundResource(R.drawable.icon_back);
+                        viewMode = ViewMode.LAW_VIEW_MODE;
+                        break;
+                    }
+                    case R.id.nav_view_colreg: {
+                        WebView webview = new WebView(getApplicationContext());
+                        webview.setVerticalScrollBarEnabled(false);
+                        frameLayout_map.removeAllViews();
+                        frameLayout_map.addView(webview);
+                        webview.loadUrl("file:///android_asset/colreg72.html");
+                        imageButtonMenu.setBackgroundResource(R.drawable.icon_back);
+                        viewMode = ViewMode.LAW_VIEW_MODE;
                         break;
                     }
                     default: {
                         CHOOSE_DISTANE_OR_ROUTE = 0;
-                        onViewMain = 0;
+                        viewMode = ViewMode.NORMAL_VIEW_MODE;
                         break;
                     }
                 }
@@ -662,30 +695,29 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         });
 
         // su kien mo drawer//
-        imageButtonOther.setOnClickListener(new View.OnClickListener() {
+        imageButtonMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                switch (onViewMain) {
-                    case 0: {
+                switch (viewMode) {
+                    case NORMAL_VIEW_MODE: {
                         mDrawerLayout.openDrawer(GravityCompat.START);
                         break;
                     }
-                    case 1: {
+
+                    default :{
                         CHOOSE_DISTANE_OR_ROUTE = 0;
-                        onViewMain = 0;
-                        imageButtonOther.setBackgroundResource(R.drawable.icon_cancel);
+                        viewMode = ViewMode.NORMAL_VIEW_MODE;
+                        imageButtonMenu.setBackgroundResource(R.drawable.icon_menu);
                         addDestinationButton.setVisibility(View.INVISIBLE);
-                        navigationView.getCheckedItem().setChecked(false);
-                        frameLayout_map.removeView(distancePTPView);
-                        distancePTPView = null;
+                        frameLayout_map.removeAllViews();
+                        frameLayout_map.addView(map);
                         route_layout.setVisibility(View.INVISIBLE);
                         route_layout.getLayoutParams().height = heightScrUse * 2 / 5;
                         route_layout.requestLayout();
-
                         //dat lai gia tri ban dau
                         map.mapOutdated = true;
                         namePlaces.clear();
-                        route.clear();
+                        //route.clear();
                         arrayAdapter.notifyDataSetChanged();
                         break;
                     }

@@ -1,6 +1,8 @@
 package com.SeaMap.myapplication.classes;
 import java.util.*;
 import android.content.Context;
+import android.graphics.PointF;
+import android.location.Location;
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
@@ -25,8 +27,9 @@ import java.util.Vector;
 
 
 
-public class ReadFile {
-
+public class GlobalDataManager {
+    private static String configFileName = "cfg.txt";
+    private static String loclogFileName = "loclog.txt";
     public static HashMap<String,Vector<Line>> Lines = new HashMap<String, Vector<Line>>();
     public static HashMap<String, Vector<Polyline>> Border_Map = new HashMap<>();
     public static HashMap<String,Vector<Polyline>> PLines = new HashMap<String, Vector<Polyline>>();
@@ -46,11 +49,10 @@ public class ReadFile {
     private static boolean  isConfigBusy = false;
     public static List<Text> ListPlace = new ArrayList<>();
     public static boolean dataReady = false;
-    private static File userConfigFile;
+//    private static File userConfigFile;
     private  static Context mCtx;
-
-    public ReadFile(Context context){
-        super();
+    private  static ArrayList<MapPoint> locationHistory = new ArrayList<MapPoint>();
+    public static void Init(Context context){
         mCtx = context;
         //readBoat();
         //readDensity();
@@ -60,6 +62,103 @@ public class ReadFile {
         readBouys();
         readBorderMap();
         LoadConfig();
+
+    }
+    private static boolean checkFileExist(String fileName)
+    {
+        File locationHistoryFile =  new File(mCtx.getFilesDir(), fileName);
+        if(locationHistoryFile.exists()) {
+            try {
+                FileInputStream stream = new FileInputStream(locationHistoryFile);
+            }
+            catch (FileNotFoundException ex)
+            {
+                try {
+                    locationHistoryFile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            try {
+                locationHistoryFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return true;
+    }
+    private static void SaveLocationHistory()
+    {
+        try{
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(mCtx.openFileOutput(loclogFileName, Context.MODE_PRIVATE));
+            for (MapPoint point:locationHistory)
+            {
+                outputStreamWriter.write(point.mTime.toString()+MapPoint.separator+point.mDataString+"\n");
+            }
+            outputStreamWriter.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private static void LoadLocationHistory() {
+        if(!checkFileExist(loclogFileName))return;
+        try {
+            FileInputStream  inputStream = mCtx.openFileInput(loclogFileName);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                while(true) {
+                    String line = reader.readLine();
+                    if(line==null)break;
+                    String[] timelatlon = line.split(MapPoint.separator);
+                    if ( timelatlon.length< 3)continue;
+                    Float lat = Float.parseFloat(timelatlon[1]);
+                    Float lon = Float.parseFloat(timelatlon[2]);
+                    MapPoint point = new MapPoint(lat,lon,"",5,Long.parseLong(timelatlon[0]));
+                    locationHistory.add(point );
+                }
+
+
+            } catch (IOException e) {
+                // Error occurred when opening raw file for reading.
+            }
+        }
+        catch (IOException e)
+        {
+
+        }
+
+
+    }
+
+    private static  void LoadSavedPoints() {
+        String savedPoint = mConfig.get("saved_points");
+        if(savedPoint!=null)
+            if(savedPoint.length()>2) {
+                String[] strPoints = savedPoint.split(ElementSeparator);
+                if(strPoints.length>0)
+                {
+                    for (String str:strPoints
+                    ) {
+                        String[] keylatlon = str.split(KeyValSeparator);
+                        if(keylatlon.length==2)
+                        {
+                            String name = keylatlon[0];
+                            String latlon = keylatlon[1];
+                            MapPoint newPoint = new MapPoint(name,latlon);
+                            mMapPointList.add(newPoint);
+                        }
+
+                    }
+                }
+            }
     }
 
     public static String GetConfig(String key) {
@@ -74,7 +173,11 @@ public class ReadFile {
         }
 
     }
-
+    public static void SaveData()
+    {
+        SaveConfig();
+        SaveLocationHistory();
+    }
     public static int getID() {
 
         if(mID==0)
@@ -97,12 +200,13 @@ public class ReadFile {
     private static String  KeyValSeparator = "`";
     private static String  ElementSeparator = "#";
     private static String  ConfigSeparator = ";";
-    public static Vector<MapPoint> mMapPointList = new Vector<MapPoint> ();
-    public static void  removemapPoint(String latlonString)
+    private static String  LatLonSeparator = ",";
+    public static ArrayList<MapPoint> mMapPointList = new ArrayList<MapPoint> ();
+    public static void  removemapPoint(float lat,float lon)
     {
         for(MapPoint point:mMapPointList)
         {
-            if(latlonString==point.mlatlonString)
+            if(point.DistanceTo(lat,lon)<10)
             {
                 mMapPointList.remove(point);
                 break;
@@ -110,74 +214,59 @@ public class ReadFile {
         }
         String mSavedPointsAsStrings = "";
         for(MapPoint point :mMapPointList) {
-            if(point.type!=4)
-                mSavedPointsAsStrings += point.mName + KeyValSeparator + point.mlatlonString + ElementSeparator;
+            if(point.mType !=4)
+                mSavedPointsAsStrings += point.mName + KeyValSeparator + point.mDataString + ElementSeparator;
 
         }
         SetConfig("saved_points", mSavedPointsAsStrings);
     }
     public static void AddToSavedPoints(MapPoint newPoint )//float mlat, float mlon,String name)
     {
-        if(newPoint.type==4)
+        if(newPoint.mType ==4)
         {
-            removemapPoint(newPoint.mlatlonString);
+            removemapPoint(newPoint.mlat,newPoint.mlon);
         }
         else {
             boolean pointExist = false;
             for (MapPoint point : mMapPointList) {
-                if (newPoint.mlatlonString == point.mlatlonString) {
+                if (newPoint.DistanceTo(point)<20) {
                     point.SetPoint(newPoint);
                     pointExist = true;
+                    break;
                 }
             }
             if (pointExist)//overwrite saved_points
             {
                 String mSavedPointsAsStrings = "";
                 for (MapPoint point : mMapPointList) {
-                    if (point.type != 4)
-                        mSavedPointsAsStrings += point.mName + KeyValSeparator + point.mlatlonString + ElementSeparator;
+                    if (point.mType != 4)
+                        mSavedPointsAsStrings += point.mName + KeyValSeparator + point.mDataString + ElementSeparator;
 
                 }
                 SetConfig("saved_points", mSavedPointsAsStrings);
             } else {//add to saved_points
                 mMapPointList.add(newPoint);
                 String mSavedPointsAsStrings = GetConfig("saved_points");
-                mSavedPointsAsStrings += newPoint.mName + KeyValSeparator + newPoint.mlatlonString + ElementSeparator;
+                mSavedPointsAsStrings += newPoint.mName + KeyValSeparator + newPoint.mDataString + ElementSeparator;
                 SetConfig("saved_points", mSavedPointsAsStrings);
             }
         }
 
     }
 
-    public static Vector<MapPoint>  GetSavedPoints()
+    public static ArrayList<MapPoint>  GetSavedPoints()
     {
         return mMapPointList;
     }
-    private void LoadConfig() {
-        userConfigFile =  new File(mCtx.getFilesDir(), "cfg.txt");
-        if(userConfigFile.exists()) {
-            try {
-                FileInputStream stream = new FileInputStream(userConfigFile);
-            }
-            catch (FileNotFoundException ex)
-            {
-                try {
-                    userConfigFile.createNewFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        else
-        {
-            try {
-                userConfigFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+
+    public static ArrayList<MapPoint> getLocationHistory() {
+        return locationHistory;
+    }
+
+    private static void LoadConfig() {
+        if(!checkFileExist(configFileName))return;
         try {
-            FileInputStream  inputStream = mCtx.openFileInput(userConfigFile.getName());
+            FileInputStream  inputStream = mCtx.openFileInput(configFileName);
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
                 while(true) {
@@ -193,26 +282,7 @@ public class ReadFile {
                 {
                     SetConfig("ID","0");
                 }
-                String savedPoint = mConfig.get("saved_points");
-                if(savedPoint!=null)
-                if(savedPoint.length()>2) {
-                    String[] strPoints = savedPoint.split(ElementSeparator);
-                    if(strPoints.length>0)
-                    {
-                        for (String str:strPoints
-                             ) {
-                            String[] keylatlon = str.split(KeyValSeparator);
-                            if(keylatlon.length==2)
-                            {
-                                String name = keylatlon[0];
-                                String latlon = keylatlon[1];
-                                MapPoint newPoint = new MapPoint(name,latlon);
-                                mMapPointList.add(newPoint);
-                            }
 
-                        }
-                    }
-                }
 
             } catch (IOException e) {
                 // Error occurred when opening raw file for reading.
@@ -229,13 +299,13 @@ public class ReadFile {
         mConfig.put(key,value);
         isConfigChanged = true;
     }
-    public static void SaveConfig()
+    private static void SaveConfig()
     {
         if(!isConfigChanged)return;
         isConfigChanged = false;
         try {
             isConfigBusy = true;
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(mCtx.openFileOutput("cfg.txt", Context.MODE_PRIVATE));
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(mCtx.openFileOutput(configFileName, Context.MODE_PRIVATE));
             for (HashMap.Entry<String, String> element : mConfig.entrySet()) {
 
                 outputStreamWriter.write(element.getKey()+ConfigSeparator+element.getValue()+"\n");
@@ -254,10 +324,12 @@ public class ReadFile {
 
     }
     @RequiresApi(api = Build.VERSION_CODES.Q)
-    public void  ReadBigData()
+    public static  void  ReadBigData()
     {
         try {
             dataReady = false;
+            LoadSavedPoints();
+            LoadLocationHistory();
             readRiver();
             readDataSeaMap();
             if(Build.VERSION.SDK_INT>=23)readDensity();
@@ -267,7 +339,7 @@ public class ReadFile {
             return;
         }
     }
-    private void readDataSeaMap(){
+    private static void readDataSeaMap(){
         ObjectInputStream ois = null;
         int sizeList = 0, sizeVt = 0;
         Vector<Region> vtRegion = new Vector<>();
@@ -361,7 +433,7 @@ public class ReadFile {
         System.out.println("");
     }
 
-    private void readBouys(){
+    private static  void readBouys(){
         ObjectInputStream ois = null;
         try {
             InputStream is = mCtx.getAssets().open("buoys.bin");
@@ -386,7 +458,7 @@ public class ReadFile {
     }
 
 
-    private void readDensity(){
+    private static  void readDensity(){
         try {
             InputStream inputStream = mCtx.getAssets().open("density.bin");
             int max_row_count = 4000000;
@@ -481,7 +553,7 @@ public class ReadFile {
         }
         System.out.println("");*/
     }
-     private void addDensityPoint100(String key, int lat, int lon, short  value)
+     private static void addDensityPoint100(String key, int lat, int lon, short  value)
      {
          if(listDensity.containsKey(key))
          {
@@ -496,7 +568,7 @@ public class ReadFile {
 
      }
 
-    public void readRiver(){
+    public static void readRiver(){
         ObjectInputStream ois = null;
         int sizeList = 0;
         String key = "";
@@ -535,7 +607,7 @@ public class ReadFile {
         System.out.println("");
     }
 
-    public void readBaseRegions(){
+    public static void readBaseRegions(){
         ObjectInputStream ois = null;
         int sizeList = 0;
         String key = "";
@@ -574,7 +646,7 @@ public class ReadFile {
         System.out.println("");
     }
 
-    public void readBasePlgRivers(){
+    public static void readBasePlgRivers(){
         ObjectInputStream ois = null;
         int sizeList = 0;
         String key = "";
@@ -613,7 +685,7 @@ public class ReadFile {
         System.out.println("");
     }
 
-    public void getListPlaceOnText(){
+    public static  void getListPlaceOnText(){
         for (Map.Entry place : tTexts.entrySet()) {
             String key =(String) place.getKey();
             Vector<Text> namePlace = (Vector<Text>) place.getValue();
@@ -627,7 +699,7 @@ public class ReadFile {
         }
     }
 
-    private void readBorderMap(){
+    private static  void readBorderMap(){
         ObjectInputStream ois = null;
         int sizeList = 0;
         String key = "";
@@ -666,4 +738,9 @@ public class ReadFile {
         System.out.println("");
     }
 
+    public static void AddLocation(Location location) {
+        MapPoint point = new MapPoint((float)location.getLatitude(),(float)location.getLongitude(),"",5,0L);
+        if(locationHistory.size()<2000)
+        locationHistory.add(point);
+    }
 }

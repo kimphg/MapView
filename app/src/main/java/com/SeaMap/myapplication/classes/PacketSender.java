@@ -61,7 +61,7 @@ public class PacketSender extends Thread {
     }
     public void sendModelName()
     {
-        int id= ReadFile.getID();//mID;
+        int id= GlobalDataManager.getID();//mID;
 
         try {
             sendMsgToServer(getDeviceName(),hexStringToByteArray("5aa5"));
@@ -112,7 +112,7 @@ public class PacketSender extends Thread {
                 {
                     int ID = (Byte.toUnsignedInt(incomeBuffer[2])<<24) + (Byte.toUnsignedInt(incomeBuffer[3])<<16) + (Byte.toUnsignedInt(incomeBuffer[4])<<8) + Byte.toUnsignedInt(incomeBuffer[5]);
 
-                    if(ID==ReadFile.getID())
+                    if(ID== GlobalDataManager.getID())
                         sendModelName();
                     incomePacketPending = false;
                 }

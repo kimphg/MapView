@@ -5,11 +5,11 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.SeaMap.myapplication.R;
-import com.SeaMap.myapplication.view.SeaMap;
+import com.SeaMap.myapplication.view.HistoryMapView;
 
 public class CustomMap extends AppCompatActivity {
 
-    private SeaMap mMap;
+    private HistoryMapView mMap;
     @Override
     protected void onResume(){
         super.onResume();

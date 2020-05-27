@@ -84,7 +84,7 @@
 
             <ImageButton
                 android:id="@+id/ibt_others"
-                android:background="@drawable/icon_cancel"
+                android:background="@drawable/icon_menu"
                 android:layout_marginLeft="20dp"
                 android:layout_marginTop="20dp"
                 android:layout_width="wrap_content"
@@ -113,7 +113,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:layout_marginRight="20dp"
-                    android:background="@drawable/icon_layers"
+                    android:background="@drawable/icon_map_point"
                     android:stateListAnimator="@animator/animatorbtnimg"
                     />
             </GridLayout>
