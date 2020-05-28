@@ -46,10 +46,10 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 
 public class MapView extends View {
-    protected static double mlat = 20.0;//lattitude of the center of the screen
-    protected static double mlon = 106.5;//longtitude of the center of the screen
-    protected static float mScale = 10f;// 1km = mScale*pixcels
-    protected static float mOldScale = 10f;// 1km = mScale*pixcels
+    private static double mlat = 20.0;//lattitude of the center of the screen
+    private static double mlon = 106.5;//longtitude of the center of the screen
+    private static float mScale = 10f;// 1km = mScale*pixcels
+    private static float mOldScale = 10f;// 1km = mScale*pixcels
     //protected static float viewLat = 18.32f;//lattitude of the center of the screen
     //protected static float viewLon = 105.43f;//longtitude of the center of the screen
 //    protected static boolean MYLOCATION = false; // vi tri hien tai
@@ -62,10 +62,10 @@ public class MapView extends View {
     public boolean mapOutdated = true;
     private Timer timer1s;
     private boolean isBufferBusy = false;
-    double buf_x=0,buf_y=0;
-    private Location shiplocation = new Location("GPS");
+    float buf_x=0,buf_y=0;
+    private static Location shiplocation = new Location("GPS");
 
-    public boolean isPointMode = false;
+    public static boolean isPointMode = false;
 
     private Bitmap bufferBimap;
     public Canvas canvasBuf = new Canvas();
@@ -489,7 +489,7 @@ public class MapView extends View {
     void DrawShip(float lat,float lon, float cogDeg,Canvas canvas)
     {
         PointF p1 = ConvWGSToScrPoint(lon,lat);
-        p1.offset((float)buf_x, (float)buf_y);
+        //p1.offset((float)buf_x, (float)buf_y);
         Path pat = new Path(pathOrientationShip);
         Matrix matrix = new Matrix();
         matrix.setRotate(cogDeg, 0, 0);
@@ -501,7 +501,7 @@ public class MapView extends View {
     void DrawSavedPoint(MapPoint point,Canvas canvas)
     {
         PointF p1 = ConvWGSToScrPoint(point.mlon,point.mlat);
-        p1.offset((float)buf_x, (float)buf_y);
+        //p1.offset((float)buf_x, (float)buf_y);
         switch (point.mType)
         {
             case 0:
@@ -556,7 +556,7 @@ public class MapView extends View {
 
         {
             PointF p1 = ConvWGSToScrPoint((float) shiplocation.getLongitude(), (float) shiplocation.getLatitude());
-            p1.offset(xoffset, yoffset);
+//            p1.offset(xoffset, yoffset);
             boolean shipInsideScreen = (p1.x > 0) && (p1.y > 0) && (p1.x < scrCtX * 2) && (p1.y < scrCtY * 2);
 
 
@@ -626,7 +626,7 @@ public class MapView extends View {
                 objectPaint.setColor(Color.argb(150, 70, 50, 30));
                 for (Location ship : locationHistory) {
                     PointF pship = ConvWGSToScrPoint((float) ship.getLongitude(), (float) ship.getLatitude());
-                    canvas.drawPoint(pship.x+xoffset, pship.y + yoffset, objectPaint);
+                    canvas.drawPoint(pship.x, pship.y , objectPaint);
                 }
             }
         if(DIRECTIONS) {
@@ -635,7 +635,7 @@ public class MapView extends View {
             Paint searchPl = new Paint();
             searchPl.setColor(Color.RED);
             searchPl.setStrokeWidth(3);
-            float pointf[] = {p1.x+xoffset, p1.y+yoffset, p2.x+xoffset, p2.y+yoffset};
+            float pointf[] = {p1.x, p1.y, p2.x, p2.y};
             canvas.drawLines(pointf, searchPl);
             SEARCHPLACE = true;
         }
@@ -648,10 +648,10 @@ public class MapView extends View {
             Paint searchPl = new Paint();
             searchPl.setTextSize(scrCtX/12);
             searchPl.setColor(Color.RED);
-            canvas.drawBitmap(mbitmap, p1.x - wight/2+xoffset, p1.y - height+yoffset, searchPl);
+            canvas.drawBitmap(mbitmap, p1.x - wight/2, p1.y - height, searchPl);
             float[] distance = {0};
             Location.distanceBetween(shiplocation.getLatitude(),shiplocation.getLongitude(),searchPlace_lat,searchPlace_lon,distance);
-            canvas.drawText(String.format("%.1f",distance[0]/1000.0)+"km",p1.x+xoffset, p1.y+yoffset+scrCtX/12,searchPl);
+            canvas.drawText(String.format("%.1f",distance[0]/1000.0)+"km",p1.x, p1.y+scrCtX/12,searchPl);
         }
 
         for (MapPoint mPoint: GlobalDataManager.GetSavedPoints()) {
@@ -665,7 +665,7 @@ public class MapView extends View {
     }
     public void pushBuffer()
     {
-        PointF newLatLon = ConvScrPointToWGS((int) (scrCtX - buf_x), (int) (scrCtY - buf_y));
+        PointF newLatLon = ConvScrPointToWGS((int) (scrCtX ), (int) (scrCtY ));
         mlat = newLatLon.y;
         mlon = newLatLon.x;
         buf_x = 0;
@@ -823,14 +823,15 @@ public class MapView extends View {
         s.set((float )(mScale*((m_Long - mlon) * 111.31949079327357)*cos(refLat))+(float )scrCtX,
                 (float)(mScale*((mlat- (m_Lat)) * 111.132954))+(float )scrCtY
         );
+        s.offset(buf_x,buf_y);
         return s;
     }
 
     public PointF ConvScrPointToWGS(int x,int y)
     {
-        double olat  = mlat -  (float)(((y-scrCtY)/mScale)/(111.132954f));
+        double olat  = mlat -  (float)(((y-buf_y-scrCtY)/mScale)/(111.132954f));
         double refLat = (mlat +(olat))*0.00872664625997f;//3.14159265358979324/180.0/2;
-        double olon = (x-scrCtX)/mScale/(111.31949079327357f*(float)cos(refLat))+ mlon;
+        double olon = (x-buf_x-scrCtX)/mScale/(111.31949079327357f*(float)cos(refLat))+ mlon;
         return new PointF((float)olon,(float)olat);
     }
     List<Location> nearbyShips = new LinkedList<Location>();

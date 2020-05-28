@@ -3,6 +3,7 @@ package com.SeaMap.myapplication.view;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PointF;
 import android.os.Build;
 
@@ -19,10 +20,13 @@ import static java.lang.Math.abs;
 public class HistoryMapView extends MapView {
 
     ArrayList<MapPoint> pointList = new ArrayList<>();
-
     public HistoryMapView(Context context) {
         super(context);
         pointList = GlobalDataManager.getLocationHistory();
+        objectPaint.setStrokeWidth(Math.max(2, pointSize ));
+        objectPaint.setColor(Color.argb(150, 50, 10, 0));
+        objectPaint.setTextSize(pointSize*6);
+        objectPaint.setStyle(Paint.Style.FILL);
     }
     public void SetTimePeriod(long begin,long end){
         pointList = GlobalDataManager.getLocationHistory();
@@ -31,20 +35,21 @@ public class HistoryMapView extends MapView {
     @Override
     public void onDraw(Canvas canvas){
         super.onDraw(canvas);
+        PointF tempPoint=null;
+        objectPaint.setColor(Color.argb(150, 50, 10, 0));
         for (MapPoint point:pointList
              ) {
-            DrawData(canvas,point);
+            if(tempPoint==null)tempPoint = ConvWGSToScrPoint(point.mlon,point.mlat);
+            else
+            {
+                PointF p1 = ConvWGSToScrPoint(point.mlon,point.mlat);
+                canvas.drawLine(p1.x,p1.y,tempPoint.x,tempPoint.y,objectPaint);
+                tempPoint=p1;
+            }
         }
 
     }
-    private void DrawData(Canvas canvas,MapPoint point)
-    {
-        PointF p1 = ConvWGSToScrPoint(point.mlon,point.mlat);
-        p1.offset((float)buf_x, (float)buf_y);
-        objectPaint.setColor(Color.argb(160, 20,200 , 20));
-        drawCross(p1,objectPaint,canvas);
-        canvas.drawText(point.mName,p1.x+pointSize*5,p1.y,objectPaint);
-    }
+
 
 
 }

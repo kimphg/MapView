@@ -44,6 +44,7 @@ import android.widget.Toast;
 
 import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.Coordinate;
+import com.SeaMap.myapplication.classes.MapPoint;
 import com.SeaMap.myapplication.classes.Places;
 import com.SeaMap.myapplication.classes.GlobalDataManager;
 import com.SeaMap.myapplication.classes.Route;
@@ -207,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         if (curLocation != null) {
                             curBearingText.setText(String.valueOf((int) newLocation.getBearing()));
                             MapView.azimuthShip = newLocation.getBearing();
-                            map.shipMove = true;
+                            map.shipMove = speedKnots>1.0;
                         }
                         curLocation = newLocation;
                         map.setLonLatMyLocation(
@@ -218,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     }
                     else {
                         curBearingText.setText("");
-                        map.shipMove = false;
+
                     }
 
 //                    if ((nearbyShips != null) && (!nearbyShips.isEmpty())) {
@@ -587,13 +588,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 switch (CHOOSE_BTN_LAYERS) {
                     case 0: {
                         Toast.makeText(MainActivity.this, "Nhấn vào (+) ở tâm bản đồ để thêm điểm", Toast.LENGTH_LONG).show();
-                        map.isPointMode = true;
+                        MapView.isPointMode = true;
                         CHOOSE_BTN_LAYERS = 1;
                         break;
                     }
                     case 1: {
                         Toast.makeText(MainActivity.this, "Đã tắt chế độ lưu điểm", Toast.LENGTH_LONG).show();
-                        map.isPointMode = false;
+                        MapView.isPointMode = false;
                         CHOOSE_BTN_LAYERS = 0;
                         break;
                     }

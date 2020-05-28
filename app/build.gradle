@@ -7,8 +7,8 @@ android {
         applicationId "com.SeaMap.myapplication"
         minSdkVersion 15
         targetSdkVersion 29
-        versionCode 47
-        versionName "1.2.20"
+        versionCode 49
+        versionName "1.2.22"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
