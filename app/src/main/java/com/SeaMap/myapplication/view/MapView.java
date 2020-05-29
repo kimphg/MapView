@@ -584,14 +584,9 @@ public class MapView extends View {
                 Location scrLocation = new Location("GPS");
                 scrLocation.setLatitude(mlat);
                 scrLocation.setLongitude(mlon);
-                PointF p2 = ConvWGSToScrPoint((float) scrLocation.getLongitude(), (float) scrLocation.getLatitude());
-                //p2.offset(xoffset, yoffset);
+                PointF p2 = new PointF(scrCtX,scrCtY);
                 objectPaint.setColor(Color.argb(180, 200, 50 , 10));
                 drawCross(p2, objectPaint,canvas);
-                //locationPaint.setStyle(Paint.Style.STROKE);
-
-                //PointF p3 = ConvWGSToScrPoint((float) shiplocation.getLongitude(), (float) shiplocation.getLatitude());
-                //PointF p4 = new PointF(p1.x + xoffset, p1.y + yoffset);
                 float distance = scrLocation.distanceTo(shiplocation);
                 float bearing = shiplocation.bearingTo(scrLocation);
                 if(bearing<0)bearing+=360;
@@ -602,7 +597,6 @@ public class MapView extends View {
                 p3.offset(0, pointSize * 7);
                 String dms=Coordinate.decimalToDMS(mlon,mlat);
                 canvas.drawText(dms, p3.x, p3.y, objectPaint);
-
                 objectPaint.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
                 canvas.drawLine(p1.x, p1.y, p2.x, p2.y , objectPaint);
                 objectPaint.setPathEffect(null);

@@ -100,8 +100,8 @@ public class GpsService extends Service {
                 sendBroadcast(intent);
                 sendOwnLocation(curLocation);
                 //save location to file
-                if(curLocation.distanceTo(lastSavedLocation)>50) {
-                    if(curLocation.getAccuracy()<80) {
+                if(curLocation.distanceTo(lastSavedLocation)>100) {
+                    if(curLocation.getAccuracy()<50) {
 //                        locationHistory.add(newLocation);
 //                        while (locationHistory.size() > 50) locationHistory.remove(0);
                         //String time = String.valueOf(System.currentTimeMillis());

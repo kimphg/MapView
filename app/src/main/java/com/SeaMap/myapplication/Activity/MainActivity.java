@@ -261,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             //Log.e("Compass MainActivity", "Registerered for ORIENTATION Sensor");
             Toast.makeText(this, "Sensor not found",
                     Toast.LENGTH_LONG).show();
-            finish();
+            //finish();
         }
     }
 
