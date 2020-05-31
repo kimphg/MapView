@@ -55,7 +55,7 @@ public class MapView extends View {
 //    protected static boolean MYLOCATION = false; // vi tri hien tai
     private static boolean SEARCHPLACE = false;
     private static boolean DIRECTIONS = false;
-
+    private static float waveHeight = 0;
     public static float azimuthCompass = 0;
     public static float azimuthShip = 0;
 

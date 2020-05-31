@@ -54,7 +54,7 @@ public class GlobalDataManager {
     public static boolean dataReady = false;
 //    private static File userConfigFile;
     private  static Context mCtx;
-    private  static LinkedList<MapPoint> locationHistory = new LinkedList<MapPoint>();
+    private  static List<MapPoint> locationHistory =  Collections.synchronizedList( new LinkedList<MapPoint>());
     public static void Init(Context context){
         mCtx = context;
         //readBoat();
@@ -105,7 +105,6 @@ public class GlobalDataManager {
             for (MapPoint point:locationHistory)
             {
                 objectOut.writeObject(point);
-
             }
 
             objectOut.close();
@@ -282,7 +281,7 @@ public class GlobalDataManager {
         return mMapPointList;
     }
 
-    public static LinkedList<MapPoint> getLocationHistory() {
+    public static List<MapPoint> getLocationHistory() {
         return locationHistory;
     }
 
@@ -763,11 +762,11 @@ public class GlobalDataManager {
 
     public static void AddLocation(Location location) {
         MapPoint point = new MapPoint((float)location.getLatitude(),(float)location.getLongitude(),"",5,0L);
-        if(locationHistory.size()<5000)
+        if(locationHistory.size()<10000)
         locationHistory.add(point);
         else
         {
-            locationHistory.removeFirst();
+            locationHistory.remove(0);
             locationHistory.add(point);
         }
     }

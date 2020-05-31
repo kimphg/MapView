@@ -44,7 +44,6 @@ import android.widget.Toast;
 
 import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.Coordinate;
-import com.SeaMap.myapplication.classes.MapPoint;
 import com.SeaMap.myapplication.classes.Places;
 import com.SeaMap.myapplication.classes.GlobalDataManager;
 import com.SeaMap.myapplication.classes.Route;
@@ -136,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private TextView curLocationText;
     private TextView curVelocityText;
     private TextView curBearingText;
-
+    private  TextView waveHeightText;
     private Route curRoute;
     int etaToNextDestination = -1;
     boolean arrived;
@@ -297,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         curLocationText = findViewById(R.id.curLocationText);
         curVelocityText = findViewById(R.id.curVelocityText);
         curBearingText = findViewById(R.id.curBearingText);
-
+        waveHeightText = findViewById(R.id.waveHeightText);
         toNextDestinationDistanceText = findViewById(R.id._distance);
         etaToNextDestinationText = findViewById(R.id._timeRun);
         ///
@@ -333,15 +332,50 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             }
             float[] mGravity;
             float[] mGeomagnetic;
-            float azimut;
+            float azimuth;
+            float absGravity;
+            float meanGravity = 9.81f;
+            float speed = 0;
+            float meanSpeed = 0;
+            long oldTime = System.currentTimeMillis();
+            float alt = 0,altMax=-1000,altMin=1000;
+            int initTime = 0;
             @Override
             public void onSensorChanged(SensorEvent event) {
+                //get system time diff
+                float dTimeSec = ((float) (System.currentTimeMillis()-oldTime))/1000.0f;
+                oldTime = System.currentTimeMillis();
+                //update values
                 if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
                     mGravity = event.values;
 
                 if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
                     mGeomagnetic = event.values;
-
+                if(mGravity!=null)
+                {
+                    initTime++;
+                    //acceleration:
+                    absGravity = (float) Math.sqrt(mGravity[0]*mGravity[0]+mGravity[1]*mGravity[1]+mGravity[2]*mGravity[2]);
+                    float dGravity = absGravity-meanGravity;
+                    meanGravity +=(dGravity)/2000.0f;
+                    speed+=dGravity*dTimeSec;
+                    meanSpeed+=(speed-meanSpeed)/100.0f;
+                    if(initTime>1000){
+                    alt+=(speed-meanSpeed)*dTimeSec;
+                    if(alt<altMin){
+                        altMin=alt;
+                        altMin*=0.95;
+                        alt*=0.95f;
+                    }
+                    if(alt>altMax){
+                        altMax=alt;
+                        altMax*=0.95;
+                        alt*=0.95f;
+                    }
+                    float dAtl = altMax-altMin;
+                        waveHeightText.setText(String.format("%.1fm",dAtl));
+                    }
+                }
                 if (mGravity != null && mGeomagnetic != null) {
                     float R[] = new float[9];
                     float I[] = new float[9];
@@ -349,7 +383,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         // orientation contains azimut, pitch and roll
                         float orientation[] = new float[3];
                         SensorManager.getOrientation(R, orientation);
-                        float dazi = orientation[0]-azimut;
+                        float dazi = orientation[0]- azimuth;
                         if(dazi>3.1415926535f)
                         {
                             dazi = 3.1415926535f*2-dazi;
@@ -358,8 +392,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         {
                             dazi = 3.1415926535f*2+dazi;
                         }
-                        azimut += (dazi)/5.0f;
-                        map.updateAzimuthCompass(azimut);
+                        azimuth += (dazi)/10.0f;
+                        map.updateAzimuthCompass(azimuth);
                     }
                 }
             }

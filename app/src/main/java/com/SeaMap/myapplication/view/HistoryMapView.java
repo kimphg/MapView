@@ -12,11 +12,11 @@ import androidx.annotation.RequiresApi;
 import com.SeaMap.myapplication.classes.GlobalDataManager;
 import com.SeaMap.myapplication.classes.MapPoint;
 
-import java.util.LinkedList;
+import java.util.List;
 
 public class HistoryMapView extends MapView {
 
-    private LinkedList<MapPoint> pointList;
+    private List<MapPoint> pointList;
     public HistoryMapView(Context context) {
         super(context);
         pointList = GlobalDataManager.getLocationHistory();
