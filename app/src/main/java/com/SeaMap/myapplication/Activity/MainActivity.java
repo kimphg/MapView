@@ -364,13 +364,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     alt+=(speed-meanSpeed)*dTimeSec;
                     if(alt<altMin){
                         altMin=alt;
-                        altMin*=0.95;
-                        alt*=0.95f;
+                        altMin*=0.99;
+                        alt*=0.99f;
                     }
                     if(alt>altMax){
                         altMax=alt;
-                        altMax*=0.95;
-                        alt*=0.95f;
+                        altMax*=0.99;
+                        alt*=0.99f;
                     }
                     float dAtl = altMax-altMin;
                         waveHeightText.setText(String.format("%.1fm",dAtl));
