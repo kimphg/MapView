@@ -353,28 +353,30 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     mGeomagnetic = event.values;
                 if(mGravity!=null)
                 {
-                    initTime++;
+
                     //acceleration:
                     absGravity = (float) Math.sqrt(mGravity[0]*mGravity[0]+mGravity[1]*mGravity[1]+mGravity[2]*mGravity[2]);
                     float dGravity = absGravity-meanGravity;
                     meanGravity +=(dGravity)/2000.0f;
                     speed+=dGravity*dTimeSec;
                     meanSpeed+=(speed-meanSpeed)/100.0f;
-                    if(initTime>1000){
-                    alt+=(speed-meanSpeed)*dTimeSec;
-                    if(alt<altMin){
-                        altMin=alt;
-                        altMin*=0.99;
-                        alt*=0.99f;
+                    if(initTime>500) {
+                        if(Math.abs(alt)>50.0f)alt/=(alt/50.0f);
+                        alt += (speed - meanSpeed) * dTimeSec;
+                        if (alt < altMin) {
+                            altMin = alt;
+                            altMin *= 0.95f;
+                            alt *= 0.95f;
+                        }
+                        if (alt > altMax) {
+                            altMax = alt;
+                            altMax *= 0.95f;
+                            alt *= 0.95f;
+                        }
+                        float dAtl = altMax - altMin;
+                        waveHeightText.setText(String.format("%.1fm", dAtl));
                     }
-                    if(alt>altMax){
-                        altMax=alt;
-                        altMax*=0.99;
-                        alt*=0.99f;
-                    }
-                    float dAtl = altMax-altMin;
-                        waveHeightText.setText(String.format("%.1fm",dAtl));
-                    }
+                    else initTime++;
                 }
                 if (mGravity != null && mGeomagnetic != null) {
                     float R[] = new float[9];
@@ -640,7 +642,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
     //Todo ------------------------------------------//
 
-
+    private void SetViewMode()
     //Todo : Mo drawer
     /*
      * GOm cac su kien an item
@@ -668,7 +670,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         curRoute = new Route();
 
                         if(routingModeView==null)routingModeView = new RoutingModeView(getApplicationContext(), map);
-
+                        frameLayout_map.findViewById(R.id.frame_layout_map).sho
                         frameLayout_map.addView(routingModeView);
                         route_layout.setVisibility(View.VISIBLE);
                         imageButtonMenu.setBackgroundResource(R.drawable.icon_back);
