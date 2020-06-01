@@ -3,21 +3,29 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rl_rootHeader"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="20dp">
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tên điểm bản đồ:"/>
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+
+        android:layout_below="@+id/textView1"
         android:id="@+id/rl_Header">
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/text_input_name_map_point"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/text_input"
-                android:hint="Nhấn vào đây để nhập" />
+                android:hint="Tên điểm bản đồ" />
         </com.google.android.material.textfield.TextInputLayout>
     </RelativeLayout>
     <Button
@@ -25,7 +33,7 @@
         android:onClick="OnAccept"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/rl_Header"
+        android:layout_below="@+id/radio_type"
         android:text="@android:string/ok"
         />
     <Button
@@ -36,4 +44,45 @@
         android:layout_below="@+id/buttonOK"
         android:text="@android:string/cancel"
         />
+
+    <RadioGroup
+        android:id="@+id/radio_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+
+        android:layout_below="@+id/textView"
+        >
+
+        <RadioButton
+            android:id="@+id/radioButton"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Điểm an toàn" />
+
+        <RadioButton
+            android:id="@+id/radioButton2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Điểm nguy hiểm" />
+
+        <RadioButton
+            android:id="@+id/radioButton3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Điểm đánh cá" />
+        <RadioButton
+            android:id="@+id/radioButton4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Điểm mốc" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Thể loại:"
+        android:layout_below="@+id/rl_Header"/>
 </RelativeLayout>

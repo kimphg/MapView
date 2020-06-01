@@ -21,7 +21,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.TextInput"></activity>
+        <activity android:name=".Activity.MapPointEditor"></activity>
         <activity
             android:name=".Activity.ObjectEditActivity"
             android:label="@string/title_activity_object_edit" />

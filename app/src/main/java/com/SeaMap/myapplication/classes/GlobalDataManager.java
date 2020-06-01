@@ -241,6 +241,17 @@ public class GlobalDataManager {
         }
         SetConfig("saved_points", mSavedPointsAsStrings);
     }
+    public static void replaceMapPoint(String name, MapPoint newpoint)
+    {
+        for(MapPoint point:mMapPointList)
+        {
+            if(point.mName.equals(name))
+            {
+                point.SetPoint(newpoint);
+                return;
+            }
+        }
+    }
     public static void AddToSavedPoints(MapPoint newPoint )//float mlat, float mlon,String name)
     {
         if(newPoint.mType ==4)
@@ -770,5 +781,13 @@ public class GlobalDataManager {
             locationHistory.remove(0);
             locationHistory.add(point);
         }
+    }
+
+    public static MapPoint getMapPoint(String mapPointname) {
+        for(MapPoint point:mMapPointList)
+        {
+            if(point.mName.equals(mapPointname))return point;
+        }
+        return null;
     }
 }

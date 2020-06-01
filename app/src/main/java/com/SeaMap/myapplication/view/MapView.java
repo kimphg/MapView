@@ -25,7 +25,7 @@ import android.view.View;
 import androidx.annotation.RequiresApi;
 
 import com.SeaMap.myapplication.Activity.MainActivity;
-import com.SeaMap.myapplication.Activity.TextInput;
+import com.SeaMap.myapplication.Activity.MapPointEditor;
 import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.Coordinate;
 import com.SeaMap.myapplication.classes.MapPoint;
@@ -754,7 +754,7 @@ public class MapView extends View {
     }
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void EditMapPoint(MapPoint selectedMapPoint){
-            Intent intent = new Intent(mCtx.getApplicationContext(), TextInput.class);
+            Intent intent = new Intent(mCtx.getApplicationContext(), MapPointEditor.class);
             intent.putExtra("MapPoint",selectedMapPoint.mName);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mCtx.getApplicationContext().startActivity(intent);
