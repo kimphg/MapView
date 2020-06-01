@@ -20,15 +20,14 @@ public class Places extends BaseAdapter{
     LayoutInflater inflter;
     List<Text> mData;
     ArrayList<Text> temp;
-    public Places(Context context, List<Text> list){
+    public Places(Context context){
         super();
         this.context = context;
         //mData = getNameFromText(list);
         //places = list;
-        mData = list;
+        LoadData();
         inflter = LayoutInflater.from(context);
-        temp = new ArrayList<Text>();
-        temp.addAll(mData);
+
     }
 
     public List<String> getNameFromText(List<Text> list){
@@ -38,7 +37,13 @@ public class Places extends BaseAdapter{
         }
         return listName;
     }
+    public void LoadData()
+    {
+        mData = GlobalDataManager.getListPlaceOnText();
 
+        temp = new ArrayList<Text>();
+        temp.addAll(mData);
+    }
     public class ViewHolder {
         TextView name;
     }

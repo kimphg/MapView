@@ -3,7 +3,6 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.*;
 import android.content.Context;
-import android.graphics.PointF;
 import android.location.Location;
 import android.os.Build;
 
@@ -707,7 +706,8 @@ public class GlobalDataManager {
         //System.out.println("");
     }
 
-    public static  void getListPlaceOnText(){
+    public static List<Text> getListPlaceOnText(){
+        if(ListPlace.size()==0)
         for (Map.Entry place : tTexts.entrySet()) {
             String key =(String) place.getKey();
             Vector<Text> namePlace = (Vector<Text>) place.getValue();
@@ -719,6 +719,7 @@ public class GlobalDataManager {
                 }
             }
         }
+        return ListPlace;
     }
 
     private static  void readBorderMap(){

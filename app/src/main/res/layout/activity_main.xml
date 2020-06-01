@@ -17,15 +17,21 @@
             android:layout_height="match_parent"
             >
 
-
+        </FrameLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+        >
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="233dp"
-                android:layout_height="84dp"
+                android:id="@+id/frame_layout_ship_info"
+                android:layout_width="250dp"
+                android:layout_height="80dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginTop="70dp"
                 android:alpha="1"
-                android:background="#A00097A7">
+                android:alwaysDrawnWithCache="true"
+                android:background="#D076CFDA">
 
                 <TextView
                     android:id="@+id/locationText"
@@ -85,9 +91,10 @@
                     android:textAlignment="gravity"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintVertical_bias="0.33"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.33" />
+
                 <TextView
                     android:id="@+id/curLocationText"
                     android:layout_width="wrap_content"
@@ -101,6 +108,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintVertical_bias="0.0" />
+
                 <TextView
                     android:id="@+id/curBearingText"
                     android:layout_width="wrap_content"
@@ -131,7 +139,6 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </FrameLayout>
-
         <include layout="@layout/activity_search_result"
                 android:id="@+id/layout_search_result"
             android:visibility="invisible"

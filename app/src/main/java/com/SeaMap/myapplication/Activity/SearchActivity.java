@@ -38,7 +38,7 @@ public class SearchActivity extends FragmentActivity implements SearchView.OnQue
 
         list = GlobalDataManager.ListPlace;
 
-        adapter = new Places(this,list);
+        adapter = new Places(this);
         listView.setAdapter(adapter);
 
         imgbtback.setOnClickListener(new View.OnClickListener(){
