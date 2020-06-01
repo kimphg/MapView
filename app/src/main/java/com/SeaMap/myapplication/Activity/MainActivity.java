@@ -50,7 +50,7 @@ import com.SeaMap.myapplication.classes.Route;
 import com.SeaMap.myapplication.classes.StableArrayAdapter;
 import com.SeaMap.myapplication.object.Text;
 import com.SeaMap.myapplication.services.GpsService;
-import com.SeaMap.myapplication.view.RoutingModeView;
+import com.SeaMap.myapplication.view.RoutingView;
 import com.SeaMap.myapplication.view.MapView;
 import com.SeaMap.myapplication.view.HistoryMapView;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -75,10 +75,30 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public static final int REQUEST_CODE = 1004;
 
     //Todo: khi click
-    public static int CHOOSE_BTN_LAYERS = 0;
+//    public static int isAddingMapPoint = 0;
     public static int CHOOSE_DISTANE_OR_ROUTE = 0;
     //-1: reset 0: search 1:direction
     public static int CHOOSE_SEARCH_OR_DIRECTION = -1;
+
+    public void OnClickDirection(View view) {
+        if(REQUEST_SEARCH == 1){
+            if(CHOOSE_SEARCH_OR_DIRECTION == 0) {
+                //float
+                //Khong can vi tri vi da biet vi tri search trc do
+                map.myLocationToDirection(0, 0, 0);
+                String name_first_Point = first_Point.getText().toString();
+                second_Point.setText(name_first_Point);
+                CHOOSE_SEARCH_OR_DIRECTION = 1;
+                setSearch_Route_result_layout("Vị trí của tôi", name_first_Point);
+            }
+        }
+        else {
+            CHOOSE_SEARCH_OR_DIRECTION = 1;
+            Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
+            startActivityForResult(searchIntent, REQUEST_INPUT);
+        }
+    }
+
     //
     private enum ViewMode {
         NORMAL_VIEW_MODE, NAVI_VIEW_MODE,HIS_VIEW_MODE, MES_VIEW_MODE, LAW_VIEW_MODE, HELP_VIEW_MODE;
@@ -97,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private String lonlat[];
 
     //Todo: cac view hien thi
-    public static RoutingModeView routingModeView;
+    public static RoutingView routingModeView;
     public MapView map;
     private NavigationView navigationView;
 
@@ -107,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private Places places;
 
     //Todo: Cac nut an va nhan su kien
-    private ImageButton getCurLocationButton, imageButtonMenu, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, addDestinationButton, imageBtnLayer, imageBtnBackRoute;
+    private ImageButton getCurLocationButton, imageButtonMenu, imageBtnSearch, imageButtonDirection, imageBtnUp_Of_Route, addDestinationButton, imageBtnBackRoute;
     private GoogleApiClient googleApiClient;
 
     //Todo : layout main va layout route
@@ -119,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     //Todo: khai bao cho route
     private StableArrayAdapter arrayAdapter;
-    private List<Text> route;
+    private List<Text> routeTextsList = new ArrayList<Text>();;
     private List<String> namePlaces;
     //listview search trong phan info_route;
     private ListView listPlaceSeacrh, routesListView;
@@ -138,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private TextView curBearingText;
     private  TextView waveHeightText;
     View ship_info;
-    private Route curRoute;
+    private Route curRoute= new Route();;
     int etaToNextDestination = -1;
     boolean arrived;
     boolean isCalculating = false;
@@ -317,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         onDistancePTPView();
         navigationDrawer();
         onRoute();
-        onDensityView();
+//        onDensityView();
         onScreecBtn_Direction_Search();
 
 
@@ -435,43 +455,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         });
     }
-    public void EditMapPoint()
-    {
-        Intent intent = new Intent(getApplicationContext(), ObjectEditActivity.class);
-        startActivityForResult(intent, REQUEST_INPUT);
-    }
+
     private void onScreecBtn_Direction_Search() {
-        imageButtonDirection = findViewById(R.id.ic_btn_directions);
-        imageButtonDirection.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(REQUEST_SEARCH == 1){
-                    if(CHOOSE_SEARCH_OR_DIRECTION == 0) {
-                        //float
-                        //Khong can vi tri vi da biet vi tri search trc do
-                        map.myLocationToDirection(0, 0, 0);
-                        String name_first_Point = first_Point.getText().toString();
-                        second_Point.setText(name_first_Point);
-                        CHOOSE_SEARCH_OR_DIRECTION = 1;
-                        setSearch_Route_result_layout("Vị trí của tôi", name_first_Point);
-                    }
-                }
-                else {
-                        CHOOSE_SEARCH_OR_DIRECTION = 1;
-                        Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
-                        startActivityForResult(searchIntent, REQUEST_INPUT);
-                }
-            }
-        });
+//        imageButtonDirection = findViewById(R.id.ic_btn_directions);
+//        imageButtonDirection.setOnClickListener(v -> {
+
+//        });
 
         imageBtnSearch = findViewById(R.id.ic_btn_search);
-        imageBtnSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CHOOSE_SEARCH_OR_DIRECTION = 0;
-                Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
-                startActivityForResult(searchIntent, REQUEST_INPUT);
-            }
+        imageBtnSearch.setOnClickListener(v -> {
+            CHOOSE_SEARCH_OR_DIRECTION = 0;
+            Intent searchIntent = new Intent(getApplicationContext(), SearchActivity.class);
+            startActivityForResult(searchIntent, REQUEST_INPUT);
         });
         ///-----------------------------------//
 
@@ -505,7 +500,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Text place = places.getItem(i);
-                route.add(place);
+                routeTextsList.add(place);
                 namePlaces.add(place.getName());
                 arrayAdapter.notifyDataSetChanged();
 
@@ -520,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     runEtaTimer();
                 }
                 //thiet lap lai va ve
-                routingModeView.setListCoor(route);
+                routingModeView.setListCoor(routeTextsList);
                 routingModeView.invalidate();
             }
         });
@@ -529,14 +524,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                route.remove(i);
+                routeTextsList.remove(i);
                 namePlaces.remove(i);
 
                 curRoute.route.remove(i);
 
                 arrayAdapter.notifyDataSetChanged();
                 // thiet lap lai va ve
-                routingModeView.setListCoor(route);
+                routingModeView.setListCoor(routeTextsList);
                 routingModeView.invalidate();
                 map.mapOutdated = true;
                 runEtaTimer();
@@ -604,11 +599,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     text.setName(name_place);
                     text.setCoordinate(coor);
 
-                    route.add(text);
+                    routeTextsList.add(text);
                     namePlaces.add(name_place);
                     arrayAdapter.notifyDataSetChanged();
 
-                    routingModeView.setListCoor(route);
+                    routingModeView.setListCoor(routeTextsList);
                     routingModeView.invalidate();
                     break;
                 }
@@ -619,40 +614,39 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
 
     //Todo : Khoi tao density va hien view khi an layer
-    public void onDensityView() {
-        imageBtnLayer = findViewById(R.id.ic_btn_layers);
-        imageBtnLayer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (CHOOSE_BTN_LAYERS) {
-                    case 0: {
-                        Toast.makeText(MainActivity.this, "Nhấn vào (+) ở tâm bản đồ để thêm điểm", Toast.LENGTH_LONG).show();
-                        MapView.isPointMode = true;
-                        CHOOSE_BTN_LAYERS = 1;
-                        break;
-                    }
-                    case 1: {
-                        Toast.makeText(MainActivity.this, "Đã tắt chế độ lưu điểm", Toast.LENGTH_LONG).show();
-                        MapView.isPointMode = false;
-                        CHOOSE_BTN_LAYERS = 0;
-                        break;
-                    }
-                    default:
-                        break;
-                }
-            }
-        });
+//    public void onDensityView() {
+//        imageBtnLayer = findViewById(R.id.ic_btn_add_map_point);
+//        imageBtnLayer.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//            }
+//        });
+//    }
+    public void OnClickAddMapPoint(View v)
+    {
+        if (MapView.isPointMode == false) {
+            Toast.makeText(MainActivity.this, "Nhấn vào (+) ở tâm bản đồ để thêm điểm,\nnhấn vào điểm đã tạo để thay đổi", Toast.LENGTH_LONG).show();
+            MapView.isPointMode = true;
+        } else {
+            Toast.makeText(MainActivity.this, "Đã tắt chế độ lưu điểm", Toast.LENGTH_LONG).show();
+            MapView.isPointMode = false;
+        }
     }
-    //Todo ------------------------------------------//
-
+//    //Todo ------------------------------------------//
+//    private void onTextInput()
+//    {
+//        Intent textInputIntent = new Intent(MainActivity.this,TextInput.class);
+//        startActivityForResult(textInputIntent, REQUEST_INPUT);
+//    }
     private void SetViewMode(ViewMode mode)
     {
         switch (mode) {
             case NAVI_VIEW_MODE:
 
-                curRoute = new Route();
 
-                if(routingModeView==null)routingModeView = new RoutingModeView(getApplicationContext(), map);
+
+                if(routingModeView==null)routingModeView = new RoutingView(getApplicationContext(), map);
                 //frameLayout_map.findViewById(R.id.frame_layout_map).sho
                 frameLayout_map.addView(routingModeView);
                 route_layout.setVisibility(View.VISIBLE);
@@ -684,14 +678,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 addDestinationButton.setVisibility(View.INVISIBLE);
                 frameLayout_map.removeAllViews();
                 frameLayout_map.addView(map);
-
                 route_layout.setVisibility(View.INVISIBLE);
                 route_layout.getLayoutParams().height = heightScrUse * 2 / 5;
                 route_layout.requestLayout();
                 ship_info.setVisibility(View.VISIBLE);
                 //dat lai gia tri ban dau
                 map.mapOutdated = true;
-                namePlaces.clear();
                 //route.clear();
                 arrayAdapter.notifyDataSetChanged();
 
@@ -725,11 +717,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         Toast.makeText(MainActivity.this, "Nhấn vào (+) ở tâm bản đồ để thêm điểm lộ trình", Toast.LENGTH_LONG).show();
                         break;
                     }
-                    case R.id.nav_tinhkhoangcach: {
-                        SetViewMode(ViewMode.NORMAL_VIEW_MODE);
-                        Toast.makeText(MainActivity.this, "Chức năng chưa khả dụng", Toast.LENGTH_LONG).show();
-                        break;
-                    }
+//                    case R.id.nav_tinhkhoangcach: {
+//                        SetViewMode(ViewMode.NORMAL_VIEW_MODE);
+//                        Toast.makeText(MainActivity.this, "Chức năng chưa khả dụng", Toast.LENGTH_LONG).show();
+//                        break;
+//                    }
                     case R.id.nav_history: {
 
                         SetViewMode(ViewMode.HIS_VIEW_MODE);
@@ -1003,7 +995,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     //ham setting for listview lo trinh
     private void adapterListPlace() {
-        route = new ArrayList<Text>();
+        routeTextsList = new ArrayList<Text>();
         namePlaces = new ArrayList<String>();
         arrayAdapter = new StableArrayAdapter(this, namePlaces);
         routesListView.setAdapter(arrayAdapter);

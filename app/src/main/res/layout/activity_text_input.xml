@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rl_rootHeader"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/rl_Header">
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_input"
+                android:hint="Nhấn vào đây để nhập" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </RelativeLayout>
+    <Button
+        android:id="@+id/buttonOK"
+        android:onClick="OnAccept"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/rl_Header"
+        android:text="@android:string/ok"
+        />
+    <Button
+        android:id="@+id/buttonCancel"
+        android:onClick="OnCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonOK"
+        android:text="@android:string/cancel"
+        />
+</RelativeLayout>

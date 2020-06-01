@@ -173,6 +173,7 @@
                 <ImageButton
                     android:id="@+id/ic_btn_directions"
                     android:layout_marginTop="10dp"
+                    android:onClick="OnClickDirection"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/icon_directions"
@@ -180,7 +181,7 @@
                     android:layout_marginRight="20dp"
                     android:stateListAnimator="@animator/animatorbtnimg"
                     android:layout_below="@+id/get_curlocation_btn"
-                    />
+                    tools:ignore="OnClick" />
 
                 <include layout="@layout/info_route"
                     android:layout_height="900px"
@@ -227,7 +228,8 @@
                     android:stateListAnimator="@animator/animatorbtnimg"
                     />
                 <ImageButton
-                    android:id="@+id/ic_btn_layers"
+                    android:id="@+id/ic_btn_add_map_point"
+                    android:onClick="OnClickAddMapPoint"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"

@@ -9,10 +9,10 @@
                             android:id="@+id/nav_lotrinh"
                             android:icon="@drawable/ic_directions_boat_black_24dp"
                             android:title="Bắt đầu lộ trình" />
-                        <item
-                            android:id="@+id/nav_tinhkhoangcach"
-                            android:icon="@drawable/ic_golf_course_black_24dp"
-                            android:title="Tính khoảng cách" />
+<!--                        <item-->
+<!--                            android:id="@+id/nav_tinhkhoangcach"-->
+<!--                            android:icon="@drawable/ic_golf_course_black_24dp"-->
+<!--                            android:title="Tính khoảng cách" />-->
                         <item
                             android:id="@+id/nav_history"
                             android:icon="@drawable/ic_history"

@@ -1,6 +1,7 @@
 package com.SeaMap.myapplication.view;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -24,6 +25,7 @@ import android.view.View;
 import androidx.annotation.RequiresApi;
 
 import com.SeaMap.myapplication.Activity.MainActivity;
+import com.SeaMap.myapplication.Activity.TextInput;
 import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.classes.Coordinate;
 import com.SeaMap.myapplication.classes.MapPoint;
@@ -46,6 +48,8 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 
 public class MapView extends View {
+    public static final int REQUEST_INPUT = 1001;
+    public List<Text> listTextRoute = null;
     private static double mlat = 20.0;//lattitude of the center of the screen
     private static double mlon = 106.5;//longtitude of the center of the screen
     private static float mScale = 10f;// 1km = mScale*pixcels
@@ -67,7 +71,7 @@ public class MapView extends View {
 
     public static boolean isPointMode = false;
 
-    private Bitmap bufferBimap;
+    private Bitmap bufferBimap,mRouteBitmap;
     public Canvas canvasBuf = new Canvas();
     float searchPlace_lon, searchPlace_lat;
     public int scrCtY,scrCtX;
@@ -100,6 +104,7 @@ public class MapView extends View {
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleLister());
         setOnLongClickListener(infoAcoordinate);
         mCtx = context;
+
 //        bitmapBouy = BitmapFactory.decodeResource(getResources(), R.drawable.buoy_object); //getBitmap(R.drawable.buoy_object);
 
 //        ListenerRotate();
@@ -130,6 +135,7 @@ public class MapView extends View {
         scrCtY = h / 2;
         scrCtX = w / 2;
         pointSize = Math.max(4, scrCtX * 0.01f);
+        mRouteBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.custom_marker),(int)pointSize*20,(int)pointSize*20,false);
         pointTopRight = ConvScrPointToWGS(scrCtX * 2,0);
         pointBotLeft = ConvScrPointToWGS(0, scrCtY * 2);
         initPaints();
@@ -556,9 +562,8 @@ public class MapView extends View {
 
         {
             PointF p1 = ConvWGSToScrPoint((float) shiplocation.getLongitude(), (float) shiplocation.getLatitude());
-//            p1.offset(xoffset, yoffset);
             boolean shipInsideScreen = (p1.x > 0) && (p1.y > 0) && (p1.x < scrCtX * 2) && (p1.y < scrCtY * 2);
-
+            DrawRoute(canvas);
 
             if (shipInsideScreen) {//ve hinh tron o toa do hien tai
 
@@ -709,6 +714,7 @@ public class MapView extends View {
         return true;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void OnTap(PointF tapPoint) {
         if(isPointMode) {
             PointF center = new PointF(scrCtX, scrCtY);
@@ -735,7 +741,8 @@ public class MapView extends View {
                 if (minDistance < scrCtX / 10) {
                     selectedMapPoint = nearestPoint;
                     if (selectedMapPoint != null) {
-                        showContextMenu();
+                        EditMapPoint(selectedMapPoint);
+//                        showContextMenu();
                     }
                 }
             }
@@ -744,6 +751,14 @@ public class MapView extends View {
         {
 
         }
+    }
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    private void EditMapPoint(MapPoint selectedMapPoint){
+            Intent intent = new Intent(mCtx.getApplicationContext(), TextInput.class);
+            intent.putExtra("MapPoint",selectedMapPoint.mName);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mCtx.getApplicationContext().startActivity(intent);
+
     }
     private View.OnCreateContextMenuListener contextMenu = new View.OnCreateContextMenuListener() {
 
@@ -853,7 +868,30 @@ public class MapView extends View {
         }
 
     }
+    public void DrawRoute(Canvas canvas)
+    {
+        if(listTextRoute==null)return;
+        if(mRouteBitmap==null)return;
 
+        int height = mRouteBitmap.getHeight();
+        int wight = mRouteBitmap.getWidth();
+        Paint routePaint = new Paint();
+        routePaint.setTextSize(pointSize*10);
+        routePaint.setAlpha(255);
+        routePaint.setColor(Color.rgb(0, 0, 0));
+//        searchPl.setColor(Color.RED);
+
+        int size = listTextRoute.size();
+
+        for(int i = 0; i< size; i++){
+            float [] coor = listTextRoute.get(i).getCoordinate();
+            PointF p = ConvWGSToScrPoint(coor[0], coor[1]);
+            //canvas.drawBitmap(bitmap,p.x - height / 4, p.y - wight,locationPaint);
+
+            canvas.drawBitmap(mRouteBitmap, p.x - wight*0.4f, p.y - height, routePaint);
+            canvas.drawText(String.valueOf(i+1),p.x - wight*0.3f ,p.y-height*0.5f,routePaint);
+        }
+    }
     public void setLonLatMyLocation(double latLoc, double lonLoc,boolean gotoLocation ){
         blinkSize = 200;
         //save old location
