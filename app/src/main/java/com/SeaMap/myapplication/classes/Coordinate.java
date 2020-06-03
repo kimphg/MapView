@@ -30,6 +30,11 @@ public class Coordinate {
 
         return result;
     }
+    public static String decimalToDMS(float value ) {
+        int latDeg = (int) Math.floor( value );
+        float latMin = (value - (float)latDeg ) * 60.0f ;
+        return latDeg + "°" + latMin + "'";
+    }
 
 
 }

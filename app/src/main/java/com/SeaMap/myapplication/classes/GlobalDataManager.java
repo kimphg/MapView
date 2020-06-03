@@ -49,7 +49,7 @@ public class GlobalDataManager {
 //    private static HashMap<String, String> mSavedPointsAsStrings = new HashMap<String, String>();
     private static boolean  isConfigChanged = false;
     private static boolean  isConfigBusy = false;
-    public static List<Text> ListPlace = new ArrayList<>();
+//    public static List<MapText> ListPlace = new ArrayList<>();
     public static boolean dataReady = false;
 //    private static File userConfigFile;
     private  static Context mCtx;
@@ -222,17 +222,9 @@ public class GlobalDataManager {
     private static String  ElementSeparator = "#";
     private static String  ConfigSeparator = ";";
     private static String  LatLonSeparator = ",";
-    public static ArrayList<MapPoint> mMapPointList = new ArrayList<MapPoint> ();
-    public static void  removemapPoint(float lat,float lon)
+    public  static ArrayList<MapPoint> mMapPointList = new ArrayList<MapPoint> ();
+    private static void SaveMapPoints()
     {
-        for(MapPoint point:mMapPointList)
-        {
-            if(point.DistanceTo(lat,lon)<10)
-            {
-                mMapPointList.remove(point);
-                break;
-            }
-        }
         String mSavedPointsAsStrings = "";
         for(MapPoint point :mMapPointList) {
             if(point.mType !=4)
@@ -240,6 +232,18 @@ public class GlobalDataManager {
 
         }
         SetConfig("saved_points", mSavedPointsAsStrings);
+    }
+    public static void  removemapPoint(String name)
+    {
+        for(MapPoint point:mMapPointList)
+        {
+            if(point.mName.equals(name))
+            {
+                mMapPointList.remove(point);
+                break;
+            }
+        }
+
     }
     public static void replaceMapPoint(String name, MapPoint newpoint)
     {
@@ -254,36 +258,43 @@ public class GlobalDataManager {
     }
     public static void AddToSavedPoints(MapPoint newPoint )//float mlat, float mlon,String name)
     {
-        if(newPoint.mType ==4)
+        newPoint.mName = GetUniqueMapPointName(newPoint.mName);
+        mMapPointList.add(newPoint);
+
+    }
+
+    public static String GetUniqueMapPointName(String mName) {
+        String newName = new String(mName);
+        while(GlobalDataManager.checkMapPointNameExist(newName)>0)
         {
-            removemapPoint(newPoint.mlat,newPoint.mlon);
-        }
-        else {
-            boolean pointExist = false;
-            for (MapPoint point : mMapPointList) {
-                if (newPoint.DistanceTo(point)<20) {
-                    point.SetPoint(newPoint);
-                    pointExist = true;
-                    break;
-                }
-            }
-            if (pointExist)//overwrite saved_points
+            String[] spaceSplited = newName.split(" - ");
+            if(spaceSplited.length>1)
             {
-                String mSavedPointsAsStrings = "";
-                for (MapPoint point : mMapPointList) {
-                    if (point.mType != 4)
-                        mSavedPointsAsStrings += point.mName + KeyValSeparator + point.DataString() + ElementSeparator;
+                String indexString = spaceSplited[spaceSplited.length-1];
+                try {
 
+                    int index = Integer.parseInt(indexString);
+                    for(int indexStep=1;;indexStep++) {
+                        indexString = " " + String.valueOf(index + indexStep);
+                        newName = "";
+                        for (int i = 0; i < spaceSplited.length-1; i++) {
+                            newName += spaceSplited[i] + "-";
+                        }
+                        newName += indexString;
+                        if(GlobalDataManager.checkMapPointNameExist(newName)==0)
+                        {
+                            break;
+                        }
+                    }
                 }
-                SetConfig("saved_points", mSavedPointsAsStrings);
-            } else {//add to saved_points
-                mMapPointList.add(newPoint);
-                String mSavedPointsAsStrings = GetConfig("saved_points");
-                mSavedPointsAsStrings += newPoint.mName + KeyValSeparator + newPoint.DataString() + ElementSeparator;
-                SetConfig("saved_points", mSavedPointsAsStrings);
+                catch (NumberFormatException e)
+                {
+                    newName+=" - 1";
+                }
             }
+            else newName+=" - 1";
         }
-
+        return newName;
     }
 
     public static ArrayList<MapPoint>  GetSavedPoints()
@@ -333,6 +344,7 @@ public class GlobalDataManager {
     }
     private static void SaveConfig()
     {
+        SaveMapPoints();
         if(!isConfigChanged)return;
         isConfigChanged = false;
         try {
@@ -717,19 +729,26 @@ public class GlobalDataManager {
         //System.out.println("");
     }
 
-    public static List<Text> getListPlaceOnText(){
-        if(ListPlace.size()==0)
+    public static List<Text> getListPlaceOnText() {
+        List<Text> ListPlace = new ArrayList<>();
         for (Map.Entry place : tTexts.entrySet()) {
-            String key =(String) place.getKey();
+            String key = (String) place.getKey();
             Vector<Text> namePlace = (Vector<Text>) place.getValue();
 
-            for(int i =0; i<namePlace.size(); i++){
+            for (int i = 0; i < namePlace.size(); i++) {
                 int type = namePlace.get(i).getType();
-                if(type != 0 && type != 1){
+                if (type != 0 && type != 1) {
                     ListPlace.add(namePlace.get(i));
                 }
             }
         }
+        for (MapPoint point : mMapPointList) {
+            float[] coor = new float[4];
+            coor[0] = point.mlon;
+            coor[1] = point.mlat;
+            ListPlace.add(new Text(point.mName, coor, "", 0.0f, ""));
+        }
+
         return ListPlace;
     }
 
@@ -789,5 +808,14 @@ public class GlobalDataManager {
             if(point.mName.equals(mapPointname))return point;
         }
         return null;
+    }
+
+    public static int checkMapPointNameExist(String mName) {
+        int count=0;
+        for(MapPoint point:mMapPointList)
+        {
+            if(point.mName.equals(mName))count++;
+        }
+        return count;
     }
 }

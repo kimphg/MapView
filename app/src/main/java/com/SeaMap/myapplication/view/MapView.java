@@ -254,7 +254,7 @@ public class MapView extends View {
                     int blue = (int) (color - red * 65536 - green * 256);
                     textPaint.setColor(Color.rgb(red, green, blue));
                     int fontSize = (int) (distance*0.9 / text.getName().length());
-                    if ( text.getType() == 3||text.getType()==0) fontSize*=2;
+                    if ( text.getType() == 3|| text.getType()==0) fontSize*=2;
                     //todo: du lieu da duoc loai bo
 //                    {
 //
@@ -719,7 +719,7 @@ public class MapView extends View {
         if(isPointMode) {
             PointF center = new PointF(scrCtX, scrCtY);
             if (Distance(center, tapPoint) < scrCtX / 10) {
-                MapPoint newPoint = new MapPoint((float) mlat, (float) mlon, null,0,0L);
+                MapPoint newPoint = new MapPoint((float) mlat, (float) mlon, "Điểm",0,0L);
                 GlobalDataManager.AddToSavedPoints(newPoint);
             }
             else {
@@ -870,7 +870,7 @@ public class MapView extends View {
     }
     public void DrawRoute(Canvas canvas)
     {
-        if(listTextRoute==null)return;
+        if(listTextRoute ==null)return;
         if(mRouteBitmap==null)return;
 
         int height = mRouteBitmap.getHeight();

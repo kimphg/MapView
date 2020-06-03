@@ -157,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private TextView curVelocityText;
     private TextView curBearingText;
     private  TextView waveHeightText;
+    private  TextView presureAirText;
     View ship_info;
     private Route curRoute= new Route();;
     int etaToNextDestination = -1;
@@ -170,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private int heightScr, widthScr, heightScrUse;
 
     private SensorManager sensorService;
-    private Sensor magne,accele;
+    private Sensor magne,accele,pressure;
     @Override
     protected void onStart() {
         super.onStart();
@@ -275,14 +276,25 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (magne != null) {
             sensorService.registerListener(mySensorEventListener, magne,
                     SensorManager.SENSOR_DELAY_NORMAL);
+
+        } else {
+            Toast.makeText(this, "Không tìm thấy la bàn số",
+                    Toast.LENGTH_LONG).show();
+        }
+        if (accele != null) {
             sensorService.registerListener(mySensorEventListener, accele,
                     SensorManager.SENSOR_DELAY_NORMAL);
-            //Log.i("Compass MainActivity", "Registerered for ORIENTATION Sensor");
+
         } else {
-            //Log.e("Compass MainActivity", "Registerered for ORIENTATION Sensor");
-            Toast.makeText(this, "Sensor not found",
+            Toast.makeText(this, "Không tìm thấy cảm biến gia tốc",
                     Toast.LENGTH_LONG).show();
-            //finish();
+        }
+        if (pressure != null) {
+            sensorService.registerListener(mySensorEventListener, pressure,
+                    SensorManager.SENSOR_DELAY_NORMAL);
+        } else {
+            Toast.makeText(this, "Không tìm thấy cảm biến áp suất",
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -319,6 +331,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         curVelocityText = findViewById(R.id.curVelocityText);
         curBearingText = findViewById(R.id.curBearingText);
         waveHeightText = findViewById(R.id.waveHeightText);
+        presureAirText = findViewById(R.id.presureAirText);
         ship_info = findViewById(R.id.frame_layout_ship_info);
         toNextDestinationDistanceText = findViewById(R.id._distance);
         etaToNextDestinationText = findViewById(R.id._timeRun);
@@ -348,6 +361,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         sensorService = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         magne = sensorService.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         accele = sensorService.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        pressure = sensorService.getDefaultSensor(Sensor.TYPE_PRESSURE);
         mySensorEventListener = new SensorEventListener() {
 
             @Override
@@ -355,31 +369,81 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             }
             float[] mGravity;
             float[] mGeomagnetic;
+            float[] pressureData;
             float azimuth;
-            float absGravity;
-            float meanGravity = 9.81f;
-            float speed = 0;
-            float meanSpeed = 0;
-            long oldTime = System.currentTimeMillis();
-            float alt = 0,altMax=-1000,altMin=1000;
-            int initTime = 0;
+//            float absGravity;
+//            float meanGravity = 9.81f;
+//            float speed = 0;
+//            float meanSpeed = 0;
+//            long oldTime = System.currentTimeMillis();
+//            float alt = 0,altMax=-1000,altMin=1000;
+            int counter = 0;
+            private static final int BUFFER_SIZE = 100;
+            float pressure[] = new float[BUFFER_SIZE];
             @Override
             public void onSensorChanged(SensorEvent event) {
+
                 //get system time diff
-                float dTimeSec = ((float) (System.currentTimeMillis()-oldTime))/1000.0f;
-                oldTime = System.currentTimeMillis();
-                if(dTimeSec>0.5f)dTimeSec=0.5f;
+//                float dTimeSec = ((float) (System.currentTimeMillis()-oldTime))/1000.0f;
+//                oldTime = System.currentTimeMillis();
+//                if(dTimeSec>0.5f)dTimeSec=0.5f;
                 //update values
                 if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
                     mGravity = event.values;
 
                 if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
                     mGeomagnetic = event.values;
+                if (event.sensor.getType() == Sensor.TYPE_PRESSURE)
+                {
+                    pressureData = event.values;
+                    if(pressureData!=null)
+                    {
+                        counter++;
+                        counter = counter%BUFFER_SIZE;
+                        pressure[counter] = (pressureData[0]);
+                        presureAirText.setText(String.valueOf( ( (int)( pressure[counter]*10) )/10.0f)+" hPa" );
+                        if(counter==0)
+                        {
+                            float minPres = 10000;
+                            float maxPres = 0;
+                            for (int i=0;i<BUFFER_SIZE;i++)
+                            {
+                                if(pressure[i]>maxPres)maxPres = pressure[i];
+                                else if (pressure[i]<minPres)minPres = pressure[i];
+                            }
+                            float dPres = maxPres-minPres;
+                            float dAlt = dPres*108.7f/13.0f - 0.3f;
+                            if(dAlt<0)dAlt=0;
+                            waveHeightText.setText(String.format("%.1f m", dAlt));
+                        }
+
+                    }
+                }
                 if(mGravity!=null)
                 {
-
-                    //acceleration:
-                    absGravity = (float) Math.sqrt(mGravity[0]*mGravity[0]+mGravity[1]*mGravity[1]+mGravity[2]*mGravity[2]);
+                    // đo hướng la bàn
+                    if ( mGeomagnetic != null) {
+                        float R[] = new float[9];
+                        float I[] = new float[9];
+                        if (SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic)) {
+                            // orientation contains azimut, pitch and roll
+                            float orientation[] = new float[3];
+                            SensorManager.getOrientation(R, orientation);
+                            float dazi = orientation[0]- azimuth;
+                            if(dazi>3.1415926535f)
+                            {
+                                dazi = 3.1415926535f*2-dazi;
+                            }
+                            if(dazi<-3.1415926535f)
+                            {
+                                dazi = 3.1415926535f*2+dazi;
+                            }
+                            azimuth += (dazi)/10.0f;
+                            map.updateAzimuthCompass(azimuth);
+                        }
+                    }
+                    //đo độ cao sóng biển:
+                    /*absGravity = (float) Math.sqrt(mGravity[0]*mGravity[0]+mGravity[1]*mGravity[1]+mGravity[2]*mGravity[2]);
                     float dGravity = absGravity-meanGravity;
                     meanGravity +=(dGravity)/2000.0f;
                     speed+=dGravity*dTimeSec;
@@ -400,28 +464,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         float dAtl = altMax - altMin;
                         waveHeightText.setText(String.format("%.1fm", dAtl));
                     }
-                    else initTime++;
+                    else initTime++;*/
                 }
-                if (mGravity != null && mGeomagnetic != null) {
-                    float R[] = new float[9];
-                    float I[] = new float[9];
-                    if (SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic)) {
-                        // orientation contains azimut, pitch and roll
-                        float orientation[] = new float[3];
-                        SensorManager.getOrientation(R, orientation);
-                        float dazi = orientation[0]- azimuth;
-                        if(dazi>3.1415926535f)
-                        {
-                            dazi = 3.1415926535f*2-dazi;
-                        }
-                        if(dazi<-3.1415926535f)
-                        {
-                            dazi = 3.1415926535f*2+dazi;
-                        }
-                        azimuth += (dazi)/10.0f;
-                        map.updateAzimuthCompass(azimuth);
-                    }
-                }
+
             }
 
         };
@@ -524,10 +569,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                routeTextsList.remove(i);
-                namePlaces.remove(i);
-
-                curRoute.route.remove(i);
+                if(i<routeTextsList.size())routeTextsList.remove(i);
+                if(i<namePlaces.size())namePlaces.remove(i);
+                if(i<curRoute.route.size())curRoute.route.remove(i);
 
                 arrayAdapter.notifyDataSetChanged();
                 // thiet lap lai va ve
@@ -736,6 +780,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     case R.id.nav_view_colreg: {
                         webview = new WebView(getApplicationContext());
                         webview.loadUrl("file:///android_asset/colreg72.html");
+                        SetViewMode(ViewMode.LAW_VIEW_MODE);
+                        break;
+                    }
+                    case R.id.nav_view_buoc_day: {
+                        webview = new WebView(getApplicationContext());
+                        webview.loadUrl("file:///android_asset/buoc_day/buoc_day.html");
                         SetViewMode(ViewMode.LAW_VIEW_MODE);
                         break;
                     }

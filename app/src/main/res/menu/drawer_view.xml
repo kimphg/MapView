@@ -8,7 +8,7 @@
                         <item
                             android:id="@+id/nav_lotrinh"
                             android:icon="@drawable/ic_directions_boat_black_24dp"
-                            android:title="Bắt đầu lộ trình" />
+                            android:title="Quản lý lộ trình" />
 <!--                        <item-->
 <!--                            android:id="@+id/nav_tinhkhoangcach"-->
 <!--                            android:icon="@drawable/ic_golf_course_black_24dp"-->
@@ -33,6 +33,9 @@
                         <item
                             android:id="@+id/nav_view_colreg"
                             android:title="Quy tắc phòng ngừa đâm va" />
+                        <item
+                            android:id="@+id/nav_view_buoc_day"
+                            android:title="Các nút buộc hàng hải" />
                         <item
                             android:id="@+id/nav_view_law"
                             android:title="Luật hàng hải" />

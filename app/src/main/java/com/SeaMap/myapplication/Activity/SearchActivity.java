@@ -36,7 +36,7 @@ public class SearchActivity extends FragmentActivity implements SearchView.OnQue
         search = findViewById(R.id.sv_place);
         listView = findViewById(R.id.listView);
 
-        list = GlobalDataManager.ListPlace;
+        list = GlobalDataManager.getListPlaceOnText();
 
         adapter = new Places(this);
         listView.setAdapter(adapter);

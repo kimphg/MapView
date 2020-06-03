@@ -7,9 +7,16 @@
     android:layout_height="match_parent"
     android:layout_marginLeft="20dp">
     <TextView
+        android:id="@+id/textView0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="Thiết lập điểm bản đồ:"/>
+    <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/textView0"
         android:text="Tên điểm bản đồ:"/>
     <RelativeLayout
         android:layout_width="fill_parent"
@@ -25,13 +32,15 @@
                 android:id="@+id/text_input_name_map_point"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Tên điểm bản đồ" />
+                android:hint="Tên điểm bản đồ"
+                android:selectAllOnFocus="true"
+                android:singleLine="true" />
         </com.google.android.material.textfield.TextInputLayout>
     </RelativeLayout>
     <Button
         android:id="@+id/buttonOK"
         android:onClick="OnAccept"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/radio_type"
         android:text="@android:string/ok"
@@ -39,10 +48,20 @@
     <Button
         android:id="@+id/buttonCancel"
         android:onClick="OnCancel"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/buttonOK"
+        android:layout_below="@+id/radio_type"
+        android:layout_toRightOf="@+id/buttonOK"
         android:text="@android:string/cancel"
+        />
+    <Button
+        android:id="@+id/buttonDel"
+        android:onClick="OnDelete"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonCancel"
+        android:layout_toRightOf="@+id/buttonOK"
+        android:text="Xóa điểm bản đồ"
         />
 
     <RadioGroup
@@ -51,7 +70,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
 
-        android:layout_below="@+id/textView"
+        android:layout_below="@+id/textViewType"
         >
 
         <RadioButton
@@ -80,9 +99,39 @@
     </RadioGroup>
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/textViewLat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kinh độ:"
+        android:layout_below="@+id/rl_Header"/>
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/text_input_lon_map_point"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textViewLat"
+        android:hint="Kinh độ"
+        android:numeric="signed|decimal"
+        android:singleLine="true" />
+    <TextView
+        android:id="@+id/textViewLon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Vỹ độ:"
+        android:layout_below="@+id/text_input_lon_map_point"/>
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/text_input_lat_map_point"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textViewLon"
+        android:hint="Vỹ độ"
+        android:numeric="signed|decimal"
+        android:singleLine="true" />
+    <TextView
+        android:id="@+id/textViewType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Thể loại:"
-        android:layout_below="@+id/rl_Header"/>
+        android:layout_below="@+id/text_input_lat_map_point"/>
 </RelativeLayout>

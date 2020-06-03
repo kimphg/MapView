@@ -43,7 +43,7 @@ public class Text implements Serializable, Parcelable {
         type = 0;
     }
 
-    protected Text(Parcel in) {
+    public Text(Parcel in) {
         name = in.readString();
         coordinate = in.createFloatArray();
         font = in.readString();

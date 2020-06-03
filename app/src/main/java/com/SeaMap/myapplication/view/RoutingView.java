@@ -1,17 +1,11 @@
 package com.SeaMap.myapplication.view;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PointF;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
-import com.SeaMap.myapplication.R;
 import com.SeaMap.myapplication.object.Text;
 
 import java.util.ArrayList;

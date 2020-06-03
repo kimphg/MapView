@@ -40,7 +40,6 @@ public class Places extends BaseAdapter{
     public void LoadData()
     {
         mData = GlobalDataManager.getListPlaceOnText();
-
         temp = new ArrayList<Text>();
         temp.addAll(mData);
     }
