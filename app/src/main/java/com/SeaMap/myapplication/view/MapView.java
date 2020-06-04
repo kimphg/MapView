@@ -134,7 +134,7 @@ public class MapView extends View {
         super.onSizeChanged(w, h, oldw, oldh);
         scrCtY = h / 2;
         scrCtX = w / 2;
-        pointSize = Math.max(4, scrCtX * 0.01f);
+        pointSize = Math.max(4, Math.min(scrCtX,scrCtY) * 0.01f);
         mRouteBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.custom_marker),(int)pointSize*20,(int)pointSize*20,false);
         pointTopRight = ConvScrPointToWGS(scrCtX * 2,0);
         pointBotLeft = ConvScrPointToWGS(0, scrCtY * 2);
@@ -673,6 +673,7 @@ public class MapView extends View {
     }
     PointF dragStartPoint;
     long dragStartTime;
+//    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         scaleGestureDetector.onTouchEvent(event);
@@ -714,7 +715,7 @@ public class MapView extends View {
         return true;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+//    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void OnTap(PointF tapPoint) {
         if(isPointMode) {
             PointF center = new PointF(scrCtX, scrCtY);
@@ -752,7 +753,7 @@ public class MapView extends View {
 
         }
     }
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+//    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void EditMapPoint(MapPoint selectedMapPoint){
             Intent intent = new Intent(mCtx.getApplicationContext(), MapPointEditor.class);
             intent.putExtra("MapPoint",selectedMapPoint.mName);

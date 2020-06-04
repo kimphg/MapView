@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -272,6 +273,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     protected void onResume() {
         super.onResume();
+
         // Sensor
         if (magne != null) {
             sensorService.registerListener(mySensorEventListener, magne,
@@ -306,6 +308,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
         InitSensor();
+        // hiện mã version và user ID trên menu header
+
+
+
         frameLayout_main = findViewById(R.id.content_frame);
         frameLayout_map = findViewById(R.id.frame_layout_map);
         GlobalDataManager.Init(getApplicationContext());
@@ -689,9 +695,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             case NAVI_VIEW_MODE:
 
 
-
+                frameLayout_map.removeAllViews();
                 if(routingModeView==null)routingModeView = new RoutingView(getApplicationContext(), map);
                 //frameLayout_map.findViewById(R.id.frame_layout_map).sho
+                frameLayout_map.addView(map);
                 frameLayout_map.addView(routingModeView);
                 route_layout.setVisibility(View.VISIBLE);
                 imageButtonMenu.setBackgroundResource(R.drawable.icon_back);
@@ -819,6 +826,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             public void onClick(View view) {
                 switch (curViewMode) {
                     case NORMAL_VIEW_MODE: {
+                        try {
+                            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                            TextView textVersion = findViewById(R.id.text_version_name);
+                            textVersion.setText("Ver. "+ pInfo.versionName);
+                        } catch (PackageManager.NameNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                        TextView textID = findViewById(R.id.text_dev_id);
+                        textID.setText("ID: "+String.valueOf(GlobalDataManager.getID()));
                         mDrawerLayout.openDrawer(GravityCompat.START);
                         break;
                     }
