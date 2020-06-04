@@ -27,6 +27,7 @@ public class HistoryMapView extends MapView {
         objectPaint.setColor(Color.argb(150, 50, 10, 0));
         objectPaint.setTextSize(pointSize*6);
         objectPaint.setStyle(Paint.Style.FILL);
+        GlobalDataManager.SetConfig("history_start","0");
     }
     public void SetTimePeriod(){
         Intent intent = new Intent(mCtx.getApplicationContext(), HistoryTimeInput.class);
@@ -45,20 +46,43 @@ public class HistoryMapView extends MapView {
     {
         Long timeStart = Long.parseLong(GlobalDataManager.GetConfig("history_start"));
         PointF tempPoint=null;
+        MapPoint tempPointLL=null;
+        float sumDistance = 0.0f;
+        Long firstTime = System.currentTimeMillis()/1000;
+        Long lastTime = 0L;
         objectPaint.setColor(Color.argb(100, 50, 10, 0));
         for (MapPoint point:pointList
         ) {
+
             //kiểm tra thời gian
+
             if(point.mTime<timeStart)continue;
+            if(firstTime>point.mTime)firstTime=point.mTime;
+            if(lastTime<point.mTime)lastTime=point.mTime;
             //vẽ
-            if(tempPoint==null)tempPoint = ConvWGSToScrPoint(point.mlon,point.mlat);
+            if(tempPoint==null) {
+                tempPoint = ConvWGSToScrPoint(point.mlon, point.mlat);
+
+            }
+
             else
             {
+                //đo khoảng cách:
+                float dist = tempPointLL.DistanceTo(point);
+                sumDistance+=dist;
                 PointF p1 = ConvWGSToScrPoint(point.mlon,point.mlat);
                 canvas.drawLine(p1.x,p1.y,tempPoint.x,tempPoint.y,objectPaint);
                 tempPoint=p1;
             }
+            tempPointLL = point;
         }
+        float totalTimeHours = (lastTime-firstTime)/3600.0f;
+        if(totalTimeHours<=0)return;
+        objectPaint.setTextSize(pointSize*8);
+        canvas.drawText("Tổng quãng đường(km): "+( (int) (sumDistance * 100)) / 100.0f,         pointSize*10,scrCtY*2-pointSize*40,objectPaint);
+        sumDistance/=1.852;
+        canvas.drawText("Tổng quãng đường(hải lý): "+( (int) (sumDistance * 100)) /100.0f,pointSize*10,scrCtY*2-pointSize*30,objectPaint);
+        canvas.drawText("Vận tốc trung bình(hải lý/h): "+sumDistance/totalTimeHours,            pointSize*10,scrCtY*2-pointSize*20,objectPaint);
     }
 
 

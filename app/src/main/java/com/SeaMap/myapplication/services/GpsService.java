@@ -107,6 +107,7 @@ public class GpsService extends Service {
                         //String time = String.valueOf(System.currentTimeMillis());
                         //String location = String.valueOf(curLocation.getLatitude()) + "," + String.valueOf(curLocation.getLongitude());
 //                        GlobalDataManager.SetConfig(time, location);
+                        lastSavedLocation = new Location(curLocation);
                         GlobalDataManager.AddLocation( curLocation);
                     }
                 }

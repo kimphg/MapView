@@ -23,7 +23,7 @@ public class HistoryTimeInput extends AppCompatActivity {
         switch (radGroup.getCheckedRadioButtonId())
         {
             case R.id.radioButton_time_period_1h:
-                time = String.valueOf(System.currentTimeMillis()/1000-60L);
+                time = String.valueOf(System.currentTimeMillis()/1000-3600L);
                 GlobalDataManager.SetConfig("history_start",time);
                 break;
             case R.id.radioButton_time_period_2h:

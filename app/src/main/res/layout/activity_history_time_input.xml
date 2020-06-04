@@ -6,9 +6,10 @@
     android:layout_height="match_parent"
     tools:context=".Activity.HistoryTimeInput">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <RadioGroup
             android:id="@+id/radio_time_period"
@@ -36,50 +37,57 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="5 giờ qua" />
+
             <RadioButton
                 android:id="@+id/radioButton_time_period_1d"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="24 giờ qua" />
+
             <RadioButton
                 android:id="@+id/radioButton_time_period_2d"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="2 ngày qua" />
+
             <RadioButton
                 android:id="@+id/radioButton_time_period_7d"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="7 ngày qua" />
+
             <RadioButton
                 android:id="@+id/radioButton_time_period_14d"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="2 tuần qua" />
+
             <RadioButton
                 android:id="@+id/radioButton_time_period_1m"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="30 ngày qua" />
+
             <RadioButton
                 android:id="@+id/radioButton_time_period_2m"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="60 ngày qua" />
+
             <RadioButton
                 android:id="@+id/radioButton_time_period_all"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Tất cả" />
         </RadioGroup>
+
         <Button
             android:id="@+id/buttonOK"
-            android:onClick="OnAccept"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/radio_type"
-            android:text="@android:string/ok"
-            />
-    </LinearLayout>
+            android:layout_toRightOf="@+id/radio_time_period"
+            android:onClick="OnAccept"
+            android:text="@android:string/ok" />
+    </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

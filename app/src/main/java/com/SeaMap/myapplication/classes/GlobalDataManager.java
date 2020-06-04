@@ -105,9 +105,10 @@ public class GlobalDataManager {
             {
                 objectOut.writeObject(point);
             }
-
+            objectOut.flush();
             objectOut.close();
             //System.out.println("The Object  was succesfully written to a file");
+//            fileOut.close();
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -135,10 +136,11 @@ public class GlobalDataManager {
 //            e.printStackTrace();
 //        }
     }
-    private static void LoadLocationHistory() {
+    private static void LoadLocationHistory()  {
         if(!checkFileExist(loclogFileName))return;
         ObjectInputStream ois = null;
         try {
+            // mở FileInputStream
             File file =  new File(mCtx.getFilesDir(), loclogFileName);
             FileInputStream fis = new FileInputStream(file);
             ois = new ObjectInputStream(fis);
@@ -151,12 +153,18 @@ public class GlobalDataManager {
         }
         if(ois==null)return;
         try {
-            locationHistory.add(( MapPoint) ois.readObject());
+            while (true) {
+                //đọc từng point
+                MapPoint newPoint = (MapPoint) ois.readObject();
+//                if(newPoint==null)break;
+                locationHistory.add(newPoint);
+            }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     private static  void LoadSavedPoints() {
@@ -746,6 +754,8 @@ public class GlobalDataManager {
             float[] coor = new float[4];
             coor[0] = point.mlon;
             coor[1] = point.mlat;
+            coor[2] = point.mlon;
+            coor[3] = point.mlat;
             ListPlace.add(new Text(point.mName, coor, "", 0.0f, ""));
         }
 
