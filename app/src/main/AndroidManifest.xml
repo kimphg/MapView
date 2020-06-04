@@ -21,8 +21,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.MapPointEditor"></activity>
-        
+        <activity android:name=".Activity.HistoryTimeInput"></activity>
+        <activity android:name=".Activity.MapPointEditor" />
 
         <service
             android:name=".services.GpsService"

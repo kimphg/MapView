@@ -706,6 +706,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 break;
             case HIS_VIEW_MODE:
                 if(historyMapView==null)historyMapView = new HistoryMapView(getApplicationContext());
+                historyMapView.SetTimePeriod();
                 historyMapView.setLonLatMyLocation(
                         curLocation.getLatitude(),
                         curLocation.getLongitude(), true

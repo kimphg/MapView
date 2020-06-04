@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.HistoryTimeInput">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RadioGroup
+            android:id="@+id/radio_time_period"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+
+            >
+
+            <RadioButton
+                android:id="@+id/radioButton_time_period_1h"
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1 giờ qua" />
+
+            <RadioButton
+                android:id="@+id/radioButton_time_period_2h"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2 giờ qua" />
+
+            <RadioButton
+                android:id="@+id/radioButton_time_period_5h"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5 giờ qua" />
+            <RadioButton
+                android:id="@+id/radioButton_time_period_1d"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="24 giờ qua" />
+            <RadioButton
+                android:id="@+id/radioButton_time_period_2d"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2 ngày qua" />
+            <RadioButton
+                android:id="@+id/radioButton_time_period_7d"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="7 ngày qua" />
+            <RadioButton
+                android:id="@+id/radioButton_time_period_14d"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2 tuần qua" />
+            <RadioButton
+                android:id="@+id/radioButton_time_period_1m"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="30 ngày qua" />
+            <RadioButton
+                android:id="@+id/radioButton_time_period_2m"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="60 ngày qua" />
+            <RadioButton
+                android:id="@+id/radioButton_time_period_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tất cả" />
+        </RadioGroup>
+        <Button
+            android:id="@+id/buttonOK"
+            android:onClick="OnAccept"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/radio_type"
+            android:text="@android:string/ok"
+            />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
