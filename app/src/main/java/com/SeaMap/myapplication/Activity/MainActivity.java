@@ -362,6 +362,29 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     }
 
+    float[] standardDeviation(float arr[],
+                             int n)
+    {
+        // Compute mean (average of elements)
+        float sum = 0;
+        for (int i = 0; i < n; i++)
+            sum += arr[i];
+        float mean = sum /
+                (float)n;
+
+        // Compute sum squared
+        // differences with mean.
+        float sqDiff = 0;
+        for (int i = 0; i < n; i++)
+            sqDiff += (arr[i] - mean) *
+                    (arr[i] - mean);
+        float var =  sqDiff / n;
+        float[] out = new float[2];
+        out[0] = (float)Math.sqrt(var);
+        out[1] = mean;
+        return out;
+    }
+
     private void InitSensor() {
 
         sensorService = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -410,16 +433,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         presureAirText.setText(String.valueOf( ( (int)( pressure[counter]*10) )/10.0f)+" hPa" );
                         if(counter==0)
                         {
-                            float minPres = 10000;
-                            float maxPres = 0;
-                            for (int i=0;i<BUFFER_SIZE;i++)
-                            {
-                                if(pressure[i]>maxPres)maxPres = pressure[i];
-                                else if (pressure[i]<minPres)minPres = pressure[i];
-                            }
-                            float dPres = maxPres-minPres;
-                            float dAlt = dPres*108.7f/13.0f - 0.3f;
-                            if(dAlt<0)dAlt=0;
+                            float[] statisticData = standardDeviation(pressure,BUFFER_SIZE);
+                            GlobalDataManager.SetConfig("air_pressure",String.valueOf(statisticData[1]));
+                            GlobalDataManager.SetConfig("air_pressure_std",String.valueOf(statisticData[0]));
+                            float dPres = statisticData[0]*3;
+                            float dAlt = dPres*108.7f/13.0f;
                             waveHeightText.setText(String.format("%.1f m", dAlt));
                         }
 
@@ -788,6 +806,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     case R.id.nav_view_colreg: {
                         webview = new WebView(getApplicationContext());
                         webview.loadUrl("file:///android_asset/colreg72.html");
+                        SetViewMode(ViewMode.LAW_VIEW_MODE);
+                        break;
+                    }
+                    case R.id.nav_view_help: {
+                        webview = new WebView(getApplicationContext());
+                        webview.loadUrl("file:///android_asset/hdsd/hdsd.html");
                         SetViewMode(ViewMode.LAW_VIEW_MODE);
                         break;
                     }

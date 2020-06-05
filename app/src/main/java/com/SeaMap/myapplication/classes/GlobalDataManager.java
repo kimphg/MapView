@@ -1,6 +1,5 @@
 package com.SeaMap.myapplication.classes;
 import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 import java.util.*;
 import android.content.Context;
 import android.location.Location;
@@ -30,7 +29,7 @@ import java.util.Vector;
 
 public class GlobalDataManager {
     private static String configFileName = "cfg.txt";
-    private static String loclogFileName = "loclog.bin";
+    private static String loclogFileName = "log.bin";
     private static String pointFileName = "point.bin";
     public static HashMap<String,Vector<Line>> Lines = new HashMap<String, Vector<Line>>();
     public static HashMap<String, Vector<Polyline>> Border_Map = new HashMap<>();
@@ -72,6 +71,7 @@ public class GlobalDataManager {
         if(file.exists()) {
             try {
                 FileInputStream stream = new FileInputStream(file);
+                stream.close();
             }
             catch (FileNotFoundException ex)
             {
@@ -81,6 +81,8 @@ public class GlobalDataManager {
                     e.printStackTrace();
                     return false;
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
         else
@@ -98,72 +100,77 @@ public class GlobalDataManager {
     {
         checkFileExist(loclogFileName);
         try {
-            File file =  new File(mCtx.getFilesDir(), loclogFileName);
-            FileOutputStream fileOut = new FileOutputStream(file);
-            ObjectOutputStream objectOut = new ObjectOutputStream(fileOut);
+
+            byte[] outputdata = new byte[locationHistory.size()*MapPoint.bytesSize];
+            int pos = 0;
             for (MapPoint point:locationHistory)
             {
-                objectOut.writeObject(point);
+                System.arraycopy(point.toBytes(),0,outputdata,pos,MapPoint.bytesSize);
+                pos+= MapPoint.bytesSize;
             }
-            objectOut.flush();
-            objectOut.close();
+            File file =  new File(mCtx.getFilesDir(), loclogFileName);
+            FileOutputStream fileOut = new FileOutputStream(file);
+            fileOut.write(outputdata);
+            fileOut.close();
             //System.out.println("The Object  was succesfully written to a file");
 //            fileOut.close();
 
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-//        try{
-//            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(mCtx.openFileOutput(loclogFileName, Context.MODE_PRIVATE));
-//
-//            Long lastTime = 0L;
-//            for (MapPoint point:locationHistory)
-//            {
-//                if(lastTime==0L) outputStreamWriter.write(point.mTime.toString()+MapPoint.separator+point.mDataString+"\n");
-//                else
-//                {
-//                    int timeDiff =(int)(point.mTime-lastTime);
-//                    outputStreamWriter.write(String.valueOf(timeDiff)+MapPoint.separator+point.mDataString+"\n");
-//                    lastTime=point.mTime;
-//                }
-//
-//            }
-//            outputStreamWriter.close();
-//
+
+    }
+
+    private static void LoadLocationHistory()  {
+        if(!checkFileExist(loclogFileName))return;
+
+        try {
+            File file = new File(mCtx.getFilesDir(), loclogFileName);
+            byte[] input = new byte[(int)file.length()];
+            FileInputStream fileIn = new FileInputStream(file);
+            fileIn.read(input);
+            fileIn.close();
+            byte[] data = new byte[MapPoint.bytesSize];
+            for (int pos = 0;pos<input.length-MapPoint.bytesSize+1;pos+=MapPoint.bytesSize)
+            {
+                System.arraycopy(input,pos,data,0,MapPoint.bytesSize);
+                MapPoint newPoint = new MapPoint(data);
+                locationHistory.add(newPoint);
+            }
+        }
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }
+
+        ///
+//        ObjectInputStream ois = null;
+//        try {
+//            // mở FileInputStream
+//            File file =  new File(mCtx.getFilesDir(), loclogFileName);
+//            long len = file.length();
+//            FileInputStream fis = new FileInputStream(file);
+//            ois = new ObjectInputStream(fis);
 //        } catch (FileNotFoundException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        if(ois==null)return;
+//        try {
+//            while (true) {
+//                //đọc từng point
+//                MapPoint newPoint = (MapPoint) ois.readObject();
+////                if(newPoint==null)break;
+//                locationHistory.add(newPoint);
+//            }
+//        } catch (ClassNotFoundException e) {
 //            e.printStackTrace();
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-    }
-    private static void LoadLocationHistory()  {
-        if(!checkFileExist(loclogFileName))return;
-        ObjectInputStream ois = null;
-        try {
-            // mở FileInputStream
-            File file =  new File(mCtx.getFilesDir(), loclogFileName);
-            FileInputStream fis = new FileInputStream(file);
-            ois = new ObjectInputStream(fis);
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        if(ois==null)return;
-        try {
-            while (true) {
-                //đọc từng point
-                MapPoint newPoint = (MapPoint) ois.readObject();
-//                if(newPoint==null)break;
-                locationHistory.add(newPoint);
-            }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
     }
 
@@ -205,7 +212,6 @@ public class GlobalDataManager {
     public static void SaveData()
     {
         SaveConfig();
-        SaveLocationHistory();
     }
     public static int getID() {
 
@@ -259,7 +265,7 @@ public class GlobalDataManager {
         {
             if(point.mName.equals(name))
             {
-                point.SetPoint(newpoint);
+                point.copyData(newpoint);
                 return;
             }
         }
@@ -800,16 +806,20 @@ public class GlobalDataManager {
         }
         //System.out.println("");
     }
-
-    public static void AddLocation(Location location) {
-        MapPoint point = new MapPoint((float)location.getLatitude(),(float)location.getLongitude(),"",5,0L);
-        if(locationHistory.size()<10000)
+    private static MapPoint  lastSavedPoint = null;
+    private static Long lastSavedTime = 0L;
+    public static void AddLocationHistory(Location location) {
+        MapPoint point = new MapPoint((float)location.getLatitude(),(float)location.getLongitude(),"",5);
+        if(lastSavedPoint!=null)if((point.mTimeSec -lastSavedPoint.mTimeSec)<30)return;
+        lastSavedPoint=(point);
+        if(locationHistory.size()<30000)
         locationHistory.add(point);
         else
         {
             locationHistory.remove(0);
             locationHistory.add(point);
         }
+        SaveLocationHistory();
     }
 
     public static MapPoint getMapPoint(String mapPointname) {

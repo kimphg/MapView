@@ -327,10 +327,11 @@ public class MapView extends View {
         pointTopRight = ConvScrPointToWGS(scrCtX * 2,0);
         pointBotLeft = ConvScrPointToWGS(0, scrCtY * 2);
         //DRAW POLYGON
+        Vector<Region> regions;
         if(GlobalDataManager.dataReady)
         for(int lon = (int) pointBotLeft.x - 2; lon<= (int) pointTopRight.x + 2; lon++) {
             for (int lat = (int) pointBotLeft.y - 2; lat <= (int) pointTopRight.y + 2; lat++) {
-                Vector<Region> regions;
+
                 if(mScale < 8) {
                     regions = GlobalDataManager.BaseRegions.get(lon + "-" + lat);
                 }
@@ -720,7 +721,7 @@ public class MapView extends View {
         if(isPointMode) {
             PointF center = new PointF(scrCtX, scrCtY);
             if (Distance(center, tapPoint) < scrCtX / 10) {
-                MapPoint newPoint = new MapPoint((float) mlat, (float) mlon, "Điểm",0,0L);
+                MapPoint newPoint = new MapPoint((float) mlat, (float) mlon, "Điểm",0);
                 GlobalDataManager.AddToSavedPoints(newPoint);
             }
             else {

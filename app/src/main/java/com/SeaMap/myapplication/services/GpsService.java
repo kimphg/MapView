@@ -60,7 +60,6 @@ public class GpsService extends Service {
     }
     Location oldLocation = new Location("GPS");
     Location curLocation = new Location("GPS");//use old location to estimate speed and movement
-    private Location lastSavedLocation = new Location("GPS");
     @RequiresApi(api = Build.VERSION_CODES.Q)
     @SuppressLint("MissingPermission")
     @Override
@@ -100,17 +99,7 @@ public class GpsService extends Service {
                 sendBroadcast(intent);
                 sendOwnLocation(curLocation);
                 //save location to file
-                if(curLocation.distanceTo(lastSavedLocation)>100) {
-                    if(curLocation.getAccuracy()<50) {
-//                        locationHistory.add(newLocation);
-//                        while (locationHistory.size() > 50) locationHistory.remove(0);
-                        //String time = String.valueOf(System.currentTimeMillis());
-                        //String location = String.valueOf(curLocation.getLatitude()) + "," + String.valueOf(curLocation.getLongitude());
-//                        GlobalDataManager.SetConfig(time, location);
-                        lastSavedLocation = new Location(curLocation);
-                        GlobalDataManager.AddLocation( curLocation);
-                    }
-                }
+                GlobalDataManager.AddLocationHistory( curLocation);
             }
         };
         if(isNetworkConnectionAvailable()) {

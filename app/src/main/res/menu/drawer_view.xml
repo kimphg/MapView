@@ -31,6 +31,9 @@
                         android:id="@+id/documents"
                         >
                         <item
+                            android:id="@+id/nav_view_help"
+                            android:title="Hướng dẫn sử dụng" />
+                        <item
                             android:id="@+id/nav_view_colreg"
                             android:title="Quy tắc phòng ngừa đâm va" />
                         <item

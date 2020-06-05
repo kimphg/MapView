@@ -11,7 +11,6 @@ import android.os.Build;
 import androidx.annotation.RequiresApi;
 
 import com.SeaMap.myapplication.Activity.HistoryTimeInput;
-import com.SeaMap.myapplication.Activity.MapPointEditor;
 import com.SeaMap.myapplication.classes.GlobalDataManager;
 import com.SeaMap.myapplication.classes.MapPoint;
 
@@ -56,13 +55,24 @@ public class HistoryMapView extends MapView {
 
             //kiểm tra thời gian
 
-            if(point.mTime<timeStart)continue;
-            if(firstTime>point.mTime)firstTime=point.mTime;
-            if(lastTime<point.mTime)lastTime=point.mTime;
+            if(point.mTimeSec <timeStart)continue;
+            if(firstTime>point.mTimeSec)firstTime=point.mTimeSec;
+            if(lastTime<point.mTimeSec)lastTime=point.mTimeSec;
             //vẽ
+            if(tempPointLL!=null)
+            {
+                //swap points if time is not increment
+                if(point.mTimeSec-tempPointLL.mTimeSec<0)
+                {
+                    MapPoint temp = new MapPoint(point);
+                    point.copyData(tempPointLL);
+                    tempPointLL.copyData(temp);
+                    tempPointLL = point;
+                    continue;
+                }
+            }
             if(tempPoint==null) {
                 tempPoint = ConvWGSToScrPoint(point.mlon, point.mlat);
-
             }
 
             else
@@ -81,8 +91,9 @@ public class HistoryMapView extends MapView {
         objectPaint.setTextSize(pointSize*8);
         canvas.drawText("Tổng quãng đường(km): "+( (int) (sumDistance * 100)) / 100.0f,         pointSize*10,scrCtY*2-pointSize*40,objectPaint);
         sumDistance/=1.852;
-        canvas.drawText("Tổng quãng đường(hải lý): "+( (int) (sumDistance * 100)) /100.0f,pointSize*10,scrCtY*2-pointSize*30,objectPaint);
+        canvas.drawText("Tổng quãng đường(hải lý): "+( (int) (sumDistance * 100)) /100.0f,      pointSize*10,scrCtY*2-pointSize*30,objectPaint);
         canvas.drawText("Vận tốc trung bình(hải lý/h): "+sumDistance/totalTimeHours,            pointSize*10,scrCtY*2-pointSize*20,objectPaint);
+
     }
 
 
