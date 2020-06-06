@@ -17,15 +17,18 @@ import com.SeaMap.myapplication.classes.MapPoint;
 import java.util.List;
 
 public class HistoryMapView extends MapView {
-
+    Paint mPaint = new Paint();
     private List<MapPoint> pointList;
+    //biến đề cài đặt quãng thời gian cho hiển thị lịch sử
+    private Long timeMin;
+    private Long timeMax;
     public HistoryMapView(Context context) {
         super(context);
         pointList = GlobalDataManager.getLocationHistory();
-        objectPaint.setStrokeWidth(Math.max(2, pointSize ));
-        objectPaint.setColor(Color.argb(150, 50, 10, 0));
-        objectPaint.setTextSize(pointSize*6);
-        objectPaint.setStyle(Paint.Style.FILL);
+        mPaint.setStrokeWidth(Math.max(2, pointSize ));
+        mPaint.setColor(Color.argb(150, 50, 10, 0));
+        mPaint.setTextSize(pointSize*6);
+        mPaint.setStyle(Paint.Style.FILL);
         GlobalDataManager.SetConfig("history_start","0");
     }
     public void SetTimePeriod(){
@@ -43,22 +46,20 @@ public class HistoryMapView extends MapView {
     }
     private void DrawHistory(Canvas canvas)
     {
-        Long timeStart = Long.parseLong(GlobalDataManager.GetConfig("history_start"));
+        timeMin = Long.parseLong(GlobalDataManager.GetConfig("history_start"));
         PointF tempPoint=null;
         MapPoint tempPointLL=null;
         float sumDistance = 0.0f;
+        // biến để lưu thời gian bắt đầu và kết thúc của đoạn ghi lưu
         Long firstTime = System.currentTimeMillis()/1000;
         Long lastTime = 0L;
-        objectPaint.setColor(Color.argb(100, 50, 10, 0));
-        for (MapPoint point:pointList
-        ) {
-
+        mPaint.setColor(Color.argb(100, 50, 10, 0));
+        for (MapPoint point:pointList) {
             //kiểm tra thời gian
-
-            if(point.mTimeSec <timeStart)continue;
+            if(point.mTimeSec < timeMin)continue;
             if(firstTime>point.mTimeSec)firstTime=point.mTimeSec;
             if(lastTime<point.mTimeSec)lastTime=point.mTimeSec;
-            //vẽ
+
             if(tempPointLL!=null)
             {
                 //swap points if time is not increment
@@ -80,6 +81,7 @@ public class HistoryMapView extends MapView {
                 //đo khoảng cách:
                 float dist = tempPointLL.DistanceTo(point);
                 sumDistance+=dist;
+                //vẽ đường nối
                 PointF p1 = ConvWGSToScrPoint(point.mlon,point.mlat);
                 canvas.drawLine(p1.x,p1.y,tempPoint.x,tempPoint.y,objectPaint);
                 tempPoint=p1;
@@ -88,7 +90,7 @@ public class HistoryMapView extends MapView {
         }
         float totalTimeHours = (lastTime-firstTime)/3600.0f;
         if(totalTimeHours<=0)return;
-        objectPaint.setTextSize(pointSize*8);
+
         canvas.drawText("Tổng quãng đường(km): "+( (int) (sumDistance * 100)) / 100.0f,         pointSize*10,scrCtY*2-pointSize*40,objectPaint);
         sumDistance/=1.852;
         canvas.drawText("Tổng quãng đường(hải lý): "+( (int) (sumDistance * 100)) /100.0f,      pointSize*10,scrCtY*2-pointSize*30,objectPaint);

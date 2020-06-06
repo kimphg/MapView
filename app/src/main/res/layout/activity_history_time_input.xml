@@ -88,6 +88,16 @@
             android:layout_toRightOf="@+id/radio_time_period"
             android:onClick="OnAccept"
             android:text="@android:string/ok" />
+
+        <Text
+            android:layout_below="@+id/buttonOK"
+            android:layout_toRightOf="@+id/radio_time_period"
+            android:id="@+id/editText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="Chọn khoảng thời gian để hiện lịch sử hành trình.\nLịch sử hành trình là các điểm mà tàu đã đi qua, các điểm này chỉ được lưu lại khi phần mềm được bật" />
     </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
