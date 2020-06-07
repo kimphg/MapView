@@ -5,18 +5,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 
 import com.SeaMap.myapplication.R;
-import com.SeaMap.myapplication.classes.Coordinate;
 import com.SeaMap.myapplication.classes.GlobalDataManager;
-import com.SeaMap.myapplication.classes.MapPoint;
+import com.SeaMap.myapplication.classes.MapPointUser;
 import com.google.android.material.textfield.TextInputEditText;
 
 
 public class MapPointEditor extends AppCompatActivity {
     String mapPointname;
-    MapPoint newPoint;
+    MapPointUser newPoint;
     RadioGroup type;
     int[] radioId = new int[4];
     TextInputEditText textInputName,textInputLat,textInputLon;

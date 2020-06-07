@@ -3,9 +3,8 @@ import java.io.FileOutputStream;
 import java.util.*;
 import android.content.Context;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Build;
-
-import androidx.annotation.RequiresApi;
 
 import com.SeaMap.myapplication.object.*;
 import com.SeaMap.myapplication.object.Buoy;
@@ -52,18 +51,21 @@ public class GlobalDataManager {
     public static boolean dataReady = false;
 //    private static File userConfigFile;
     private  static Context mCtx;
-    private  static List<MapPoint> locationHistory =  Collections.synchronizedList( new LinkedList<MapPoint>());
+    private  static List<MapPointUser> locationHistory =  Collections.synchronizedList( new LinkedList<MapPointUser>());
     public static void Init(Context context){
         mCtx = context;
         //readBoat();
         //readDensity();
+        readDataSeaMap();
 
-        readBaseRegions();
-        readBasePlgRivers();
-        readBouys();
         readBorderMap();
         LoadConfig();
-
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                GlobalDataManager.ReadBigData();
+            }
+        });
     }
     private static boolean checkFileExist(String fileName)
     {
@@ -101,12 +103,12 @@ public class GlobalDataManager {
         checkFileExist(loclogFileName);
         try {
 
-            byte[] outputdata = new byte[locationHistory.size()*MapPoint.bytesSize];
+            byte[] outputdata = new byte[locationHistory.size()* MapPointUser.bytesSize];
             int pos = 0;
-            for (MapPoint point:locationHistory)
+            for (MapPointUser point:locationHistory)
             {
-                System.arraycopy(point.toBytes(),0,outputdata,pos,MapPoint.bytesSize);
-                pos+= MapPoint.bytesSize;
+                System.arraycopy(point.toBytes(),0,outputdata,pos, MapPointUser.bytesSize);
+                pos+= MapPointUser.bytesSize;
             }
             File file =  new File(mCtx.getFilesDir(), loclogFileName);
             FileOutputStream fileOut = new FileOutputStream(file);
@@ -130,11 +132,11 @@ public class GlobalDataManager {
             FileInputStream fileIn = new FileInputStream(file);
             fileIn.read(input);
             fileIn.close();
-            byte[] data = new byte[MapPoint.bytesSize];
-            for (int pos = 0;pos<input.length-MapPoint.bytesSize+1;pos+=MapPoint.bytesSize)
+            byte[] data = new byte[MapPointUser.bytesSize];
+            for (int pos = 0; pos<input.length- MapPointUser.bytesSize+1; pos+= MapPointUser.bytesSize)
             {
-                System.arraycopy(input,pos,data,0,MapPoint.bytesSize);
-                MapPoint newPoint = new MapPoint(data);
+                System.arraycopy(input,pos,data,0, MapPointUser.bytesSize);
+                MapPointUser newPoint = new MapPointUser(data);
                 locationHistory.add(newPoint);
             }
         }
@@ -188,7 +190,7 @@ public class GlobalDataManager {
                         {
                             String name = keylatlon[0];
                             String latlon = keylatlon[1];
-                            MapPoint newPoint = new MapPoint(name,latlon);
+                            MapPointUser newPoint = new MapPointUser(name,latlon);
                             mMapPointList.add(newPoint);
                         }
 
@@ -236,11 +238,11 @@ public class GlobalDataManager {
     private static String  ElementSeparator = "#";
     private static String  ConfigSeparator = ";";
     private static String  LatLonSeparator = ",";
-    public  static ArrayList<MapPoint> mMapPointList = new ArrayList<MapPoint> ();
+    public  static ArrayList<MapPointUser> mMapPointList = new ArrayList<MapPointUser> ();
     private static void SaveMapPoints()
     {
         String mSavedPointsAsStrings = "";
-        for(MapPoint point :mMapPointList) {
+        for(MapPointUser point :mMapPointList) {
             if(point.mType !=4)
                 mSavedPointsAsStrings += point.mName + KeyValSeparator + point.DataString() + ElementSeparator;
 
@@ -249,7 +251,7 @@ public class GlobalDataManager {
     }
     public static void  removemapPoint(String name)
     {
-        for(MapPoint point:mMapPointList)
+        for(MapPointUser point:mMapPointList)
         {
             if(point.mName.equals(name))
             {
@@ -259,9 +261,9 @@ public class GlobalDataManager {
         }
 
     }
-    public static void replaceMapPoint(String name, MapPoint newpoint)
+    public static void replaceMapPoint(String name, MapPointUser newpoint)
     {
-        for(MapPoint point:mMapPointList)
+        for(MapPointUser point:mMapPointList)
         {
             if(point.mName.equals(name))
             {
@@ -270,7 +272,7 @@ public class GlobalDataManager {
             }
         }
     }
-    public static void AddToSavedPoints(MapPoint newPoint )//float mlat, float mlon,String name)
+    public static void AddToSavedPoints(MapPointUser newPoint )//float mlat, float mlon,String name)
     {
         newPoint.mName = GetUniqueMapPointName(newPoint.mName);
         mMapPointList.add(newPoint);
@@ -311,12 +313,12 @@ public class GlobalDataManager {
         return newName;
     }
 
-    public static ArrayList<MapPoint>  GetSavedPoints()
+    public static ArrayList<MapPointUser>  GetSavedPoints()
     {
         return mMapPointList;
     }
 
-    public static List<MapPoint> getLocationHistory() {
+    public static List<MapPointUser> getLocationHistory() {
         return locationHistory;
     }
 
@@ -381,7 +383,7 @@ public class GlobalDataManager {
         isConfigBusy = false;
 
     }
-    @RequiresApi(api = Build.VERSION_CODES.Q)
+
     public static  void  ReadBigData()
     {
         try {
@@ -389,11 +391,14 @@ public class GlobalDataManager {
             LoadSavedPoints();
             LoadLocationHistory();
             readRiver();
-            readDataSeaMap();
+            readBaseRegions();
+            readBasePlgRivers();
+            readBouys();
             if(Build.VERSION.SDK_INT>=23)readDensity();
             Thread.sleep(500);
             dataReady = true;
         } catch (InterruptedException e) {
+            dataReady = true;
             return;
         }
     }
@@ -748,7 +753,6 @@ public class GlobalDataManager {
         for (Map.Entry place : tTexts.entrySet()) {
             String key = (String) place.getKey();
             Vector<Text> namePlace = (Vector<Text>) place.getValue();
-
             for (int i = 0; i < namePlace.size(); i++) {
                 int type = namePlace.get(i).getType();
                 if (type != 0 && type != 1) {
@@ -756,7 +760,7 @@ public class GlobalDataManager {
                 }
             }
         }
-        for (MapPoint point : mMapPointList) {
+        for (MapPointUser point : mMapPointList) {
             float[] coor = new float[4];
             coor[0] = point.mlon;
             coor[1] = point.mlat;
@@ -806,10 +810,10 @@ public class GlobalDataManager {
         }
         //System.out.println("");
     }
-    private static MapPoint  lastSavedPoint = null;
+    private static MapPointUser lastSavedPoint = null;
     private static Long lastSavedTime = 0L;
     public static void AddLocationHistory(Location location) {
-        MapPoint point = new MapPoint((float)location.getLatitude(),(float)location.getLongitude(),"",5);
+        MapPointUser point = new MapPointUser((float)location.getLatitude(),(float)location.getLongitude(),"",5);
         if(lastSavedPoint!=null)if((point.mTimeSec -lastSavedPoint.mTimeSec)<30)return;
         lastSavedPoint=(point);
         if(locationHistory.size()<30000)
@@ -822,8 +826,8 @@ public class GlobalDataManager {
         SaveLocationHistory();
     }
 
-    public static MapPoint getMapPoint(String mapPointname) {
-        for(MapPoint point:mMapPointList)
+    public static MapPointUser getMapPoint(String mapPointname) {
+        for(MapPointUser point:mMapPointList)
         {
             if(point.mName.equals(mapPointname))return point;
         }
@@ -832,7 +836,7 @@ public class GlobalDataManager {
 
     public static int checkMapPointNameExist(String mName) {
         int count=0;
-        for(MapPoint point:mMapPointList)
+        for(MapPointUser point:mMapPointList)
         {
             if(point.mName.equals(mName))count++;
         }

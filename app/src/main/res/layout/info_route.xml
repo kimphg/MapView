@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#12000000"
+    android:background="#90ffffff"
     app:behavior_hideable = "true"
     app:behavior_peekHeight ="56dp"
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
@@ -13,28 +13,19 @@
     >
     <ImageButton
         android:id="@+id/button_up"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:background="@drawable/icon_up"
         android:layout_centerHorizontal="true"
         />
 
-    <TextView
-        android:id="@+id/route_TX"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/button_up"
-        android:layout_marginTop="5dp"
-        android:text="LỘ TRÌNH"
-        android:textAlignment="center"
-        android:layout_gravity="center|top"
-        android:background="#003F51B5"
-        />
+
     <com.SeaMap.myapplication.view.DynamicListView
         android:id="@+id/route_listview"
-        android:layout_below="@+id/route_TX"
+        android:layout_below="@+id/_timeRun"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+
         >
 
     </com.SeaMap.myapplication.view.DynamicListView>
@@ -44,7 +35,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/_distance"
-        android:layout_below="@+id/route_listview"
+        android:layout_below="@id/button_up"
         android:text="Khoảng cách đến điểm tiếp theo: "
         android:background="#800097A7"
         />
@@ -60,54 +51,15 @@
         />
 
     <FrameLayout
-        android:id="@+id/search"
+        android:id="@+id/search_frame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/_timeRun"
+        android:layout_below="@+id/route_listview"
         android:layout_marginTop="10dp"
         android:background="@color/cardview_shadow_end_color"
-        >
-        <SearchView
-            android:id="@+id/searchview_place"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/_distance"
-            android:layout_marginTop="5dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:layout_marginLeft="90dp"
-            android:layout_marginRight="5dp"
-            android:background="@drawable/background"
-            android:queryHint="Nhập . . ."
-            >
-        </SearchView>
-
-        <TextView
-            android:id="@+id/text"
-            android:layout_gravity="center|left"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Thêm địa điểm"
-            android:layout_marginLeft="5dp"
-            android:layout_below="@+id/search_place"
-            android:layout_alignParentTop="true"
-            />
-
-    </FrameLayout>
+        />
 
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/search"
-        android:layout_marginTop="5dp">
-        <ListView
-            android:id="@+id/listplace"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            >
-        </ListView>
-    </FrameLayout>
 
 
 </RelativeLayout>

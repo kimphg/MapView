@@ -213,22 +213,22 @@ public class GpsService extends Service {
         return permissionAccessBackgroundLocationApproved || permissionAccessCoarseLocationApproved;
     }
 
-    public static double distance( double lon1, double lat1, double lon2, double lat2 ){
-//        double dlat = 6371 * Math.toRadians(Math.abs( l1.getLatitude() - lat ));
-//        double dlon = 6371 * Math.cos( Math.toRadians( Math.abs(
-//                l1.getLatitude()
-//        ))) * Math.toRadians( Math.abs( l1.getLongitude() - lon));
+//    public static double distance( double lon1, double lat1, double lon2, double lat2 ){
+////        double dlat = 6371 * Math.toRadians(Math.abs( l1.getLatitude() - lat ));
+////        double dlon = 6371 * Math.cos( Math.toRadians( Math.abs(
+////                l1.getLatitude()
+////        ))) * Math.toRadians( Math.abs( l1.getLongitude() - lon));
+////
+////        return Math.sqrt( Math.pow( dlat, 2 ) + Math.pow( dlon, 2 ) );
+//        double deltaLat = Math.toRadians( lat2 - lat1 );
+//        double deltaLon = Math.toRadians( lon2 - lon1 );
 //
-//        return Math.sqrt( Math.pow( dlat, 2 ) + Math.pow( dlon, 2 ) );
-        double deltaLat = Math.toRadians( lat2 - lat1 );
-        double deltaLon = Math.toRadians( lon2 - lon1 );
-
-        double haversine = Math.pow(Math.sin( deltaLat / 2 ), 2) +
-                Math.cos( Math.toRadians( lat1 ) ) * Math.cos( Math.toRadians( lat2 )) *
-                        Math.pow( Math.sin(deltaLon/2), 2);
-
-        return 2 * 6371 * Math.atan2( Math.sqrt( haversine ), Math.sqrt(1 - haversine));
-    }
+//        double haversine = Math.pow(Math.sin( deltaLat / 2 ), 2) +
+//                Math.cos( Math.toRadians( lat1 ) ) * Math.cos( Math.toRadians( lat2 )) *
+//                        Math.pow( Math.sin(deltaLon/2), 2);
+//
+//        return 2 * 6371 * Math.atan2( Math.sqrt( haversine ), Math.sqrt(1 - haversine));
+//    }
 
 //    public static int estimateTimeArrival(Location location, double distance) {
 //        //distance is in km

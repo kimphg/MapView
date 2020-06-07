@@ -1,84 +1,22 @@
 package com.SeaMap.myapplication.classes;
 
-import java.nio.ByteBuffer;
-
-public class MapPoint  {
-    //time in seconds
-    public Long mTimeSec;
-    //Point type 0: safe 1: danger 2: fishing 3: location 4: empty 5: location history
-    public int mType = 0;
-    public static String separator = ",";
-    public static int bytesSize = 32;//8 + 4 + 4 + 4 + 4 + 4 ;//time8 type4 lat4 lon4 pres4 presVar4
+public class MapPoint {
     public float mlat,mlon;
-    public float mAirPressure=0,mAirPressureStd=0;
-    public String mName;//, mDataString;
-    MapPoint(String name,String data)
-    {
-        mName = name;
-        String[] lat_lon_type = data.split(separator);
-        if(lat_lon_type.length>=3)
-        {
-            mlat = Float.parseFloat(lat_lon_type[0]);
-            mlon = Float.parseFloat(lat_lon_type[1]);
-            mType = Integer.parseInt(lat_lon_type[2]);
-        }
+
+    public MapPoint() {
 
     }
-    public MapPoint(byte[] data)
+
+    public MapPoint(float lat,float lon)
     {
-        if(data.length!=MapPoint.bytesSize)return;
-        ByteBuffer buffer = ByteBuffer.wrap(data);
-        mTimeSec = buffer.getLong(0);
-        mType = buffer.getInt(8);
-        mlat = buffer.getFloat(12);
-        mlon = buffer.getFloat(16);
-        mAirPressure = buffer.getFloat(20);
-        mAirPressureStd = buffer.getFloat(24);
+        mlat = lat;
+        mlon = lon;
     }
-    public MapPoint(MapPoint newPoint) {
-        mTimeSec = newPoint.mTimeSec;
-        mType = newPoint.mType;
-        mlat = newPoint.mlat;
-        mlon = newPoint.mlon;
-        mName = newPoint.mName;
-        if(mName==null)mName=DataString();
-    }
-    public MapPoint(float plat,float plon,String name,int type)
+    public float DistanceKmTo(MapPoint point)
     {
-        mTimeSec =System.currentTimeMillis()/1000;
-        mType = type;
-        mlat = plat;
-        mlon = plon;
-        mAirPressure = Float.parseFloat(GlobalDataManager.GetConfig("air_pressure"));//Float.parseFloat(GetConfig("air_pressure")
-        mAirPressureStd = Float.parseFloat(GlobalDataManager.GetConfig("air_pressure_std"));
-        mName = name;
-        if(mName==null)mName=new String(String.valueOf( mlat) + separator + String.valueOf( mlon)+separator+String.valueOf( mType));
+        return DistanceKmTo(point.mlat,point.mlon);
     }
-    public byte[] toBytes()
-    {
-        ByteBuffer byteBuffer = ByteBuffer.allocate(bytesSize);
-        byteBuffer.putLong(mTimeSec);
-        byteBuffer.putInt(mType);
-        byteBuffer.putFloat(mlat);
-        byteBuffer.putFloat(mlon);
-        byteBuffer.putFloat(mAirPressure);
-        byteBuffer.putFloat(mAirPressureStd);
-        return byteBuffer.array();
-    }
-    public void copyData(MapPoint newPoint)
-    {
-        mTimeSec = newPoint.mTimeSec;
-        mType = newPoint.mType;
-        mlat = newPoint.mlat;
-        mlon = newPoint.mlon;
-        mName = newPoint.mName;
-        if(mName==null)mName=DataString();
-    }
-    public float DistanceTo(MapPoint point)
-    {
-        return DistanceTo(point.mlat,point.mlon);
-    }
-    public float DistanceTo(float lat,float lon)
+    public float DistanceKmTo(float lat, float lon)
     {
 //        double f1 = mlat * 0.01745329252;
 //        double f2 = mlon * 0.01745329252;
@@ -91,9 +29,40 @@ public class MapPoint  {
         float x	= (float) ((((mlon) - lon) * 111.31949079327357f)*Math.cos(refLat));// 3.14159265358979324/180.0*6378.137);//deg*pi/180*rEarth
         float y	= ((mlat- lat ) * 111.132954f);
         return (float)Math.sqrt(x*x+y*y);
+//        double deltaLat = Math.toRadians( lat2 - lat1 );
+//        double deltaLon = Math.toRadians( lon2 - lon1 );
+//
+//        double haversine = Math.pow(Math.sin( deltaLat / 2 ), 2) +
+//                Math.cos( Math.toRadians( lat1 ) ) * Math.cos( Math.toRadians( lat2 )) *
+//                        Math.pow( Math.sin(deltaLon/2), 2);
+//
+//        return 2 * 6371 * Math.atan2( Math.sqrt( haversine ), Math.sqrt(1 - haversine));
     }
+    public String getDMSString()
+    {
+        return decimalToDMS(mlon,mlat);
+    }
+    public static String decimalToDMS(double lon, double lat ){
 
-    public String DataString() {
-        return String.valueOf( mlat) + separator + String.valueOf( mlon)+separator+String.valueOf( mType);
+        double convertLat = Math.abs( lat );
+        int latDeg = (int) Math.floor( convertLat );
+        int latMin = (int) Math.floor( (convertLat - latDeg ) * 60 );
+        int latSec = (int) Math.floor( ( (convertLat - latDeg) * 60.0 - latMin)*60.0);
+        String latCardinal = ( (lat > 0) ? "N" : "S");
+
+        double convertLon = Math.abs( lon );
+        int lonDeg = (int) Math.floor( convertLon );
+        int lonMin = (int) Math.floor( (convertLon - lonDeg ) * 60 );
+        int lonSec = (int)Math.floor( ( (convertLon - lonDeg ) * 60 - lonMin) *60.0);
+        String lonCardinal = ( (lon > 0) ? "E" : "W");
+
+        String result  = latDeg + "°" + latMin + "'" + latSec + "\"" + latCardinal+"/"+ lonDeg + "°" + lonMin + "'" + lonSec + "\"" + lonCardinal;
+
+        return result;
+    }
+    public static String decimalToDMS(float value ) {
+        int latDeg = (int) Math.floor( value );
+        float latMin = (value - (float)latDeg ) * 60.0f ;
+        return latDeg + "°" + latMin + "'";
     }
 }

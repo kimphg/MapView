@@ -27,8 +27,8 @@ import androidx.annotation.RequiresApi;
 import com.SeaMap.myapplication.Activity.MainActivity;
 import com.SeaMap.myapplication.Activity.MapPointEditor;
 import com.SeaMap.myapplication.R;
-import com.SeaMap.myapplication.classes.Coordinate;
 import com.SeaMap.myapplication.classes.MapPoint;
+import com.SeaMap.myapplication.classes.MapPointUser;
 import com.SeaMap.myapplication.classes.GlobalDataManager;
 import com.SeaMap.myapplication.object.Buoy;
 import com.SeaMap.myapplication.object.Density;
@@ -75,7 +75,7 @@ public class MapView extends View {
     public Canvas canvasBuf = new Canvas();
     float searchPlace_lon, searchPlace_lat;
     public int scrCtY,scrCtX;
-    PointF pointTopRight,pointBotLeft;
+    MapPoint pointTopRight,pointBotLeft;
     //protected double shipLocationLon = 105.43f, shipLocationLat = 18.32f;
     private boolean lockDragging = false;// khóa không cho drag khi đang zoom
     private Paint landPaint = new Paint(), riverPaint = new Paint(), depthLinePaint = new Paint(), borderlinePaint = new Paint(), cusPaint = new Paint(),textPaint = new Paint(), ownShipPaint;
@@ -232,8 +232,8 @@ public class MapView extends View {
         cusPaint.setStyle(Paint.Style.STROKE);
         cusPaint.setColor(Color.rgb(255, 239, 213));
         cusPaint.setStyle(Paint.Style.FILL);
-        for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x  ; lon++) {
-            for (int lat = (int) pointBotLeft.y; lat <= (int) pointTopRight.y; lat++) {
+        for(int lon = (int) pointBotLeft.mlon ; lon<= (int) pointTopRight.mlon  ; lon++) {
+            for (int lat = (int) pointBotLeft.mlat; lat <= (int) pointTopRight.mlat; lat++) {
                 String area = lon + "-" + lat;
 //                //draw text
                 Vector<Text> tT = GlobalDataManager.tTexts.get(area);
@@ -329,8 +329,8 @@ public class MapView extends View {
         //DRAW POLYGON
         Vector<Region> regions;
         if(GlobalDataManager.dataReady)
-        for(int lon = (int) pointBotLeft.x - 2; lon<= (int) pointTopRight.x + 2; lon++) {
-            for (int lat = (int) pointBotLeft.y - 2; lat <= (int) pointTopRight.y + 2; lat++) {
+        for(int lon = (int) pointBotLeft.mlon - 2; lon<= (int) pointTopRight.mlon + 2; lon++) {
+            for (int lat = (int) pointBotLeft.mlat - 2; lat <= (int) pointTopRight.mlat + 2; lat++) {
 
                 if(mScale < 8) {
                     regions = GlobalDataManager.BaseRegions.get(lon + "-" + lat);
@@ -354,8 +354,8 @@ public class MapView extends View {
             }
         }
 
-        for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x ; lon++) {
-            for (int lat = (int) pointBotLeft.y ; lat <= (int) pointTopRight.y ; lat++) {
+        for(int lon = (int) pointBotLeft.mlon ; lon<= (int) pointTopRight.mlon ; lon++) {
+            for (int lat = (int) pointBotLeft.mlat ; lat <= (int) pointTopRight.mlat ; lat++) {
                 String area = lon + "-" + lat;
 
                 ////DRAW RIVER
@@ -403,8 +403,8 @@ public class MapView extends View {
         //vẽ các đường đẳng sâu
 
         {
-            for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x ; lon++) {
-                for (int lat = (int) pointBotLeft.y ; lat <= (int) pointTopRight.y ; lat++) {
+            for(int lon = (int) pointBotLeft.mlon ; lon<= (int) pointTopRight.mlon ; lon++) {
+                for (int lat = (int) pointBotLeft.mlat ; lat <= (int) pointTopRight.mlat ; lat++) {
                     String area = lon + "-" + lat;
                     //draw polyline
                     Vector<Polyline> PL = GlobalDataManager.PLines.get(area);
@@ -463,8 +463,8 @@ public class MapView extends View {
         if(recudeResolution)pointDensity.setStrokeWidth(size*2);
         else pointDensity.setStrokeWidth(size);
 
-        for(int lon = (int) pointBotLeft.x ; lon<= (int) pointTopRight.x ; lon++) {
-            for (int lat = (int) pointBotLeft.y ; lat <= (int) pointTopRight.y ; lat++) {
+        for(int lon = (int) pointBotLeft.mlon ; lon<= (int) pointTopRight.mlon ; lon++) {
+            for (int lat = (int) pointBotLeft.mlat ; lat <= (int) pointTopRight.mlat ; lat++) {
                 String area = lon + "," + lat;
                 Vector<Density> vtDensity = GlobalDataManager.listDensity.get(area);
                 if (vtDensity == null) continue;
@@ -505,7 +505,7 @@ public class MapView extends View {
         canvas.drawPath(pat, objectPaint);
     }
 
-    void DrawSavedPoint(MapPoint point,Canvas canvas)
+    void DrawSavedPoint(MapPointUser point, Canvas canvas)
     {
         PointF p1 = ConvWGSToScrPoint(point.mlon,point.mlat);
         //p1.offset((float)buf_x, (float)buf_y);
@@ -532,10 +532,10 @@ public class MapView extends View {
     }
     private boolean isInsiseScr(float plat,float plon)
     {
-        if(plat>pointBotLeft.y)
-            if(plat<pointTopRight.y)
-                if(plon>pointBotLeft.x)
-                    if(plon<pointTopRight.x)
+        if(plat>pointBotLeft.mlat)
+            if(plat<pointTopRight.mlat)
+                if(plon>pointBotLeft.mlon)
+                    if(plon<pointTopRight.mlon)
                     {
                         return true;
                     }
@@ -601,7 +601,7 @@ public class MapView extends View {
 
                 canvas.drawText(String.format("%.1f",  bearing) + "\260 "+ String.format("%.1f", distance / 1852.0) + "Nm", p3.x, p3.y, objectPaint);
                 p3.offset(0, pointSize * 7);
-                String dms=Coordinate.decimalToDMS(mlon,mlat);
+                String dms= MapPoint.decimalToDMS(mlon,mlat);
                 canvas.drawText(dms, p3.x, p3.y, objectPaint);
                 objectPaint.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
                 canvas.drawLine(p1.x, p1.y, p2.x, p2.y , objectPaint);
@@ -615,7 +615,7 @@ public class MapView extends View {
             if(nearbyShips.size()>0) {
                 objectPaint.setColor(Color.argb(150, 150, 0, 0));
                 for (Location ship : nearbyShips) {
-                    PointF pship = ConvWGSToScrPoint((float) ship.getLongitude(), (float) ship.getLatitude());
+
                     DrawShip((float) ship.getLatitude(),(float) ship.getLongitude(),ship.getBearing(),canvas);
                     //canvas.drawCircle(pship.x+xoffset, pship.y+yoffset, 7, locationPaint);
                 }
@@ -625,8 +625,7 @@ public class MapView extends View {
             if(locationHistory.size()>0) {
                 objectPaint.setColor(Color.argb(150, 70, 50, 30));
                 for (Location ship : locationHistory) {
-                    PointF pship = ConvWGSToScrPoint((float) ship.getLongitude(), (float) ship.getLatitude());
-                    canvas.drawPoint(pship.x, pship.y , objectPaint);
+                    canvas.drawPoint((float) ship.getLongitude(), (float) ship.getLatitude(), objectPaint);
                 }
             }
         if(DIRECTIONS) {
@@ -654,7 +653,7 @@ public class MapView extends View {
             canvas.drawText(String.format("%.1f",distance[0]/1000.0)+"km",p1.x, p1.y+scrCtX/12,searchPl);
         }
 
-        for (MapPoint mPoint: GlobalDataManager.GetSavedPoints()) {
+        for (MapPointUser mPoint: GlobalDataManager.GetSavedPoints()) {
             float pLat = mPoint.mlat;
             float pLon = mPoint.mlon;
             if(isInsiseScr(pLat,pLon))
@@ -665,9 +664,9 @@ public class MapView extends View {
     }
     public void pushBuffer()
     {
-        PointF newLatLon = ConvScrPointToWGS((int) (scrCtX ), (int) (scrCtY ));
-        mlat = newLatLon.y;
-        mlon = newLatLon.x;
+        MapPoint newLatLon = ConvScrPointToWGS((int) (scrCtX ), (int) (scrCtY ));
+        mlat = newLatLon.mlat;
+        mlon = newLatLon.mlon;
         buf_x = 0;
         buf_y = 0;
         drawMap();
@@ -721,13 +720,13 @@ public class MapView extends View {
         if(isPointMode) {
             PointF center = new PointF(scrCtX, scrCtY);
             if (Distance(center, tapPoint) < scrCtX / 10) {
-                MapPoint newPoint = new MapPoint((float) mlat, (float) mlon, "Điểm",0);
+                MapPointUser newPoint = new MapPointUser((float) mlat, (float) mlon, "Điểm",0);
                 GlobalDataManager.AddToSavedPoints(newPoint);
             }
             else {
                 float minDistance = scrCtX;
-                MapPoint nearestPoint = null;
-                for (MapPoint mPoint : GlobalDataManager.GetSavedPoints()) {
+                MapPointUser nearestPoint = null;
+                for (MapPointUser mPoint : GlobalDataManager.GetSavedPoints()) {
                     float pLat = mPoint.mlat;
                     float pLon = mPoint.mlon;
 
@@ -755,7 +754,7 @@ public class MapView extends View {
         }
     }
 //    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    private void EditMapPoint(MapPoint selectedMapPoint){
+    private void EditMapPoint(MapPointUser selectedMapPoint){
             Intent intent = new Intent(mCtx.getApplicationContext(), MapPointEditor.class);
             intent.putExtra("MapPoint",selectedMapPoint.mName);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -788,7 +787,7 @@ public class MapView extends View {
         }
     };
 
-    MapPoint selectedMapPoint;
+    MapPointUser selectedMapPoint;
     public void clearNearbyShips() {
         nearbyShips.clear();
     }
@@ -838,12 +837,12 @@ public class MapView extends View {
         return s;
     }
 
-    public PointF ConvScrPointToWGS(int x,int y)
+    public MapPoint ConvScrPointToWGS(int x,int y)
     {
-        double olat  = mlat -  (float)(((y-buf_y-scrCtY)/mScale)/(111.132954f));
-        double refLat = (mlat +(olat))*0.00872664625997f;//3.14159265358979324/180.0/2;
-        double olon = (x-buf_x-scrCtX)/mScale/(111.31949079327357f*(float)cos(refLat))+ mlon;
-        return new PointF((float)olon,(float)olat);
+        float olat  = (float)mlat -  (float)(((y-buf_y-scrCtY)/mScale)/(111.132954f));
+        float refLat = ((float)mlat +(olat))*0.00872664625997f;//3.14159265358979324/180.0/2;
+        float olon = (x-buf_x-scrCtX)/mScale/(111.31949079327357f*(float)cos(refLat))+ (float)mlon;
+        return new MapPoint(olat,olon);
     }
     List<Location> nearbyShips = new LinkedList<Location>();
     List<Location> locationHistory  = new ArrayList<Location>();
@@ -877,22 +876,26 @@ public class MapView extends View {
 
         int height = mRouteBitmap.getHeight();
         int wight = mRouteBitmap.getWidth();
-        Paint routePaint = new Paint();
-        routePaint.setTextSize(pointSize*10);
-        routePaint.setAlpha(255);
-        routePaint.setColor(Color.rgb(0, 0, 0));
+        objectPaint.setTextSize(pointSize*10);
+        objectPaint.setAlpha(255);
+        objectPaint.setColor(Color.rgb(0, 0, 0));
+        objectPaint.setPathEffect(new DashPathEffect(new float[] {10,20}, 0));
 //        searchPl.setColor(Color.RED);
 
         int size = listTextRoute.size();
+        PointF pold = ConvWGSToScrPoint((float) shiplocation.getLongitude(), (float) shiplocation.getLatitude());
 
         for(int i = 0; i< size; i++){
             float [] coor = listTextRoute.get(i).getCoordinate();
             PointF p = ConvWGSToScrPoint(coor[0], coor[1]);
             //canvas.drawBitmap(bitmap,p.x - height / 4, p.y - wight,locationPaint);
-
-            canvas.drawBitmap(mRouteBitmap, p.x - wight*0.4f, p.y - height, routePaint);
-            canvas.drawText(String.valueOf(i+1),p.x - wight*0.3f ,p.y-height*0.5f,routePaint);
+            canvas.drawLine(pold.x,pold.y,p.x,p.y,objectPaint);
+            pold = p;
+            canvas.drawBitmap(mRouteBitmap, p.x - wight*0.4f, p.y - height, objectPaint);
+            canvas.drawText(String.valueOf(i+1),p.x - wight*0.3f ,p.y-height*0.5f,objectPaint);
         }
+
+        objectPaint.setPathEffect(null);
     }
     public void setLonLatMyLocation(double latLoc, double lonLoc,boolean gotoLocation ){
         blinkSize = 200;

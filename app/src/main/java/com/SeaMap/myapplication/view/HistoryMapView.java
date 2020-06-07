@@ -12,13 +12,13 @@ import androidx.annotation.RequiresApi;
 
 import com.SeaMap.myapplication.Activity.HistoryTimeInput;
 import com.SeaMap.myapplication.classes.GlobalDataManager;
-import com.SeaMap.myapplication.classes.MapPoint;
+import com.SeaMap.myapplication.classes.MapPointUser;
 
 import java.util.List;
 
 public class HistoryMapView extends MapView {
     Paint mPaint = new Paint();
-    private List<MapPoint> pointList;
+    private List<MapPointUser> pointList;
     //biến đề cài đặt quãng thời gian cho hiển thị lịch sử
     private Long timeMin;
     private Long timeMax;
@@ -48,13 +48,13 @@ public class HistoryMapView extends MapView {
     {
         timeMin = Long.parseLong(GlobalDataManager.GetConfig("history_start"));
         PointF tempPoint=null;
-        MapPoint tempPointLL=null;
+        MapPointUser tempPointLL=null;
         float sumDistance = 0.0f;
         // biến để lưu thời gian bắt đầu và kết thúc của đoạn ghi lưu
         Long firstTime = System.currentTimeMillis()/1000;
         Long lastTime = 0L;
         mPaint.setColor(Color.argb(100, 50, 10, 0));
-        for (MapPoint point:pointList) {
+        for (MapPointUser point:pointList) {
             //kiểm tra thời gian
             if(point.mTimeSec < timeMin)continue;
             if(firstTime>point.mTimeSec)firstTime=point.mTimeSec;
@@ -65,7 +65,7 @@ public class HistoryMapView extends MapView {
                 //swap points if time is not increment
                 if(point.mTimeSec-tempPointLL.mTimeSec<0)
                 {
-                    MapPoint temp = new MapPoint(point);
+                    MapPointUser temp = new MapPointUser(point);
                     point.copyData(tempPointLL);
                     tempPointLL.copyData(temp);
                     tempPointLL = point;
@@ -79,7 +79,7 @@ public class HistoryMapView extends MapView {
             else
             {
                 //đo khoảng cách:
-                float dist = tempPointLL.DistanceTo(point);
+                float dist = tempPointLL.DistanceKmTo(point);
                 sumDistance+=dist;
                 //vẽ đường nối
                 PointF p1 = ConvWGSToScrPoint(point.mlon,point.mlat);

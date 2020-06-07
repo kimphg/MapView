@@ -2,58 +2,38 @@ package com.SeaMap.myapplication.classes;
 
 import android.location.Location;
 
-import com.SeaMap.myapplication.services.GpsService;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Route {
-    public List<Coordinate> route;
-    private float totalDistance;
-    private static final float SPEED_THRESHOLD = 1;/*m/s*/
+    private ArrayList<MapPoint> route;
+    private float totalDistanceKm;
+    private static final float SPEED_THRESHOLD = 0.5f;/*m/s*/
 
     public Route() {
-        this.route = new LinkedList<>();
-        this.totalDistance = 0;
+        this.route = new ArrayList<>();
+        this.totalDistanceKm = 0;
     }
 
-    public List<Coordinate> getRoute() {
+    public List<MapPoint> getRoute() {
         return route;
     }
 
-    public void setRoute(ArrayList<Coordinate> route) {
-        this.route = route;
+    public float getTotalDistance(Location curLocation) {
+        return totalDistanceKm +getNextDestinationDistance(curLocation);
     }
 
-    public float getTotalDistance() {
-        return totalDistance;
-    }
-
-    public void addNewDestination(Coordinate newDestination) {
-        if( !route.isEmpty() ){
-            Coordinate last = route.get(route.size() - 1);
-            this.totalDistance += GpsService.distance(
-                    last.longitude,
-                    last.latitude,
-                    newDestination.longitude,
-                    newDestination.latitude
-            );
-        }
-
-
+    public void addNewDestination(MapPoint newDestination) {
         this.route.add(newDestination);
+        updateTotalDist();
     }
 
     public void arrivedToDestination() {
         if (!this.route.isEmpty()) {
             if( route.size() >= 2 ){
-                this.totalDistance -= GpsService.distance(
-                        route.get(0).longitude,
-                        route.get(0).latitude,
-                        route.get(1).longitude,
-                        route.get(1).latitude
-                );
+                this.totalDistanceKm -= route.get(0).DistanceKmTo(route.get(1));
+
             }
             this.route.remove(0);
         }
@@ -61,23 +41,14 @@ public class Route {
 
     //distance under 50m is considered arrived at the destination
     public boolean isArrived(Location curLocation) {
-        return GpsService.distance(
-                curLocation.getLongitude(),
-                curLocation.getLatitude(),
-                route.get(0).longitude,
-                route.get(0).latitude
+        return (route.get(0).DistanceKmTo((float)curLocation.getLatitude(),(float)curLocation.getLongitude())
         ) * 1000 < 50;
     }
 
-    public double getNextDestinationDistance(Location curLocation) {
+    public float getNextDestinationDistance(Location curLocation) {
         if( !route.isEmpty() ){
-            Coordinate head = route.get(0);
-            return GpsService.distance(
-                    curLocation.getLongitude(),
-                    curLocation.getLatitude(),
-                    head.longitude,
-                    head.latitude
-            );
+            MapPoint head = route.get(0);
+            return head.DistanceKmTo((float)curLocation.getLatitude(),(float)curLocation.getLongitude());
         }
         else {
             return 0;
@@ -85,7 +56,7 @@ public class Route {
     }
 
     public double getRemainingDistance( Location curLocation ){
-        return getNextDestinationDistance(curLocation) + this.totalDistance;
+        return getNextDestinationDistance(curLocation) + this.totalDistanceKm;
     }
 
     public int getNextDestinationEta(Location curLocation) {
@@ -99,6 +70,28 @@ public class Route {
     }
 
     public void getTotalEta(Location curLocation) {
+    }
+
+    public void RemoveRoutePoint(int i) {
+        route.remove(i);
+        updateTotalDist();
+    }
+    private void updateTotalDist()
+    {
+        totalDistanceKm = 0;
+        MapPoint pointOld = null;
+        for(MapPoint point :route)
+        {
+            if(pointOld!=null)
+            {
+                totalDistanceKm +=pointOld.DistanceKmTo(point);
+            }
+            pointOld = point;
+        }
+    }
+
+    public boolean isEmpty() {
+        return route.isEmpty();
     }
     //    private Date timeStart, timeEnd;
 //    private int distanceEstimated = 0;

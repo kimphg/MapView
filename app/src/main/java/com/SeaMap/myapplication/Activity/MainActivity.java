@@ -11,7 +11,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.pm.PackageInfo;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.Manifest;
@@ -44,7 +43,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.SeaMap.myapplication.R;
-import com.SeaMap.myapplication.classes.Coordinate;
+import com.SeaMap.myapplication.classes.MapPoint;
 import com.SeaMap.myapplication.classes.Places;
 import com.SeaMap.myapplication.classes.GlobalDataManager;
 import com.SeaMap.myapplication.classes.Route;
@@ -68,7 +67,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
+public class MainActivity extends AppCompatActivity {
     //Todo: dung dinh danh moi request
     public static final int REQUEST_INPUT = 1001;
     public static final int DISTANCE = 1002;
@@ -122,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public MapView map;
     private NavigationView navigationView;
 
-    private SearchView searchView;
+    //private SearchView searchView;
 
     private Text textSearch;
     private Places places;
@@ -143,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private List<Text> routeTextsList = new ArrayList<Text>();;
     private List<String> namePlaces;
     //listview search trong phan info_route;
-    private ListView listPlaceSeacrh, routesListView;
+    private ListView  routesListView;
     private WebView webview;
     private SensorEventListener mySensorEventListener ;
     private Places adapter;
@@ -224,7 +223,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     Location newLocation = intent.getParcelableExtra("newLocation");
                     if (newLocation != null) {
 
-                        String dmsCoord = Coordinate.decimalToDMS(newLocation.getLongitude(), newLocation.getLatitude());
+                        String dmsCoord = MapPoint.decimalToDMS(newLocation.getLongitude(), newLocation.getLatitude());
                         curLocationText.setText(dmsCoord);
                         speedKnots += (newLocation.getSpeed() * 3600.0 / 1852.0 - speedKnots)/3.0;
                         curVelocityText.setText(String.format("%.1f",speedKnots)+" Hải lý/h");
@@ -315,12 +314,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         frameLayout_main = findViewById(R.id.content_frame);
         frameLayout_map = findViewById(R.id.frame_layout_map);
         GlobalDataManager.Init(getApplicationContext());
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                GlobalDataManager.ReadBigData();
-            }
-        });
+
         // su kien bat dau lo trinh
 
         route_result_layout = findViewById(R.id.layout_route_result);
@@ -355,10 +349,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         //
         onDistancePTPView();
         navigationDrawer();
-        onRoute();
+
 //        onDensityView();
         onScreecBtn_Direction_Search();
-
+        onRoute();
 
     }
 
@@ -555,39 +549,39 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         route_layout.setVisibility(View.INVISIBLE);
 
         routesListView = findViewById(R.id.route_listview);
-        listPlaceSeacrh = findViewById(R.id.listplace);
-        searchView = findViewById(R.id.searchview_place);
+//        listPlaceSeacrh = findViewById(R.id.listplace);
+        //searchView = findViewById(R.id.searchview_place);
 
         //.............tao adpter.....
         places = new Places(this);
-        listPlaceSeacrh.setAdapter(places);
-        searchView.setOnQueryTextListener(this);
+//        listPlaceSeacrh.setAdapter(places);
+        //searchView.setOnQueryTextListener(this);
         //##### su kien an vao item cua listview: 1.route  2.search //
         adapterListPlace();
         //1.search
-        listPlaceSeacrh.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Text place = places.getItem(i);
-                routeTextsList.add(place);
-                namePlaces.add(place.getName());
-                arrayAdapter.notifyDataSetChanged();
-
-                float[] coor = place.getCoordinate();
-                //map.setLonLatSearchPlace(coor[1], coor[0]);
-
-                Coordinate selected = new Coordinate(coor[0], coor[1]);
-                curRoute.addNewDestination(selected);
-
-                if (!isCalculating) {
-                    isCalculating = true;
-                    runEtaTimer();
-                }
-                //thiet lap lai va ve
-                routingModeView.setListCoor(routeTextsList);
-                routingModeView.invalidate();
-            }
-        });
+//        listPlaceSeacrh.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//                Text place = places.getItem(i);
+//                routeTextsList.add(place);
+//                namePlaces.add(place.getName());
+//                arrayAdapter.notifyDataSetChanged();
+//
+//                float[] coor = place.getCoordinate();
+//                //map.setLonLatSearchPlace(coor[1], coor[0]);
+//
+//                MapPoint selected = new MapPoint( coor[1],coor[0]);
+//                curRoute.addNewDestination(selected);
+//
+//                if (!isCalculating) {
+//                    isCalculating = true;
+//                    runEtaTimer();
+//                }
+//                //thiet lap lai va ve
+//                routingModeView.setListCoor(routeTextsList);
+//                routingModeView.invalidate();
+//            }
+//        });
 
         //list dia diem da chon
         routesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -595,7 +589,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(i<routeTextsList.size())routeTextsList.remove(i);
                 if(i<namePlaces.size())namePlaces.remove(i);
-                if(i<curRoute.route.size())curRoute.route.remove(i);
+                curRoute.RemoveRoutePoint(i);
 
                 arrayAdapter.notifyDataSetChanged();
                 // thiet lap lai va ve
@@ -652,17 +646,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     break;
                 }
                 case ROUTE: {
-                    PointF p = map.ConvScrPointToWGS(map.scrCtX, map.scrCtY);
-                    Coordinate selected = new Coordinate(p.x, p.y);
-                    this.curRoute.addNewDestination(selected);
+                    MapPoint p = map.ConvScrPointToWGS(map.scrCtX, map.scrCtY);
+                    this.curRoute.addNewDestination(p);
                     if (!isCalculating) {
                         isCalculating = true;
                         runEtaTimer();
                     }
 
-                    String name_place = Coordinate.decimalToDMS(selected.longitude, selected.latitude);
-                    float[] coor = {p.x, p.y};
-
+                    String name_place = p.getDMSString();
+                    float[] coor = {p.mlon, p.mlat};
                     Text text = new Text();
                     text.setName(name_place);
                     text.setCoordinate(coor);
@@ -882,9 +874,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         final Handler countdownHandler = new Handler();
 
         calculateHandler.post(new Runnable() {
+            @SuppressLint("DefaultLocale")
             @Override
             public void run() {
-                if (curLocation != null && !curRoute.route.isEmpty() ) {
+                if ((curLocation != null) && (!curRoute.isEmpty() ) ) {
                     if (curRoute.isArrived(curLocation)) {
                         arrived = true;
                         toNextDestinationDistanceText
@@ -897,9 +890,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                             arrived = false;
                         }
                         toNextDestinationDistanceText
-                                .setText("Khoảng cách đến điểm tiếp theo:\t" +
-                                        (int) curRoute.getNextDestinationDistance(curLocation) +
-                                        " km");
+                                .setText("K.cách đến điểm tiếp theo(hải lý):\t" +
+                                        String.format("%.2f",curRoute.getNextDestinationDistance(curLocation)/1.852) +
+                                        "\nTổng hành trình: " + String.format("%.2f",curRoute.getTotalDistance(curLocation)/1.852));
                         etaToNextDestination = curRoute.getNextDestinationEta(curLocation);
                         if (etaToNextDestination == -1) {
                             etaToNextDestinationText
@@ -935,7 +928,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
                     etaToNextDestinationText
                             .setText("Thời gian đến điểm tiếp theo:\t" +
-                                    hour + " giờ " + minute + " phút " + sec + " giây");
+                                    hour + " giờ " + minute + " phút ");
 
                     etaToNextDestination--;
                 }
@@ -1092,16 +1085,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         routesListView.setAdapter(arrayAdapter);
     }
 
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        return false;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String newText) {
-        //arrayAdapter.filter(text);
-        return false;
-    }
 
     //Ham lay kich thuoc man hinh
     private void getDisplayMetrics() {
